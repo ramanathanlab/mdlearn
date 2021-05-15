@@ -42,6 +42,18 @@ class ContactMapDataset(Dataset):
         in_memory: bool
             If True, pull data stored in HDF5 from disk to numpy arrays. Otherwise,
             read each batch from HDF5 on the fly.
+
+        Examples
+        --------
+        >>> dataset = ContactMapDataset("contact_maps.h5", (28, 28))
+        >>> dataset[0]
+        {"X": torch.Tensor(...), "index": 0}
+        >>> dataset[0]["X"].shape
+        (28, 28)
+
+        >>> dataset = ContactMapDataset("contact_maps.h5", (28, 28), scalar_dset_names=["rmsd"])
+        >>> dataset[0]
+        {"X": torch.Tensor(...), "index": 0, "rmsd": 8.67}
         """
         self.file_path = str(path)
         self.dataset_name = dataset_name
