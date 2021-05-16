@@ -86,9 +86,10 @@ class ContactMapDataset(Dataset):
 
         # Pull data into main memory (numpy)
         if self.in_memory:
-            self.dset = np.array(self.dset)
+            # self.dset and self.val_dset is a ragged array, requires storage as an object
+            self.dset = np.array(self.dset, dtype=object)
             if self._values_dset_name is not None:
-                self.val_dset = np.array(self.val_dset)
+                self.val_dset = np.array(self.val_dset, dtype=object)
             self.scalar_dsets = {
                 name: np.array(dset) for name, dset in self.scalar_dsets.items()
             }
@@ -105,6 +106,7 @@ class ContactMapDataset(Dataset):
         if not self._initialized:
             self._init_dataset()
 
+        # Data is stored as np.concatenate((row_inds, col_inds))
         ind = self.dset[idx, ...].reshape(2, -1)
         indices = torch.from_numpy(ind).to(torch.long)
 
