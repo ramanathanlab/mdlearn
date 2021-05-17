@@ -1,4 +1,3 @@
-# TODO: These pytorch functions should be moved elsewhere
 from torch import nn
 
 

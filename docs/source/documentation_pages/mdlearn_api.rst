@@ -8,5 +8,6 @@ Function and class API documentation.
     :maxdepth: 1
 
     data/datasets/contact_map
+    data/utils
     nn/models/ae/model
     nn/models/vae/models
