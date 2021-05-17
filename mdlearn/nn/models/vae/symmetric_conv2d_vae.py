@@ -6,7 +6,9 @@ from mdlearn.nn.modules.conv2d_decoder import Conv2dDecoder
 
 
 class SymmetricConv2dVAE(VAE):
-    """Convolutional variational autoencoder.
+    """Convolutional variational autoencoder from the
+    `"Deep clustering of protein folding simulations"
+    <https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-018-2507-5>`_ paper.
     Inherits from :obj:`mdlearn.nn.models.vae.VAE`."""
 
     def __init__(
