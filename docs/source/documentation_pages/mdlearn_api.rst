@@ -7,4 +7,6 @@ Function and class API documentation.
 .. toctree::
     :maxdepth: 1
 
-    datasets/contact_map
+    data/datasets/contact_map
+    nn/models/ae/model
+    nn/models/vae/models
