@@ -75,7 +75,7 @@ class VAE(AE):
         ----------
         mu : torch.Tensor, optional
             The latent space for :math:`\mu`. If set to :obj:`None`,
-            uses the last computation of :math:`mu`.
+            uses the last computation of :math:`\mu`.
         logstd : torch.Tensor, optional
             The latent space for :math:`\log\sigma`. If set to :obj:`None`,
             uses the last computation of :math:`\log\sigma^2`.
