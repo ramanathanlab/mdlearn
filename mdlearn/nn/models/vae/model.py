@@ -65,10 +65,10 @@ class VAE(AE):
         z = self.reparametrize(self.__mu__, self.__logstd__)
         return z
 
-    def kl_loss(
+    def kld_loss(
         self, mu: Optional[torch.Tensor] = None, logstd: Optional[torch.Tensor] = None
     ) -> torch.Tensor:
-        r"""Computes the KL loss, either for the passed arguments :obj:`mu`
+        r"""Computes the KLD loss, either for the passed arguments :obj:`mu`
         and :obj:`logstd`, or based on latent variables from last encoding.
 
         Parameters

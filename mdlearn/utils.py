@@ -3,12 +3,22 @@ import json
 import yaml
 import torch
 import wandb
+import argparse
 from pathlib import Path
 from pydantic import BaseSettings as _BaseSettings
 from typing import TypeVar, Type, Union, Optional, Dict, Any
 
 PathLike = Union[str, Path]
 _T = TypeVar("_T")
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-c", "--config", help="YAML config file", type=str, required=True
+    )
+    args = parser.parse_args()
+    return args
 
 
 class BaseSettings(_BaseSettings):
@@ -31,7 +41,7 @@ class WandbConfig(BaseSettings):
     # Model tag for wandb labeling
     model_tag: Optional[str] = None
 
-    def setup_wandb(
+    def init(
         self,
         cfg: BaseSettings,
         model: torch.nn.Module,
@@ -80,7 +90,7 @@ class OptimizerConfig(BaseSettings):
     # Arbitrary optimizer hyperparameters
     hparams: Dict[str, Any] = {}
 
-    def get_torch_optimizer(self, parameters):
+    def get_torch_optimizer(self, parameters) -> torch.optim.Optimizer:
         """Construct a PyTorch optimizer specified by :obj:`name` and :obj:`hparams`."""
         from torch import optim
 
@@ -131,7 +141,7 @@ class SchedulerConfig(BaseSettings):
     # Arbitrary scheduler hyperparameters
     hparams: Dict[str, Any] = {}
 
-    def get_torch_scheduler(self, optimizer):
+    def get_torch_scheduler(self, optimizer: torch.optim.Optimizer):
         """Construct a PyTorch lr_scheduler specified by :obj:`name` and :obj:`hparams`."""
         from torch.optim import lr_scheduler
 
@@ -168,3 +178,74 @@ class SchedulerConfig(BaseSettings):
                 f"Invalid parameter in hparams: {self.hparams}"
                 f" for scheduler {self.name}.\nSee PyTorch docs."
             )
+
+
+def log_checkpoint(
+    checkpoint_file: PathLike,
+    epoch: int,
+    model: torch.nn.Module,
+    optimizer: torch.optim.Optimizer,
+    scheduler: Optional[torch.optim.lr_scheduler._LRScheduler],
+):
+    """Write a torch .pt file containing the epoch, model, optimizer,
+    and scheduler.
+
+    Parameters
+    ----------
+    checkpoint_file: PathLike
+        Path to save checkpoint file.
+    epoch : int
+        The current training epoch.
+    model : torch.nn.Module
+        The model whose parameters are saved.
+    optimizer : torch.optim.Optimizer
+        The optimizer whose parameters are saved.
+    scheduler : Optional[torch.optim.lr_scheduler._LRScheduler]
+        Optional scheduler whose parameters are saved.
+    """
+    checkpoint = {
+        "epoch": epoch,  # To resume training, (see resume_checkpoint)
+        "model_state_dict": model.state_dict(),
+        "optimizer_state_dict": optimizer.state_dict(),
+    }
+    if scheduler is not None:
+        checkpoint["scheduler_state_dict"] = scheduler.state_dict()
+    torch.save(checkpoint, checkpoint_file)
+
+
+def resume_checkpoint(
+    checkpoint_file: PathLike,
+    model: torch.nn.Module,
+    optimizer: torch.optim.Optimizer,
+    scheduler: Optional[torch.optim.lr_scheduler._LRScheduler] = None,
+) -> int:
+    """Modifies :obj:`model`, :obj:`optimizer`, and :obj:`scheduler` with
+    values stored in torch .pt file :obj:`checkpoint_file` to resume from
+    a previous training checkpoint.
+
+    Parameters
+    ----------
+    checkpoint_file : PathLike
+        Path to checkpoint file to resume from.
+    model : torch.nn.Module
+        Module to update the parameters of.
+    optimizer : torch.optim.Optimizer
+        Optimizer to update.
+    scheduler : Optional[torch.optim.lr_scheduler._LRScheduler]
+        Optional scheduler to update.
+
+    Returns
+    -------
+    int :
+        The epoch the checkpoint is saved plus one i.e. the current
+        training epoch to start from.
+    """
+    checkpoint = torch.load(checkpoint_file, map_location="cpu")
+    start_epoch = checkpoint["epoch"] + 1
+    model.load_state_dict(checkpoint["model_state_dict"])
+    optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+    if scheduler is not None:
+        scheduler_state_dict = checkpoint.get("scheduler_state_dict")
+        if scheduler_state_dict is not None:
+            scheduler.load_state_dict(scheduler_state_dict)
+    return start_epoch
