@@ -83,7 +83,7 @@ class Conv2dDecoder(nn.Module):
         # self.output_shape[0] Needs to be the last out_channels to match the input matrix
         for i, (filter_, kernel, stride) in enumerate(
             zip(
-                (self.output_shape[0], *self.filters),
+                (*self.filters, self.output_shape[0]),
                 self.kernels,
                 self.strides,
             )

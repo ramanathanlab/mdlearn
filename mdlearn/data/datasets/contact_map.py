@@ -107,8 +107,8 @@ class ContactMapDataset(Dataset):
             self._init_dataset()
 
         # Data is stored as np.concatenate((row_inds, col_inds))
-        ind = self.dset[idx, ...].reshape(2, -1)
-        indices = torch.from_numpy(ind).to(torch.long)
+        ind = self.dset[idx] if self.in_memory else self.dset[idx, ...]
+        indices = torch.from_numpy(ind.reshape(2, -1)).to(torch.long)
 
         # Create array of 1s, all values in the contact map are 1. Or load values.
         if self._values_dset_name is not None:
