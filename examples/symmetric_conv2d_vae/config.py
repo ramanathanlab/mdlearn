@@ -65,3 +65,7 @@ class SymmetricConv2dVAEConfig(BaseSettings):
     num_data_workers: int = 0
     # Whether or not to ignore the GPU while training.
     ignore_gpu: bool = False
+
+
+if __name__ == "__main__":
+    SymmetricConv2dVAEConfig().dump_yaml("symmetric_conv2d_vae_template.yaml")
