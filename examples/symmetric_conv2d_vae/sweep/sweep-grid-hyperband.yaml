@@ -1,0 +1,74 @@
+program: train.py
+method: grid
+name: null
+description: null
+project: null
+entity: null
+metric:
+  goal: minimize
+  name: valid_loss
+parameters:
+  input_path:
+    desc: Path to HDF5 training file
+    value: /homes/abrace/data/bba/BBA-subset-100.h5
+  output_path:
+    value: /homes/abrace/src/mdlearn/runs/test-run-0
+  input_shape:
+    value: [1, 28, 28]
+  dataset_name:
+    value: contact_map
+  scalar_dset_names:
+    value: []
+  values_dset_name:
+    value: null
+  scalar_requires_grad:
+    value: false
+  in_memory:
+    value: true
+  split_pct:
+    value: 0.8
+  seed:
+    value: 333
+  shuffle:
+    value: true
+  epochs:
+    value: 10
+  batch_size:
+    value: 64
+  clip_grad_max_norm:
+    value: 10.0
+  init_weights:
+    value: null
+  optimizer:
+    value: Adam
+  lr:
+    value: 0.0001
+  scheduler:
+    value: null
+  latent_dim:
+    values: [8, 10, 12]
+  filters:
+    value: [100, 100, 100, 100]
+  kernels:
+    value: [5, 5, 5, 5]
+  strides:
+    value: [1, 2, 1, 1]
+  affine_widths:
+    value: [64]
+  affine_dropouts:
+    value: [0.0]
+  activation:
+    value: ReLU
+  output_activation:
+    value: Sigmoid
+  lambda_rec:
+    value: 1.0
+  num_data_workers:
+    value: 0
+  ignore_gpu:
+    value: false
+early_terminate:
+  type: hyperband
+  s: 2
+  eta: 3
+  max_iter: 27
