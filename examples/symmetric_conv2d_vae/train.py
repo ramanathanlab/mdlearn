@@ -116,7 +116,7 @@ def main(cfg: SymmetricConv2dVAEConfig):
             avg_valid_losses = validate(valid_loader, model, device)
 
         print(
-            "====> Epoch: {} Valid:\tAvg loss: {:.4f}\tAvg recon loss {:.4f}\tAvg kld loss {:.4f}".format(
+            "====> Epoch: {} Valid:\tAvg loss: {:.4f}\tAvg recon loss {:.4f}\tAvg kld loss {:.4f}\n".format(
                 epoch, *avg_valid_losses
             )
         )
