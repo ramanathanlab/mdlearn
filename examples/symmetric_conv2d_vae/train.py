@@ -6,6 +6,8 @@ from mdlearn.utils import (
     parse_args,
     log_checkpoint,
     resume_checkpoint,
+    get_torch_optimizer,
+    get_torch_scheduler,
 )
 from mdlearn.nn.models.vae.symmetric_conv2d_vae import SymmetricConv2dVAE
 from mdlearn.data.utils import train_valid_split
@@ -77,9 +79,13 @@ def main(cfg: SymmetricConv2dVAEConfig):
         pin_memory=True,
     )
 
-    optimizer = cfg.optimizer.get_torch_optimizer(model.parameters())
+    optimizer = get_torch_optimizer(
+        cfg.optimizer.name, cfg.optimizer.hparams, model.parameters()
+    )
     if cfg.scheduler is not None:
-        scheduler = cfg.scheduler.get_torch_scheduler(optimizer)
+        scheduler = get_torch_scheduler(
+            cfg.scheduler.name, cfg.scheduler.hparams, optimizer
+        )
     else:
         scheduler = None
 
@@ -142,7 +148,7 @@ def main(cfg: SymmetricConv2dVAEConfig):
     # ├── checkpoint
     # │     ├── epoch-1-20200606-125334.pt
     # │     ├── epoch-2-20200606-125338.pt
-    # |__ wandb/
+    # ├── wandb/
 
 
 def train(train_loader, model, optimizer, device):
