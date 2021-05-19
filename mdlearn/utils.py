@@ -90,44 +90,6 @@ class OptimizerConfig(BaseSettings):
     # Arbitrary optimizer hyperparameters
     hparams: Dict[str, Any] = {}
 
-    def get_torch_optimizer(self, parameters) -> torch.optim.Optimizer:
-        """Construct a PyTorch optimizer specified by :obj:`name` and :obj:`hparams`."""
-        from torch import optim
-
-        if self.name == "Adadelta":
-            optimizer = optim.Adadelta
-        elif self.name == "Adagrad":
-            optimizer = optim.Adagrad
-        elif self.name == "Adam":
-            optimizer = optim.Adam
-        elif self.name == "AdamW":
-            optimizer = optim.AdamW
-        elif self.name == "SparseAdam":
-            optimizer = optim.SparseAdam
-        elif self.name == "Adamax":
-            optimizer = optim.Adamax
-        elif self.name == "ASGD":
-            optimizer = optim.ASGD
-        elif self.name == "LBFGS":
-            optimizer = optim.LBFGS
-        elif self.name == "RMSprop":
-            optimizer = optim.RMSprop
-        elif self.name == "Rprop":
-            optimizer = optim.Rprop
-        elif self.name == "SGD":
-            optimizer = optim.SGD
-        else:
-            raise ValueError(f"Invalid optimizer name: {self.name}")
-
-        try:
-            return optimizer(parameters, **self.hparams)
-
-        except TypeError:
-            raise Exception(
-                f"Invalid parameter in hparams: {self.hparams}"
-                f" for optimizer {self.name}.\nSee PyTorch docs."
-            )
-
 
 class SchedulerConfig(BaseSettings):
     """pydantic schema for PyTorch scheduler which allows for arbitrary
@@ -141,43 +103,87 @@ class SchedulerConfig(BaseSettings):
     # Arbitrary scheduler hyperparameters
     hparams: Dict[str, Any] = {}
 
-    def get_torch_scheduler(self, optimizer: torch.optim.Optimizer):
-        """Construct a PyTorch lr_scheduler specified by :obj:`name` and :obj:`hparams`."""
-        from torch.optim import lr_scheduler
 
-        if self.name == "ReduceLROnPlateau":
-            scheduler = lr_scheduler.ReduceLROnPlateau
-        elif self.name == "LambdaLR":
-            raise ValueError("LambdaLR not supported")
-        elif self.name == "MultiplicativeLR":
-            raise ValueError("MultiplicativeLR not supported")
-        elif self.name == "StepLR":
-            scheduler = lr_scheduler.StepLR
-        elif self.name == "MultiStepLR":
-            scheduler = lr_scheduler.MultiStepLR
-        elif self.name == "ExponentialLR":
-            scheduler = lr_scheduler.ExponentialLR
-        elif self.name == "CosineAnnealingLR":
-            scheduler = lr_scheduler.CosineAnnealingLR
-        elif self.name == "ReduceLROnPlateau":
-            scheduler = lr_scheduler.ReduceLROnPlateau
-        elif self.name == "CyclicLR":
-            scheduler = lr_scheduler.CyclicLR
-        elif self.name == "OneCycleLR":
-            scheduler = lr_scheduler.OneCycleLR
-        elif self.name == "CosineAnnealingWarmRestarts":
-            scheduler = lr_scheduler.CosineAnnealingWarmRestarts
-        else:
-            raise ValueError(f"Invalid scheduler name: {self.name}")
+def get_torch_optimizer(
+    name: str, hparams: Dict[str, Any], parameters
+) -> torch.optim.Optimizer:
+    """Construct a PyTorch optimizer specified by :obj:`name` and :obj:`hparams`."""
+    from torch import optim
 
-        try:
-            return scheduler(optimizer, **self.hparams)
+    if name == "Adadelta":
+        optimizer = optim.Adadelta
+    elif name == "Adagrad":
+        optimizer = optim.Adagrad
+    elif name == "Adam":
+        optimizer = optim.Adam
+    elif name == "AdamW":
+        optimizer = optim.AdamW
+    elif name == "SparseAdam":
+        optimizer = optim.SparseAdam
+    elif name == "Adamax":
+        optimizer = optim.Adamax
+    elif name == "ASGD":
+        optimizer = optim.ASGD
+    elif name == "LBFGS":
+        optimizer = optim.LBFGS
+    elif name == "RMSprop":
+        optimizer = optim.RMSprop
+    elif name == "Rprop":
+        optimizer = optim.Rprop
+    elif name == "SGD":
+        optimizer = optim.SGD
+    else:
+        raise ValueError(f"Invalid optimizer name: {name}")
 
-        except TypeError:
-            raise Exception(
-                f"Invalid parameter in hparams: {self.hparams}"
-                f" for scheduler {self.name}.\nSee PyTorch docs."
-            )
+    try:
+        return optimizer(parameters, **hparams)
+
+    except TypeError:
+        raise Exception(
+            f"Invalid parameter in hparams: {hparams}"
+            f" for optimizer {name}.\nSee PyTorch docs."
+        )
+
+
+def get_torch_scheduler(
+    name: str, hparams: Dict[str, Any], optimizer: torch.optim.Optimizer
+):
+    """Construct a PyTorch lr_scheduler specified by :obj:`name` and :obj:`hparams`."""
+    from torch.optim import lr_scheduler
+
+    if name == "ReduceLROnPlateau":
+        scheduler = lr_scheduler.ReduceLROnPlateau
+    elif name == "LambdaLR":
+        raise ValueError("LambdaLR not supported")
+    elif name == "MultiplicativeLR":
+        raise ValueError("MultiplicativeLR not supported")
+    elif name == "StepLR":
+        scheduler = lr_scheduler.StepLR
+    elif name == "MultiStepLR":
+        scheduler = lr_scheduler.MultiStepLR
+    elif name == "ExponentialLR":
+        scheduler = lr_scheduler.ExponentialLR
+    elif name == "CosineAnnealingLR":
+        scheduler = lr_scheduler.CosineAnnealingLR
+    elif name == "ReduceLROnPlateau":
+        scheduler = lr_scheduler.ReduceLROnPlateau
+    elif name == "CyclicLR":
+        scheduler = lr_scheduler.CyclicLR
+    elif name == "OneCycleLR":
+        scheduler = lr_scheduler.OneCycleLR
+    elif name == "CosineAnnealingWarmRestarts":
+        scheduler = lr_scheduler.CosineAnnealingWarmRestarts
+    else:
+        raise ValueError(f"Invalid scheduler name: {name}")
+
+    try:
+        return scheduler(optimizer, **hparams)
+
+    except TypeError:
+        raise Exception(
+            f"Invalid parameter in hparams: {hparams}"
+            f" for scheduler {name}.\nSee PyTorch docs."
+        )
 
 
 def log_checkpoint(
