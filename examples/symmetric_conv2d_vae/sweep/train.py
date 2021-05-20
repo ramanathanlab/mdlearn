@@ -13,6 +13,7 @@ from mdlearn.utils import (
 from mdlearn.data.utils import train_valid_split
 from mdlearn.data.datasets.contact_map import ContactMapDataset
 from mdlearn.nn.models.vae.symmetric_conv2d_vae import SymmetricConv2dVAE
+from config import SymmetricConv2dVAEConfig
 
 
 def main():
@@ -200,5 +201,7 @@ def validate(valid_loader, model, device):
 if __name__ == "__main__":
     wandb.init(dir=wandb.config.output_path)
     cfg = wandb.config
+    default_cfg = SymmetricConv2dVAEConfig.from_yaml(cfg.default_yaml)
     pprint(cfg)
+    print(default_cfg)
     main()
