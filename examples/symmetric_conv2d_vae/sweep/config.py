@@ -60,6 +60,8 @@ class SymmetricConv2dVAEConfig(BaseSettings):
     num_data_workers: int = 0
     # Whether or not to ignore the GPU while training.
     ignore_gpu: bool = False
+    # Log checkpoint file every `checkpoint_log_every` epochs
+    checkpoint_log_every: int = 1
 
 
 if __name__ == "__main__":
