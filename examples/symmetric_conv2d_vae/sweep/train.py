@@ -16,7 +16,7 @@ from mdlearn.nn.models.vae.symmetric_conv2d_vae import SymmetricConv2dVAE
 from config import SymmetricConv2dVAEConfig
 
 
-def main():
+def main(cfg: SymmetricConv2dVAEConfig):
 
     # Create checkpoint directory
     checkpoint_path = Path(wandb.run.dir) / "checkpoints"
@@ -200,8 +200,14 @@ def validate(valid_loader, model, device):
 
 if __name__ == "__main__":
     wandb.init(dir=wandb.config.output_path)
-    cfg = wandb.config
-    default_cfg = SymmetricConv2dVAEConfig.from_yaml(cfg.default_yaml)
-    pprint(cfg)
-    print(default_cfg)
-    main()
+    pprint(wandb.config)
+    cfg = SymmetricConv2dVAEConfig.from_yaml(wandb.config.default_yaml)
+    print(cfg)
+
+    # Update cfg with sweep parameters
+    cfg.batch_size = wandb.config.batch_size
+    cfg.optimizer.name = wandb.config.optimizer
+    cfg.optimizer.hparams["lr"] = wandb.config.lr
+    cfg.latent_dim = wandb.config.latent_dim
+
+    main(cfg)
