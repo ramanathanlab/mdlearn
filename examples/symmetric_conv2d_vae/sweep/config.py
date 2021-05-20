@@ -7,6 +7,8 @@ class SymmetricConv2dVAEConfig(BaseSettings):
 
     # Path to HDF5 training file
     input_path: Path = Path("TODO")
+    # Path to write sweep to
+    output_path: Path = Path("TODO")
     # Input image shapes
     input_shape: Tuple[int, ...] = (1, 28, 28)
     # Name of the dataset in the HDF5 file.

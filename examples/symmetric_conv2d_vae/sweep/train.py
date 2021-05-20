@@ -3,7 +3,6 @@ import torch
 import random
 import numpy as np
 from pathlib import Path
-from pprint import pprint
 from torchsummary import summary
 from mdlearn.utils import (
     log_checkpoint,
@@ -199,10 +198,9 @@ def validate(valid_loader, model, device):
 
 
 if __name__ == "__main__":
-    wandb.init(dir=wandb.config.output_path)
-    pprint(wandb.config)
+    #wandb.init(dir=wandb.config.output_path)
+    wandb.init()
     cfg = SymmetricConv2dVAEConfig.from_yaml(wandb.config.default_yaml)
-    print(cfg)
 
     # Update cfg with sweep parameters
     cfg.batch_size = wandb.config.batch_size
