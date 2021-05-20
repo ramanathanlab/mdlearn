@@ -135,13 +135,14 @@ def main(cfg: SymmetricConv2dVAEConfig):
         else:
             raise NotImplementedError(f"scheduler {cfg.scheduler.name} step function.")
 
-        log_checkpoint(
-            checkpoint_path / f"checkpoint-epoch-{epoch}.pt",
-            epoch,
-            model,
-            optimizer,
-            scheduler,
-        )
+        if epoch % cfg.checkpoint_log_every == 0:
+            log_checkpoint(
+                checkpoint_path / f"checkpoint-epoch-{epoch}.pt",
+                epoch,
+                model,
+                optimizer,
+                scheduler,
+            )
 
     # Output directory structure
     # output_path
