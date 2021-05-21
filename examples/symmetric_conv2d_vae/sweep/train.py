@@ -52,7 +52,7 @@ def main(cfg: SymmetricConv2dVAEConfig):
     # Diplay model
     print(model)
     summary(model, cfg.input_shape)
-    wandb.watch(model) # Must run after summary()
+    wandb.watch(model)  # Must run after summary()
 
     # Load training and validation data
     dataset = ContactMapDataset(
@@ -167,7 +167,7 @@ def train(train_loader, model, optimizer, device):
     for i, batch in enumerate(train_loader):
 
         if i / len(train_loader) > cfg.train_subsample_pct:
-            break # Early stop for sweeps
+            break  # Early stop for sweeps
 
         x = batch["X"].to(device, non_blocking=True)
 
@@ -188,9 +188,9 @@ def train(train_loader, model, optimizer, device):
         avg_recon_loss += recon_loss.item()
         avg_kld_loss += kld_loss.item()
 
-    avg_loss /= (i + 1)
-    avg_recon_loss /= (i + 1)
-    avg_kld_loss /= (i + 1)
+    avg_loss /= i + 1
+    avg_recon_loss /= i + 1
+    avg_kld_loss /= i + 1
 
     return avg_loss, avg_recon_loss, avg_kld_loss
 
@@ -200,7 +200,7 @@ def validate(valid_loader, model, device):
     for i, batch in enumerate(valid_loader):
 
         if i / len(valid_loader) > cfg.valid_subsample_pct:
-            break # Early stop for sweeps
+            break  # Early stop for sweeps
 
         x = batch["X"].to(device, non_blocking=True)
 
@@ -215,15 +215,15 @@ def validate(valid_loader, model, device):
         avg_recon_loss += recon_loss.item()
         avg_kld_loss += kld_loss.item()
 
-    avg_loss /= (i + 1)
-    avg_recon_loss /= (i + 1)
-    avg_kld_loss /= (i + 1)
+    avg_loss /= i + 1
+    avg_recon_loss /= i + 1
+    avg_kld_loss /= i + 1
 
     return avg_loss, avg_recon_loss, avg_kld_loss
 
 
 if __name__ == "__main__":
-    #wandb.init(dir=wandb.config.output_path)
+    # wandb.init(dir=wandb.config.output_path)
     wandb.init()
     cfg = SymmetricConv2dVAEConfig.from_yaml(wandb.config.default_yaml)
 
