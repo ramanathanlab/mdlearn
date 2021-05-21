@@ -62,6 +62,8 @@ class SymmetricConv2dVAEConfig(BaseSettings):
     ignore_gpu: bool = False
     # Log checkpoint file every `checkpoint_log_every` epochs
     checkpoint_log_every: int = 1
+    # Number of samples loaded in advance by each worker
+    prefetch_factor: int = 2
 
 
 if __name__ == "__main__":

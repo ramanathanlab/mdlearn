@@ -44,5 +44,6 @@ affine_dropouts:
 activation: ReLU
 output_activation: Sigmoid
 lambda_rec: 1.0
-num_data_workers: 0
+num_data_workers: 3
+prefetch_factor: 4
 ignore_gpu: false

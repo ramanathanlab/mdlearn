@@ -1,3 +1,4 @@
+import time
 import wandb
 import torch
 import random
@@ -26,6 +27,8 @@ def main(cfg: SymmetricConv2dVAEConfig):
     np.random.seed(cfg.seed)
     random.seed(cfg.seed)
 
+    torch.set_num_threads(cfg.num_data_workers)
+
     # Hardware
     device = torch.device(
         "cuda:0" if torch.cuda.is_available() and not cfg.ignore_gpu else "cpu"
@@ -45,11 +48,11 @@ def main(cfg: SymmetricConv2dVAEConfig):
         cfg.output_activation,
     )
     model = model.to(device)
-    wandb.watch(model)
 
     # Diplay model
     print(model)
     summary(model, cfg.input_shape)
+    wandb.watch(model) # Must run after summary()
 
     # Load training and validation data
     dataset = ContactMapDataset(
@@ -69,6 +72,8 @@ def main(cfg: SymmetricConv2dVAEConfig):
         num_workers=cfg.num_data_workers,
         drop_last=True,
         pin_memory=True,
+        persistent_workers=True,
+        prefetch_factor=cfg.prefetch_factor,
     )
 
     optimizer = get_torch_optimizer(
@@ -87,8 +92,11 @@ def main(cfg: SymmetricConv2dVAEConfig):
         model.load_state_dict(checkpoint["model_state_dict"])
         print(f"Loaded model from {cfg.init_weights}")
 
+    epoch_times = []
     # Start training
     for epoch in range(cfg.epochs):
+        start = time.time()
+
         # Training
         model.train()
         avg_train_losses = train(train_loader, model, optimizer, device)
@@ -109,6 +117,9 @@ def main(cfg: SymmetricConv2dVAEConfig):
                 epoch, *avg_valid_losses
             )
         )
+        elapsed = time.time() - start
+        print(f"Epoch: {epoch} Time: {elapsed}\n")
+        epoch_times.append(elapsed)
 
         metrics = {
             "train_loss": avg_train_losses[0],
@@ -137,6 +148,8 @@ def main(cfg: SymmetricConv2dVAEConfig):
                 scheduler,
             )
 
+    print("Elapsed avg time", np.mean(elapsed))
+
     # Output directory structure
     # output_path
     # ├── checkpoint
@@ -149,7 +162,7 @@ def train(train_loader, model, optimizer, device):
     avg_loss, avg_recon_loss, avg_kld_loss = 0.0, 0.0, 0.0
     for batch in train_loader:
 
-        x = batch["X"].to(device)
+        x = batch["X"].to(device, non_blocking=True)
 
         # Forward pass
         _, recon_x = model(x)
@@ -179,7 +192,7 @@ def validate(valid_loader, model, device):
     avg_loss, avg_recon_loss, avg_kld_loss = 0.0, 0.0, 0.0
     for batch in valid_loader:
 
-        x = batch["X"].to(device)
+        x = batch["X"].to(device, non_blocking=True)
 
         # Forward pass
         _, recon_x = model(x)
