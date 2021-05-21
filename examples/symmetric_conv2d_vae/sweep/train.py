@@ -92,8 +92,12 @@ def main(cfg: SymmetricConv2dVAEConfig):
         model.load_state_dict(checkpoint["model_state_dict"])
         print(f"Loaded model from {cfg.init_weights}")
 
-    epoch_times = []
     # Start training
+    epoch_times = []
+    print(
+        f"Start training with {round(len(train_loader) * cfg.train_subsample_pct)} batches "
+        f"and {round(len(valid_loader) * cfg.valid_subsample_pct)} validation batches."
+    )
     for epoch in range(cfg.epochs):
         start = time.time()
 
@@ -160,7 +164,10 @@ def main(cfg: SymmetricConv2dVAEConfig):
 
 def train(train_loader, model, optimizer, device):
     avg_loss, avg_recon_loss, avg_kld_loss = 0.0, 0.0, 0.0
-    for batch in train_loader:
+    for i, batch in enumerate(train_loader):
+
+        if i / len(train_loader) > cfg.train_subsample_pct:
+            break # Early stop for sweeps
 
         x = batch["X"].to(device, non_blocking=True)
 
@@ -181,16 +188,19 @@ def train(train_loader, model, optimizer, device):
         avg_recon_loss += recon_loss.item()
         avg_kld_loss += kld_loss.item()
 
-    avg_loss /= len(train_loader)
-    avg_recon_loss /= len(train_loader)
-    avg_kld_loss /= len(train_loader)
+    avg_loss /= (i + 1)
+    avg_recon_loss /= (i + 1)
+    avg_kld_loss /= (i + 1)
 
     return avg_loss, avg_recon_loss, avg_kld_loss
 
 
 def validate(valid_loader, model, device):
     avg_loss, avg_recon_loss, avg_kld_loss = 0.0, 0.0, 0.0
-    for batch in valid_loader:
+    for i, batch in enumerate(valid_loader):
+
+        if i / len(valid_loader) > cfg.valid_subsample_pct:
+            break # Early stop for sweeps
 
         x = batch["X"].to(device, non_blocking=True)
 
@@ -205,9 +215,9 @@ def validate(valid_loader, model, device):
         avg_recon_loss += recon_loss.item()
         avg_kld_loss += kld_loss.item()
 
-    avg_loss /= len(valid_loader)
-    avg_recon_loss /= len(valid_loader)
-    avg_kld_loss /= len(valid_loader)
+    avg_loss /= (i + 1)
+    avg_recon_loss /= (i + 1)
+    avg_kld_loss /= (i + 1)
 
     return avg_loss, avg_recon_loss, avg_kld_loss
 

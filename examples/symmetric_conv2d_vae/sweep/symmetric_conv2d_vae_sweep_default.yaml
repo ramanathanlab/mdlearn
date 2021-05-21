@@ -1,4 +1,4 @@
-input_path: /homes/abrace/data/bba/BBA-subset-100.h5
+input_path: /homes/abrace/data/bba/1FME-0.h5
 output_path: /homes/abrace/src/mdlearn/runs/test-run-0 
 input_shape:
 - 1
@@ -36,14 +36,18 @@ strides:
 - 1
 - 2
 - 1
-- 1
+- 2
 affine_widths:
+- 128
 - 64
 affine_dropouts:
+- 0.0
 - 0.0
 activation: ReLU
 output_activation: Sigmoid
 lambda_rec: 1.0
-num_data_workers: 3
-prefetch_factor: 4
+num_data_workers: 2
+prefetch_factor: 8
 ignore_gpu: false
+train_subsample_pct: 0.5
+valid_subsample_pct: 0.5

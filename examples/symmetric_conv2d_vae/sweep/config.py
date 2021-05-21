@@ -65,6 +65,12 @@ class SymmetricConv2dVAEConfig(BaseSettings):
     # Number of samples loaded in advance by each worker
     prefetch_factor: int = 2
 
+    # Hyperparameter sweep optimizations
+    # Percent of training batches to use (batches are shuffled each epoch)
+    train_subsample_pct: float = 1.0
+    # Percent of validation batches to use (batches are shuffled each epoch)
+    valid_subsample_pct: float = 1.0
+
 
 if __name__ == "__main__":
     SymmetricConv2dVAEConfig().dump_yaml("symmetric_conv2d_vae_sweep_default.yaml")
