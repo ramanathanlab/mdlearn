@@ -152,7 +152,7 @@ class Conv2dDecoder(nn.Module):
         # the first convolutional decoder layer
         layers.append(
             nn.Linear(
-                in_features=self.affine_widths[0],
+                in_features=self.affine_widths[-1],
                 out_features=np.prod(self.encoder_shapes[-1]),
             )
         )
