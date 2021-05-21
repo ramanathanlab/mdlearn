@@ -152,7 +152,7 @@ def main(cfg: SymmetricConv2dVAEConfig):
                 scheduler,
             )
 
-    print("Elapsed avg time", np.mean(elapsed))
+    print("Elapsed avg time", np.mean(epoch_times))
 
     # Output directory structure
     # output_path
@@ -163,7 +163,7 @@ def main(cfg: SymmetricConv2dVAEConfig):
 
 
 def train(train_loader, model, optimizer, device):
-    avg_loss, avg_recon_loss, avg_kld_loss = 0.0, 0.0, 0.0
+    avg_loss, avg_recon_loss, avg_kld_loss, i = 0.0, 0.0, 0.0, 0
     for i, batch in enumerate(train_loader):
 
         if i / len(train_loader) > cfg.train_subsample_pct:
@@ -196,7 +196,7 @@ def train(train_loader, model, optimizer, device):
 
 
 def validate(valid_loader, model, device):
-    avg_loss, avg_recon_loss, avg_kld_loss = 0.0, 0.0, 0.0
+    avg_loss, avg_recon_loss, avg_kld_loss, i = 0.0, 0.0, 0.0, 0
     for i, batch in enumerate(valid_loader):
 
         if i / len(valid_loader) > cfg.valid_subsample_pct:
