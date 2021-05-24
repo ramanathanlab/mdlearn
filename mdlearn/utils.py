@@ -258,7 +258,7 @@ def resume_checkpoint(
     return start_epoch
 
 
-def plot_scatter_3d(
+def plot_scatter(
     data: np.ndarray,
     color_dict: Dict[str, np.ndarray] = {},
     color: Optional[str] = None,
@@ -269,22 +269,25 @@ def plot_scatter_3d(
 
     df_dict = color_dict.copy()
 
-    for i, name in enumerate(["x", "y", "z"]):
+    dim = data.shape[1]
+    assert dim in [2, 3]
+    for i, name in zip(range(dim), ["x", "y", "z"]):
         df_dict[name] = data[:, i]
 
-    embeddings_df = pd.DataFrame(df_dict)
-
-    fig = px.scatter_3d(
-        embeddings_df,
+    df = pd.DataFrame(df_dict)
+    scatter_kwargs = dict(
         x="x",
         y="y",
-        z="z",
         color=color,
         width=1000,
         height=1000,
         size_max=7,
         hover_data=list(df_dict.keys()),
     )
+    if dim == 2:
+        fig = px.scatter(df, **scatter_kwargs)
+    else:  # dim == 3
+        fig = px.scatter_3d(df, z="z", **scatter_kwargs)
     return fig
 
 
@@ -311,25 +314,26 @@ def log_latent_visualization(
         from sklearn.decomposition import PCA
 
         model = PCA(n_components=3)
-        data_3d_proj = model.fit_transform(_data)
+        data_proj = model.fit_transform(_data)
 
     elif method == "TSNE":
         try:
             # Attempt to use rapidsai
             from cuml.manifold import TSNE
 
-            model = TSNE(n_components=3, method="exact")
+            # rapidsai only supports 2 dimensions
+            model = TSNE(n_components=2, method="exact")
         except ImportError:
             from sklearn.manifold import TSNE
 
             model = TSNE(n_components=3, n_jobs=1)
 
-        data_3d_proj = model.fit_transform(_data)
+        data_proj = model.fit_transform(_data)
 
     elif method == "LLE":
         from sklearn import manifold
 
-        data_3d_proj, _ = manifold.locally_linear_embedding(
+        data_proj, _ = manifold.locally_linear_embedding(
             _data, n_neighbors=12, n_components=3
         )
     else:
@@ -337,7 +341,7 @@ def log_latent_visualization(
 
     html_strings = {}
     for color in _colors:
-        fig = plot_scatter_3d(data_3d_proj, _colors, color)
+        fig = plot_scatter(data_proj, _colors, color)
         html_string = to_html(fig)
         html_strings[color] = html_string
 
