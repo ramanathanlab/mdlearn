@@ -4,6 +4,8 @@ from mdlearn.nn.models.ae import AE
 
 MAX_LOGSTD = 10
 
+# TODO: implement switch between logstd vs logvar
+
 
 class VAE(AE):
     """Variational autoencoder base class module.
