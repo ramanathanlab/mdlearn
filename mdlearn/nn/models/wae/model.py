@@ -15,9 +15,10 @@ class WAE(VAE):
     ) -> torch.Tensor:
         """Computes the loss |mu_real - mu_fake|_H"""
         z_prior = torch.randn_like(z)  # shape and device
-        mu1 = self._compute_mmd_mean_rf(z, sigma, kernel, rf_dim, rf_resample)
-        mu2 = self._compute_mmd_mean_rf(z_prior, sigma, kernel, rf_dim, rf_resample)
-        loss = ((mu1 - mu2) ** 2).sum()
+        mu_real = self._compute_mmd_mean_rf(z, sigma, kernel, rf_dim, rf_resample)
+        mu_fake = self._compute_mmd_mean_rf(z_prior, sigma, kernel, rf_dim, rf_resample)
+        # TODO: try l2norm of difference
+        loss = ((mu_real - mu_fake) ** 2).sum()
         return loss
 
     def _random_feature_approx(
