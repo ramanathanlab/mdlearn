@@ -136,7 +136,7 @@ def main(cfg: SymmetricConv2dVAEConfig):
         # Visualize latent space
         start = time.time()
         html_strings = log_latent_visualization(
-            latent_vectors, scalars, plot_path, epoch
+            latent_vectors, scalars, plot_path, epoch, cfg.plot_n_samples, cfg.plot_method
         )
         print("Plot time: ", time.time() - start)
 
