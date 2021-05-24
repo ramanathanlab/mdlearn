@@ -293,28 +293,44 @@ def log_latent_visualization(
     colors: Dict[str, np.ndarray],
     output_path: PathLike,
     epoch: int = 0,
-    method: str = "PCA",
+    n_samples: Optional[int] = None,
+    method: str = "TSNE",
 ) -> Dict[str, str]:
     from plotly.io import to_html
+
+    # Make temp variables to not mutate input data
+    if n_samples is not None:
+        inds = np.random.choice(len(data), n_samples)
+        _data = data[inds]
+        _colors = {name: color[inds] for name, color in colors.items()}
+    else:
+        _data = data
+        _colors = colors
 
     if method == "PCA":
         from sklearn.decomposition import PCA
 
-        pca = PCA(n_components=3)
-        data_3d_proj = pca.fit_transform(data)
+        model = PCA(n_components=3)
+        data_3d_proj = model.fit_transform(_data)
+
+    elif method == "TSNE":
+        from sklearn.manifold import TSNE
+
+        model = TSNE(n_components=3, n_jobs=1)
+        data_3d_proj = model.fit_transform(_data)
 
     elif method == "LLE":
         from sklearn import manifold
 
         data_3d_proj, _ = manifold.locally_linear_embedding(
-            data, n_neighbors=12, n_components=3
+            _data, n_neighbors=12, n_components=3
         )
     else:
         raise ValueError(f"Invalid dimensionality reduction method {method}")
 
     html_strings = {}
-    for color in colors:
-        fig = plot_scatter_3d(data_3d_proj, colors, color)
+    for color in _colors:
+        fig = plot_scatter_3d(data_3d_proj, _colors, color)
         html_string = to_html(fig)
         html_strings[color] = html_string
 

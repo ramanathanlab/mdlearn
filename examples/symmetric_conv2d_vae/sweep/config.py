@@ -65,6 +65,12 @@ class SymmetricConv2dVAEConfig(BaseSettings):
     # Number of samples loaded in advance by each worker
     prefetch_factor: int = 2
 
+    # Validation settings
+    # Method used to visualize latent space
+    plot_method: str = "TSNE"
+    # Number of validation samples to run visualization on
+    plot_n_samples: Optional[int] = None
+
     # Hyperparameter sweep optimizations
     # Percent of training batches to use (batches are shuffled each epoch)
     train_subsample_pct: float = 1.0
