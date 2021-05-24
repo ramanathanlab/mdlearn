@@ -289,11 +289,17 @@ def log_latent_visualization(
     colors: Dict[str, np.ndarray],
     output_path: PathLike,
     epoch: int = 0,
-    method: str = "LLE",
+    method: str = "PCA",
 ) -> Dict[str, str]:
     from plotly.io import to_html
 
-    if method == "LLE":
+    if method == "PCA":
+        from sklearn.decomposition import PCA
+
+        pca = PCA(n_components=3)
+        data_3d_proj = pca.fit_transform(data)
+
+    elif method == "LLE":
         from sklearn import manifold
 
         data_3d_proj, _ = manifold.locally_linear_embedding(
