@@ -101,7 +101,12 @@ class SymmetricConv2dVAE(VAE):
         return z, recon_x
 
     def _check_hyperparameters(
-        self, kernels, strides, filters, affine_widths, affine_dropouts
+        self,
+        kernels: List[int],
+        strides: List[int],
+        filters: List[int],
+        affine_widths: List[int],
+        affine_dropouts: List[float],
     ):
         """Check that hyperparameters are consistent and logical."""
         if not (len(kernels) == len(strides) == len(filters)):
