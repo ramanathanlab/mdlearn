@@ -13,8 +13,11 @@ Details can be found in the [ducumentation](https://mdlearn.readthedocs.io/en/la
 Install `mdlearn` into a virtualenv with:
 
 ```
-python3 -m venv env
-source env/bin/activate
+conda create -p conda-env
+conda activate conda-env
+conda config --add channels rapidsai
+conda install --channel "rapidsai" cuml
+export IBM_POWERAI_LICENSE_ACCEPT=yes
 pip install --upgrade pip setuptools wheel
 pip install -r requirements_dev.txt
 pip install -e .

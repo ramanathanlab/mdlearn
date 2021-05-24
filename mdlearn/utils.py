@@ -314,9 +314,16 @@ def log_latent_visualization(
         data_3d_proj = model.fit_transform(_data)
 
     elif method == "TSNE":
-        from sklearn.manifold import TSNE
+        try:
+            # Attempt to use rapidsai
+            from cuml.manifold import TSNE
 
-        model = TSNE(n_components=3, n_jobs=1)
+            model = TSNE(n_components=3, method="exact")
+        except ImportError:
+            from sklearn.manifold import TSNE
+
+            model = TSNE(n_components=3, n_jobs=1)
+
         data_3d_proj = model.fit_transform(_data)
 
     elif method == "LLE":
