@@ -4,9 +4,12 @@ import torch
 import random
 import numpy as np
 from pathlib import Path
+from collections import defaultdict
+from typing import Dict, Tuple
 from torchsummary import summary
 from mdlearn.utils import (
     log_checkpoint,
+    log_latent_visualization,
     get_torch_optimizer,
     get_torch_scheduler,
 )
@@ -21,6 +24,9 @@ def main(cfg: SymmetricConv2dVAEConfig):
     # Create checkpoint directory
     checkpoint_path = Path(wandb.run.dir) / "checkpoints"
     checkpoint_path.mkdir()
+    # Create plot directory
+    plot_path = Path(wandb.run.dir) / "plots"
+    plot_path.mkdir()
 
     # Set random seed
     torch.manual_seed(cfg.seed)
@@ -114,32 +120,43 @@ def main(cfg: SymmetricConv2dVAEConfig):
         # Validation
         model.eval()
         with torch.no_grad():
-            avg_valid_losses = validate(valid_loader, model, device)
+            avg_loss, avg_recon_loss, avg_kld_loss, latent_vectors, scalars = validate(
+                valid_loader, model, device
+            )
 
         print(
             "====> Epoch: {} Valid:\tAvg loss: {:.4f}\tAvg recon loss {:.4f}\tAvg kld loss {:.4f}".format(
-                epoch, *avg_valid_losses
+                epoch, avg_loss, avg_recon_loss, avg_kld_loss
             )
         )
         elapsed = time.time() - start
         print(f"Epoch: {epoch} Time: {elapsed}\n")
         epoch_times.append(elapsed)
 
+        # Visualize latent space
+        start = time.time()
+        html_strings = log_latent_visualization(
+            latent_vectors, scalars, plot_path, epoch
+        )
+        print("Plot time: ", time.time() - start)
+
         metrics = {
             "train_loss": avg_train_losses[0],
             "train_recon_loss": avg_train_losses[1],
             "train_kld_loss": avg_train_losses[2],
-            "valid_loss": avg_valid_losses[0],
-            "valid_recon_loss": avg_valid_losses[1],
-            "valid_kld_loss": avg_valid_losses[2],
+            "valid_loss": avg_loss,
+            "valid_recon_loss": avg_recon_loss,
+            "valid_kld_loss": avg_kld_loss,
         }
+        for name, html_string in html_strings.items():
+            metrics[name] = wandb.Html(html_string, inject=False)
         wandb.log(metrics)
 
         # Step the learning rate scheduler
         if scheduler is None:
             pass
         elif cfg.scheduler.name == "ReduceLROnPlateau":
-            scheduler.step(avg_valid_losses[0])
+            scheduler.step(avg_loss)
         else:
             raise NotImplementedError(f"scheduler {cfg.scheduler.name} step function.")
 
@@ -195,7 +212,11 @@ def train(train_loader, model, optimizer, device):
     return avg_loss, avg_recon_loss, avg_kld_loss
 
 
-def validate(valid_loader, model, device):
+def validate(
+    valid_loader, model, device
+) -> Tuple[float, float, float, np.ndarray, Dict[str, np.ndarray]]:
+    scalars = defaultdict(list)
+    latent_vectors = []
     avg_loss, avg_recon_loss, avg_kld_loss, i = 0.0, 0.0, 0.0, 0
     for i, batch in enumerate(valid_loader):
 
@@ -205,7 +226,7 @@ def validate(valid_loader, model, device):
         x = batch["X"].to(device, non_blocking=True)
 
         # Forward pass
-        _, recon_x = model(x)
+        z, recon_x = model(x)
         kld_loss = model.kld_loss()
         recon_loss = model.recon_loss(x, recon_x)
         loss = cfg.lambda_rec * recon_loss + kld_loss
@@ -215,11 +236,19 @@ def validate(valid_loader, model, device):
         avg_recon_loss += recon_loss.item()
         avg_kld_loss += kld_loss.item()
 
+        # Collect latent vectors for visualization
+        latent_vectors.append(z.cpu().numpy())
+        for name in cfg.scalar_dset_names:
+            scalars[name].append(batch[name].cpu().numpy())
+
     avg_loss /= i + 1
     avg_recon_loss /= i + 1
     avg_kld_loss /= i + 1
 
-    return avg_loss, avg_recon_loss, avg_kld_loss
+    latent_vectors = np.concatenate(latent_vectors)
+    scalars = {name: np.concatenate(scalar) for name, scalar in scalars.items()}
+
+    return avg_loss, avg_recon_loss, avg_kld_loss, latent_vectors, scalars
 
 
 if __name__ == "__main__":

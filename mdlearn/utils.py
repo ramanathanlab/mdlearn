@@ -4,6 +4,7 @@ import yaml
 import torch
 import wandb
 import argparse
+import numpy as np
 from pathlib import Path
 from pydantic import BaseSettings as _BaseSettings
 from typing import TypeVar, Type, Union, Optional, Dict, Any
@@ -255,3 +256,60 @@ def resume_checkpoint(
         if scheduler_state_dict is not None:
             scheduler.load_state_dict(scheduler_state_dict)
     return start_epoch
+
+
+def plot_scatter_3d(
+    data: np.ndarray, df_dict: Dict[str, np.ndarray] = {}, color: Optional[str] = None
+):
+
+    import pandas as pd
+    import plotly.express as px
+
+    for i, name in enumerate(["x", "y", "z"]):
+        df_dict[name] = data[:, i]
+
+    embeddings_df = pd.DataFrame(df_dict)
+
+    fig = px.scatter_3d(
+        embeddings_df,
+        x="x",
+        y="y",
+        z="z",
+        color=color,
+        width=1000,
+        height=1000,
+        size_max=7,
+        hover_data=list(df_dict.keys()),
+    )
+    return fig
+
+
+def log_latent_visualization(
+    data: np.ndarray,
+    colors: Dict[str, np.ndarray],
+    output_path: PathLike,
+    epoch: int = 0,
+    method: str = "LLE",
+) -> Dict[str, str]:
+    from plotly.io import to_html
+
+    if method == "LLE":
+        from sklearn import manifold
+
+        data_3d_proj, _ = manifold.locally_linear_embedding(
+            data, n_neighbors=12, n_components=3
+        )
+    else:
+        raise ValueError(f"Invalid dimensionality reduction method {method}")
+
+    html_strings = {}
+    for color in colors:
+        fig = plot_scatter_3d(data_3d_proj, df_dict=colors, color=color)
+        html_string = to_html(fig)
+        html_strings[color] = html_string
+
+        fname = Path(output_path) / f"latent_space-{method}-{color}-epoch-{epoch}.html"
+        with open(fname, "w") as f:
+            f.write(html_string)
+
+    return html_strings
