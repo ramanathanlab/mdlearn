@@ -259,11 +259,15 @@ def resume_checkpoint(
 
 
 def plot_scatter_3d(
-    data: np.ndarray, df_dict: Dict[str, np.ndarray] = {}, color: Optional[str] = None
+    data: np.ndarray,
+    color_dict: Dict[str, np.ndarray] = {},
+    color: Optional[str] = None,
 ):
 
     import pandas as pd
     import plotly.express as px
+
+    df_dict = color_dict.copy()
 
     for i, name in enumerate(["x", "y", "z"]):
         df_dict[name] = data[:, i]
@@ -310,7 +314,7 @@ def log_latent_visualization(
 
     html_strings = {}
     for color in colors:
-        fig = plot_scatter_3d(data_3d_proj, df_dict=colors, color=color)
+        fig = plot_scatter_3d(data_3d_proj, colors, color)
         html_string = to_html(fig)
         html_strings[color] = html_string
 
