@@ -50,6 +50,8 @@ lambda_rec: 1.0
 num_data_workers: 2
 prefetch_factor: 8
 ignore_gpu: false
+checkpoint_log_every: 1
+plot_log_every: 1
 plot_method: TSNE
 plot_n_samples: 8000
 train_subsample_pct: 0.05
