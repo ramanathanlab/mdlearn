@@ -134,7 +134,9 @@ def main(cfg: SymmetricConv2dVAEConfig):
         print(f"Epoch: {epoch} Time: {elapsed}\n")
         epoch_times.append(elapsed)
 
+        start = time.time()
         cluster_quality = metric_cluster_quality(latent_vectors, scalars["rmsd"])
+        print(f"cluster quality metric time: ", time.time() - start)
 
         metrics = {
             "train_loss": avg_train_losses[0],
