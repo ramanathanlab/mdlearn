@@ -13,6 +13,7 @@ from mdlearn.utils import (
     get_torch_optimizer,
     get_torch_scheduler,
 )
+from mdlearn.metrics import metric_cluster_quality
 from mdlearn.data.utils import train_valid_split
 from mdlearn.data.datasets.contact_map import ContactMapDataset
 from mdlearn.nn.models.vae.symmetric_conv2d_vae import SymmetricConv2dVAE
@@ -133,12 +134,7 @@ def main(cfg: SymmetricConv2dVAEConfig):
         print(f"Epoch: {epoch} Time: {elapsed}\n")
         epoch_times.append(elapsed)
 
-        # Visualize latent space
-        start = time.time()
-        html_strings = log_latent_visualization(
-            latent_vectors, scalars, plot_path, epoch, cfg.plot_n_samples, cfg.plot_method
-        )
-        print("Plot time: ", time.time() - start)
+        cluster_quality = metric_cluster_quality(latent_vectors, scalars["rmsd"])
 
         metrics = {
             "train_loss": avg_train_losses[0],
@@ -147,9 +143,22 @@ def main(cfg: SymmetricConv2dVAEConfig):
             "valid_loss": avg_loss,
             "valid_recon_loss": avg_recon_loss,
             "valid_kld_loss": avg_kld_loss,
+            "cluster_quality": cluster_quality,
         }
-        for name, html_string in html_strings.items():
-            metrics[name] = wandb.Html(html_string, inject=False)
+
+        # Visualize latent space
+        if epoch % cfg.plot_log_every == 0:
+            html_strings = log_latent_visualization(
+                latent_vectors,
+                scalars,
+                plot_path,
+                epoch,
+                cfg.plot_n_samples,
+                cfg.plot_method,
+            )
+            for name, html_string in html_strings.items():
+                metrics[name] = wandb.Html(html_string, inject=False)
+
         wandb.log(metrics)
 
         # Step the learning rate scheduler
