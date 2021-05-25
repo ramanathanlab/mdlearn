@@ -322,7 +322,7 @@ def log_latent_visualization(
             from cuml.manifold import TSNE
 
             # rapidsai only supports 2 dimensions
-            model = TSNE(n_components=2, method="exact")
+            model = TSNE(n_components=2, method="barnes_hut")
         except ImportError:
             from sklearn.manifold import TSNE
 
