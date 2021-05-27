@@ -17,7 +17,9 @@ parameters:
       - Adam
       - RMSprop
   lr:
-    values: [0.01, 0.001, 0.0001]     
+    values: [0.01, 0.001, 0.0001]
+  lambda_rec:
+    values: [0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
   latent_dim:
     distribution: int_uniform
     min: 8

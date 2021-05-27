@@ -286,6 +286,7 @@ if __name__ == "__main__":
     cfg.optimizer.name = wandb.config.optimizer
     cfg.optimizer.hparams["lr"] = wandb.config.lr
     cfg.latent_dim = wandb.config.latent_dim
+    cfg.lambda_rec = wandb.config.lambda_rec
     cfg.sigma = np.floor(np.sqrt(wandb.config.latent_dim))
     cfg.rf_dim = wandb.config.rf_dim
 
