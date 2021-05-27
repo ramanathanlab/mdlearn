@@ -9,6 +9,7 @@ class WAE(VAE):
 
     def __init__(self, encoder, decoder):
         super().__init__(encoder, decoder)
+        self.__rf__ = {}
 
     def mmdrf_loss(
         self, z: torch.Tensor, sigma: float, kernel: str, rf_dim: int, rf_resample: bool
@@ -25,14 +26,14 @@ class WAE(VAE):
         self, z: torch.Tensor, kernel: str, rf_dim: int, rf_resample: bool
     ):
         """Random features approximation of gaussian kernel."""
-        if kernel not in self.rf or rf_resample:
+        if kernel not in self.__rf__ or rf_resample:
             # Sample rf if it's the first time or we want to resample every time
             rf_w = torch.randn((z.shape[1], rf_dim), device=z.device)
             rf_b = math.pi * 2 * torch.rand((rf_dim,), device=z.device)
             self.__rf__ = {"gaussian": (rf_w, rf_b)}  # Cache rf approx
         else:
             rf_w, rf_b = self.__rf__["gaussian"]
-            if rf_w.shape == (z.shape[1], rf_dim):
+            if rf_w.shape != (z.shape[1], rf_dim):
                 raise ValueError("Not expecting z dim or rf_dim to change")
 
         return rf_w, rf_b
