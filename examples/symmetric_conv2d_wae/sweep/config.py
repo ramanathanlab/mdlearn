@@ -3,7 +3,7 @@ from typing import Optional, List, Tuple
 from mdlearn.utils import BaseSettings, OptimizerConfig, SchedulerConfig
 
 
-class SymmetricConv2dVAEConfig(BaseSettings):
+class SymmetricConv2dWAEConfig(BaseSettings):
 
     # Path to HDF5 training file
     input_path: Path = Path("TODO")
@@ -54,6 +54,12 @@ class SymmetricConv2dVAEConfig(BaseSettings):
     activation: str = "ReLU"
     output_activation: str = "Sigmoid"  # None is Identity function
     lambda_rec: float = 1.0
+    # Regurization parameters
+    # Should be ~ sqrt(latent_dim)
+    sigma: float = 3.0  # Set by code
+    kernel: str = "gaussian"
+    rf_dim: int = 10
+    rf_resample: bool = False
 
     # Training settings
     # Number of data loaders for training
@@ -81,4 +87,4 @@ class SymmetricConv2dVAEConfig(BaseSettings):
 
 
 if __name__ == "__main__":
-    SymmetricConv2dVAEConfig().dump_yaml("symmetric_conv2d_vae_sweep_default.yaml")
+    SymmetricConv2dWAEConfig().dump_yaml("symmetric_conv2d_wae_sweep_default.yaml")

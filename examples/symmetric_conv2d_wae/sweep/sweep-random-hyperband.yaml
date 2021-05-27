@@ -5,8 +5,6 @@ metric:
   goal: minimize
   name: valid_loss
 parameters:
-  output_path:
-      value: /homes/abrace/src/mdlearn/runs/test-run-0  
   default_yaml:
     value: symmetric_conv2d_wae_sweep_default.yaml
   batch_size:
@@ -20,11 +18,14 @@ parameters:
       - RMSprop
   lr:
     values: [0.01, 0.001, 0.0001]     
-
   latent_dim:
-    values: [8, 10, 12]
-
+    distribution: int_uniform
+    min: 8
+    max: 12
+  rf_dim:
+    distribution: int_uniform
+    min: 10
+    max: 100
 early_terminate:
   type: hyperband
   min_iter: 3
-
