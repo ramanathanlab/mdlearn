@@ -1,0 +1,31 @@
+program: train.py
+method: bayes
+description: Bayesian optimization for cluster quality with SymmetricConv2dVAE
+metric:
+  goal: maximize
+  name: cluster_quality
+parameters:
+  output_path:
+      value: /homes/abrace/src/mdlearn/runs/test-run-0  
+  default_yaml:
+    value: symmetric_conv2d_vae_sweep_default.yaml
+  batch_size:
+      values:
+        - 32
+        - 64
+        - 128
+  optimizer:
+    values:
+      - SGD
+      - Adam
+      - RMSprop
+  lr:
+    values: [1e-2, 1e-3, 1e-4, 3e-4, 3e-5, 1e-5]     
+  latent_dim:
+    values: [6, 8, 10, 12]
+  lambda_rec:
+    values: [0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
+early_terminate:
+  type: hyperband
+  min_iter: 3
+
