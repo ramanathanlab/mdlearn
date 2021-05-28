@@ -13,7 +13,7 @@ in_memory: true
 split_pct: 0.8
 seed: 333
 shuffle: true
-epochs: 10
+epochs: 25
 batch_size: 64
 clip_grad_max_norm: 10.0
 init_weights: null
