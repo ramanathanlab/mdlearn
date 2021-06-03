@@ -38,6 +38,8 @@ class PointCloudDataset(Dataset):
         num_points : int
             Number of points per sample. Should be smaller or equal
             than the total number of points.
+        num_features : int
+            Number of additional per-point features in addition to xyz coords.
         seed : int
             Seed for the RNG for the splitting. Make sure it is the
             same for all workers reading from the same file.
