@@ -18,7 +18,7 @@ class ContactMapDataset(Dataset):
         scalar_dset_names: List[str] = [],
         values_dset_name: Optional[str] = None,
         scalar_requires_grad: bool = False,
-        in_memory: bool = False,
+        in_memory: bool = True,
     ):
         """
         Parameters
