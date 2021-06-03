@@ -57,6 +57,52 @@ class AAE3d(AAE):
         recon_x = self.decode(z)
         return z, recon_x
 
-    def discriminate(self, z: torch.Tensor):
-        logit = self.discriminator(z)
-        return logit
+    def critic_loss(
+        self, real_logits: torch.Tensor, fake_logits: torch.Tensor
+    ) -> torch.Tensor:
+        """Classification loss (critic) function.
+
+        Parameters
+        ----------
+        real_logits : torch.Tensor
+            Discriminator output logits from prior distribution.
+        fake_logits : torch.Tensor
+            Discriminator output logits from encoded latent vectors.
+
+        Returns
+        -------
+        torch.Tensor
+            Classification loss i.e. the difference between logit means.
+        """
+        return torch.mean(fake_logits) - torch.mean(real_logits)
+
+    def gp_loss(self, noise: torch.Tensor, z: torch.Tensor) -> torch.Tensor:
+        """Gradient penalty loss function.
+
+        Parameters
+        ----------
+        noise : [type]
+            Random noise sampled from prior distribution.
+        z : [type]
+            Encoded latent vectors.
+
+        Returns
+        -------
+        torch.Tensor
+            The gradient penalty loss.
+        """
+        alpha = torch.rand(z.shape[0], 1).to(z.device)  # z.shape[0] is batch_size
+        interpolates = noise + alpha * (z - noise)
+        disc_interpolates = self.discriminate(interpolates)
+
+        gradients = torch.autograd.grad(
+            outputs=disc_interpolates,
+            inputs=interpolates,
+            grad_outputs=torch.ones_like(disc_interpolates).to(z.device),
+            create_graph=True,
+            retain_graph=True,
+            only_inputs=True,
+        )[0]
+        slopes = torch.sqrt(torch.sum(gradients ** 2, dim=1))
+        gradient_penalty = ((slopes - 1) ** 2).mean()
+        return gradient_penalty
