@@ -130,12 +130,7 @@ def same_padding(input_dim, kernel_size, stride):
     return h_pad, w_pad
 
 
-# TODO: conider moving this into the HyperParams class
-#       could make base classes for ModelArchHyperParams
-#       which handles layes and can return pytorch layer
-#       types and activations. OptimizerHyperParams can
-#       return different optimizers.
-def get_activation(activation):
+def get_activation(activation, *args, **kwargs):
     """
     Parameters
     ----------
@@ -143,13 +138,15 @@ def get_activation(activation):
         type of activation e.g. 'ReLU', etc
     """
     if activation == "ReLU":
-        return nn.ReLU()
+        return nn.ReLU(*args, **kwargs)
+    if activation == "LeakyReLU":
+        return nn.LeakyReLU(*args, **kwargs)
     if activation == "Sigmoid":
-        return nn.Sigmoid()
+        return nn.Sigmoid(*args, **kwargs)
     if activation == "Tanh":
-        return nn.Tanh()
+        return nn.Tanh(*args, **kwargs)
     if activation == "None":
-        return nn.Identity()
+        return nn.Identity(*args, **kwargs)
     raise ValueError(f"Invalid activation type: {activation}")
 
 

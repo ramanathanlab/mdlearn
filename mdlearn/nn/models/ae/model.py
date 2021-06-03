@@ -7,7 +7,7 @@ from mdlearn.nn.utils import reset
 class AE(nn.Module):
     """Autoencoder base class module."""
 
-    def __init__(self, encoder, decoder):
+    def __init__(self, encoder: nn.Module, decoder: nn.Module):
         """
         Parameters
         ----------
