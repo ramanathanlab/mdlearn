@@ -16,10 +16,10 @@ class PointCloudDataset(Dataset):
     def __init__(
         self,
         path: PathLike,
-        dataset_name: str,
-        scalar_dset_names: List[str],
         num_points: int,
-        num_features: int,
+        num_features: int = 0,
+        dataset_name: str = "point_cloud",
+        scalar_dset_names: List[str] = [],
         seed: int = 333,
         cms_transform: bool = False,
         scalar_requires_grad: bool = False,
@@ -51,10 +51,23 @@ class PointCloudDataset(Dataset):
         in_memory: bool
             If True, pull data stored in HDF5 from disk to numpy arrays. Otherwise,
             read each batch from HDF5 on the fly.
-        """
 
-        # Open h5 file. Python's garbage collector closes the
-        # file when class is destructed.
+        Examples
+        --------
+        >>> dataset = PointCloudDataset("point_clouds.h5", 200)
+        >>> dataset[0]
+        {"X": torch.Tensor(...), "index": 0}
+        >>> dataset[0]["X"].shape
+        (1, 3, 200)
+
+        >>> dataset = PointCloudDataset("point_clouds.h5", 200, 1)
+        >>> dataset[0]["X"].shape
+        (1, 4, 200)
+
+        >>> dataset = PointCloudDataset("point_clouds.h5", 200, scalar_dset_names=["rmsd"])
+        >>> dataset[0]
+        {"X": torch.Tensor(...), "index": 0, "rmsd": 8.67}
+        """
         self.file_path = str(path)
         self.dataset_name = dataset_name
         self.scalar_dset_names = scalar_dset_names
