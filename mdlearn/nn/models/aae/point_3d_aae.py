@@ -1,8 +1,9 @@
+"""Adversarial Autoencoder for 3D point cloud data (3dAAE)"""
 import torch
-from typing import List
+from typing import List, Tuple
 from mdlearn.nn.models.aae import AAE
 from mdlearn.nn.modules.conv1d_encoder import Conv1dEncoder
-from mdlearn.nn.modules.conv1d_decoder import Conv1dDecoder
+from mdlearn.nn.modules.linear_decoder import LinearDecoder
 from mdlearn.nn.modules.linear_discriminator import LinearDiscriminator
 from mdlearn.nn.models.aae.loss.chamfer_loss import ChamferLoss
 
@@ -24,7 +25,41 @@ class AAE3d(AAE):
         discriminator_relu_slope: float = 0.0,
         discriminator_affine_widths: List[int] = [512, 128, 64],
     ):
+        """Adversarial Autoencoder module for point cloud data.
 
+        Parameters
+        ----------
+        num_points : int
+            Number of input points in point cloud.
+        num_features : int, optional
+            Number of scalar features per point in addition to 3D
+            coordinates, by default 0
+        latent_dim : int, optional
+            Latent dimension of the encoder, by default 20
+        encoder_bias : bool, optional
+            Use a bias term in the encoder Conv1d layers, by default True.
+        encoder_relu_slope : float, optional
+            If greater than 0.0, will use LeakyReLU activiation in the encoder
+            with :obj:`negative_slope` set to :obj:`relu_slope`, by default 0.0
+        encoder_filters : List[int], optional
+            Encoder Conv1d filter sizes, by default [64, 128, 256, 256, 512]
+        encoder_kernels : List[int], optional
+            Encoder Conv1d kernel sizes, by default [5, 5, 3, 1, 1]
+        decoder_bias : bool, optional
+            Use a bias term in the decoder Linear layers, by default True
+        decoder_relu_slope : float, optional
+            If greater than 0.0, will use LeakyReLU activiation in the decoder
+            with :obj:`negative_slope` set to :obj:`relu_slope`, by default 0.0
+        decoder_affine_widths : List[int], optional
+            Decoder Linear layers :obj:`in_features`, by default [64, 128, 512, 1024]
+        discriminator_bias : bool, optional
+            Use a bias term in the discriminator Linear layers, by default True.
+        discriminator_relu_slope : float, optional
+            If greater than 0.0, will use LeakyReLU activiation in the discriminator
+            with :obj:`negative_slope` set to :obj:`relu_slope`, by default 0.0
+        discriminator_affine_widths : List[int], optional
+            Discriminator Linear layers :obj:`in_features`, by default [512, 128, 64]
+        """
         encoder = Conv1dEncoder(
             num_points,
             num_features,
@@ -35,7 +70,7 @@ class AAE3d(AAE):
             encoder_kernels,
         )
 
-        decoder = Conv1dDecoder(
+        decoder = LinearDecoder(
             num_points,
             num_features,
             latent_dim,
@@ -55,7 +90,20 @@ class AAE3d(AAE):
 
         self._recon_loss = ChamferLoss()
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Forward pass of encoder and decoder.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input point cloud data.
+
+        Returns
+        -------
+        Tuple[torch.Tensor, torch.Tensor]
+            The :math:`z`-latent vector, and the :obj:`recon_x`
+            reconstruction.
+        """
         z = self.encode(x)
         recon_x = self.decode(z)
         return z, recon_x

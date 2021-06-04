@@ -1,11 +1,11 @@
-"""Conv1dDecoder module for point cloud data."""
+"""LinearDecoder module for point cloud data."""
 import torch
 import torch.nn as nn
 from typing import List
 from mdlearn.nn.utils import get_activation
 
 
-class Conv1dDecoder(nn.Module):
+class LinearDecoder(nn.Module):
     def __init__(
         self,
         num_points: int,
@@ -15,7 +15,7 @@ class Conv1dDecoder(nn.Module):
         relu_slope: float = 0.0,
         affine_widths: List[int] = [64, 128, 512, 1024],
     ):
-        """Conv1dDecoder module for point cloud data.
+        """LinearDecoder module for point cloud data.
 
         Parameters
         ----------
@@ -27,12 +27,12 @@ class Conv1dDecoder(nn.Module):
         latent_dim : int, optional
             Latent dimension of the decoder, by default 20.
         bias : bool, optional
-            Use a bias term in the Conv1d layers, by default True.
+            Use a bias term in the Linear layers, by default True.
         relu_slope : float, optional
             If greater than 0.0, will use LeakyReLU activiation with
             :obj:`negative_slope` set to :obj:`relu_slope`, by default 0.0.
         affine_widths : List[int], optional
-            Decoder Linear in_features, by default [64, 128, 512, 1024].
+            Linear layers :obj:`in_features`, by default [64, 128, 512, 1024].
         """
         super().__init__()
 

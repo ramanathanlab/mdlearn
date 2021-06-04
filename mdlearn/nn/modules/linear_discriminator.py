@@ -7,11 +7,25 @@ from typing import List
 class LinearDiscriminator(nn.Module):
     def __init__(
         self,
-        latent_dim: int,
+        latent_dim: int = 20,
         bias: bool = True,
         relu_slope: float = 0.0,
         affine_widths: List[int] = [512, 128, 64],
     ):
+        """LinearDiscriminator module.
+
+        Parameters
+        ----------
+        latent_dim : int, optional
+            Latent dimension of the decoder, by default 20.
+        bias : bool, optional
+            Use a bias term in the Linear layers, by default True.
+        relu_slope : float, optional
+            If greater than 0.0, will use LeakyReLU activiation with
+            :obj:`negative_slope` set to :obj:`relu_slope`, by default 0.0.
+        affine_widths : List[int], optional
+            Linear layers :obj:`in_features`, by default [64, 128, 512, 1024].
+        """
         super().__init__()
 
         self.latent_dim = latent_dim
