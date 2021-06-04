@@ -100,7 +100,7 @@ def main(cfg: SymmetricConv2dVAEConfig):
     # Optionally resume training from a checkpoint
     if cfg.resume_checkpoint is not None:
         start_epoch = resume_checkpoint(
-            cfg.resume_checkpoint, model, optimizer, scheduler
+            cfg.resume_checkpoint, model, {"optimizer": optimizer}, scheduler
         )
         print(f"Resume training at epoch {start_epoch} from {cfg.resume_checkpoint}")
     else:
@@ -142,7 +142,7 @@ def main(cfg: SymmetricConv2dVAEConfig):
                 checkpoint_path / f"checkpoint-epoch-{epoch}.pt",
                 epoch,
                 model,
-                optimizer,
+                {"optimizer": optimizer},
                 scheduler,
             )
 

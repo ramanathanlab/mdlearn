@@ -181,7 +181,7 @@ def main(cfg: SymmetricConv2dWAEConfig):
                 checkpoint_path / f"checkpoint-epoch-{epoch}.pt",
                 epoch,
                 model,
-                optimizer,
+                {"optimizer": optimizer},
                 scheduler,
             )
 
