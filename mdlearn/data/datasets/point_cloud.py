@@ -58,17 +58,17 @@ class PointCloudDataset(Dataset):
         --------
         >>> dataset = PointCloudDataset("point_clouds.h5", 200)
         >>> dataset[0]
-        {"X": torch.Tensor(...), "index": 0}
+        {'X': torch.Tensor(..., dtype=float32), 'index': tensor(0)}
         >>> dataset[0]["X"].shape
-        (1, 3, 200)
+        (3, 200)
 
         >>> dataset = PointCloudDataset("point_clouds.h5", 200, 1)
         >>> dataset[0]["X"].shape
-        (1, 4, 200)
+        (4, 200)
 
         >>> dataset = PointCloudDataset("point_clouds.h5", 200, scalar_dset_names=["rmsd"])
         >>> dataset[0]
-        {"X": torch.Tensor(...), "index": 0, "rmsd": 8.67}
+        {'X': torch.Tensor(..., dtype=float32), 'index': tensor(0), 'rmsd': tensor(8.7578, dtype=torch.float16)}
         """
         self.file_path = str(path)
         self.dataset_name = dataset_name
@@ -184,7 +184,7 @@ class PointCloudDataset(Dataset):
             # Normalize
             self.buffer = (self.buffer[0, ...] - self.bias) * self.scale
 
-        sample = {"X": self.buffer}
+        sample = {"X": torch.from_numpy(self.buffer.squeeze())}
         # Add index into dataset to sample
         sample["index"] = torch.tensor(idx, requires_grad=False)
         # Add scalars
