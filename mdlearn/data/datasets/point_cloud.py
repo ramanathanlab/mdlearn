@@ -60,11 +60,11 @@ class PointCloudDataset(Dataset):
         >>> dataset[0]
         {'X': torch.Tensor(..., dtype=float32), 'index': tensor(0)}
         >>> dataset[0]["X"].shape
-        (3, 28)
+        torch.Size([3, 28])
 
         >>> dataset = PointCloudDataset("point_clouds.h5", 28, 1)
         >>> dataset[0]["X"].shape
-        (4, 28)
+        torch.Size([4, 28])
 
         >>> dataset = PointCloudDataset("point_clouds.h5", 28, scalar_dset_names=["rmsd"])
         >>> dataset[0]
