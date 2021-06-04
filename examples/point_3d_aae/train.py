@@ -1,11 +1,14 @@
 import torch
+import wandb
 import random
 import itertools
 import numpy as np
+from collections import defaultdict
 from torchsummary import summary
 from mdlearn.utils import (
     parse_args,
     log_checkpoint,
+    log_latent_visualization,
     resume_checkpoint,
     get_torch_optimizer,
 )
@@ -20,8 +23,11 @@ def main(cfg: Point3dAAEConfig):
     # Create directory for new run, or use old directory if resuming from a checkpoint
     exist_ok = cfg.resume_checkpoint is not None
     cfg.output_path.mkdir(exist_ok=exist_ok)
-    checkpoint_path = cfg.output_path.joinpath("checkpoints")
+    checkpoint_path = cfg.output_path / "checkpoints"
     checkpoint_path.mkdir(exist_ok=exist_ok)
+    # Create plot directory
+    plot_path = cfg.output_path / "plots"
+    plot_path.mkdir(exist_ok=exist_ok)
 
     # Copy training data to output directory to not slow down other
     # training processes using the same data.
@@ -133,13 +139,36 @@ def main(cfg: Point3dAAEConfig):
         # Validation
         model.eval()
         with torch.no_grad():
-            avg_valid_recon_loss = validate(valid_loader, model, device)
+            avg_valid_recon_loss, latent_vectors, scalars = validate(
+                valid_loader, model, device
+            )
 
         print(
             "====> Epoch: {} Valid:\tAvg recon loss {:.4f}\n".format(
                 epoch, avg_valid_recon_loss
             )
         )
+
+        metrics = {
+            "train_disc_loss": avg_train_disc_loss,
+            "train_ae_loss": avg_train_ae_loss,
+            "valid_recon_loss": avg_valid_recon_loss,
+        }
+
+        # Visualize latent space
+        if epoch % cfg.plot_log_every == 0:
+            html_strings = log_latent_visualization(
+                latent_vectors,
+                scalars,
+                plot_path,
+                epoch,
+                cfg.plot_n_samples,
+                cfg.plot_method,
+            )
+            for name, html_string in html_strings.items():
+                metrics[name] = wandb.Html(html_string, inject=False)
+
+        wandb.log(metrics)
 
         if epoch % cfg.checkpoint_log_every == 0:
             log_checkpoint(
@@ -148,13 +177,6 @@ def main(cfg: Point3dAAEConfig):
                 model,
                 {"disc_optimizer": disc_optimizer, "ae_optimizer": ae_optimizer},
             )
-
-    # Output directory structure
-    # output_path
-    # ├── checkpoint
-    # │     ├── epoch-1-20200606-125334.pt
-    # │     ├── epoch-2-20200606-125338.pt
-    # ├── wandb/
 
 
 def train(train_loader, model: AAE3d, disc_optimizer, ae_optimizer, device):
@@ -209,6 +231,8 @@ def train(train_loader, model: AAE3d, disc_optimizer, ae_optimizer, device):
 
 
 def validate(valid_loader, model: AAE3d, device):
+    scalars = defaultdict(list)
+    latent_vectors = []
     avg_ae_loss = 0.0
     for batch in valid_loader:
         x = batch["X"].to(device)
@@ -216,9 +240,16 @@ def validate(valid_loader, model: AAE3d, device):
         recon_x = model.decode(z)
         avg_ae_loss += model.recon_loss(x, recon_x).item()
 
-    avg_ae_loss /= len(valid_loader)
+        # Collect latent vectors for visualization
+        latent_vectors.append(z.cpu().numpy())
+        for name in cfg.scalar_dset_names:
+            scalars[name].append(batch[name].cpu().numpy())
 
-    return avg_ae_loss
+    avg_ae_loss /= len(valid_loader)
+    latent_vectors = np.concatenate(latent_vectors)
+    scalars = {name: np.concatenate(scalar) for name, scalar in scalars.items()}
+
+    return avg_ae_loss, latent_vectors, scalars
 
 
 if __name__ == "__main__":

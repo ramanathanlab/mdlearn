@@ -86,6 +86,14 @@ class Point3dAAEConfig(BaseSettings):
     ignore_gpu: bool = False
     # Log checkpoint file every `checkpoint_log_every` epochs
     checkpoint_log_every: int = 1
+    # Log latent space plot `plot_log_every` epochs
+    plot_log_every: int = 1
+
+    # Validation settings
+    # Method used to visualize latent space
+    plot_method: str = "TSNE"
+    # Number of validation samples to run visualization on
+    plot_n_samples: Optional[int] = None
 
 
 if __name__ == "__main__":
