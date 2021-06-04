@@ -1,3 +1,4 @@
+import time
 import torch
 import wandb
 import random
@@ -124,6 +125,7 @@ def main(cfg: Point3dAAEConfig):
 
     # Start training
     for epoch in range(start_epoch, cfg.epochs):
+        train_start = time.time()
         # Training
         model.train()
         avg_train_disc_loss, avg_train_ae_loss = train(
@@ -131,11 +133,12 @@ def main(cfg: Point3dAAEConfig):
         )
 
         print(
-            "====> Epoch: {} Train:\tAvg Disc loss: {:.4f}\tAvg AE loss {:.4f}".format(
-                epoch, avg_train_disc_loss, avg_train_ae_loss
+            "====> Epoch: {} Train:\tAvg Disc loss: {:.4f}\tAvg AE loss: {:.4f}\tTime: {:.4f}".format(
+                epoch, avg_train_disc_loss, avg_train_ae_loss, time.time() - train_start
             )
         )
 
+        valid_start = time.time()
         # Validation
         model.eval()
         with torch.no_grad():
@@ -144,10 +147,12 @@ def main(cfg: Point3dAAEConfig):
             )
 
         print(
-            "====> Epoch: {} Valid:\tAvg recon loss {:.4f}\n".format(
-                epoch, avg_valid_recon_loss
+            "====> Epoch: {} Valid:\tAvg recon loss: {:.4f}\tTime: {:.4f}\n".format(
+                epoch, avg_valid_recon_loss, time.time() - valid_start
             )
         )
+
+        print("Total time: {:.4f}".format(time.time() - train_start))
 
         metrics = {
             "train_disc_loss": avg_train_disc_loss,
@@ -165,10 +170,12 @@ def main(cfg: Point3dAAEConfig):
                 cfg.plot_n_samples,
                 cfg.plot_method,
             )
-            for name, html_string in html_strings.items():
-                metrics[name] = wandb.Html(html_string, inject=False)
+            if cfg.wandb:
+                for name, html_string in html_strings.items():
+                    metrics[name] = wandb.Html(html_string, inject=False)
 
-        wandb.log(metrics)
+        if cfg.wandb:
+            wandb.log(metrics)
 
         if epoch % cfg.checkpoint_log_every == 0:
             log_checkpoint(
@@ -183,9 +190,10 @@ def train(train_loader, model: AAE3d, disc_optimizer, ae_optimizer, device):
     avg_disc_loss, avg_ae_loss = 0.0, 0.0
     # Create prior noise buffer array
     noise = torch.FloatTensor(cfg.batch_size, cfg.latent_dim).to(device)
-    for batch in train_loader:
+    from tqdm import tqdm
+    for batch in tqdm(train_loader):
 
-        x = batch["X"].to(device)
+        x = batch["X"].to(device, non_blocking=True)
 
         # Encoder/Discriminator forward
         # Get latent vectors

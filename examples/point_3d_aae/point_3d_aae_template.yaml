@@ -1,0 +1,63 @@
+input_path: /homes/abrace/data/bba/1FME-0.h5
+ #/homes/abrace/data/bba/BBA-subset-100.h5 #/homes/abrace/data/bba/1FME-0.h5
+output_path: /homes/abrace/src/mdlearn/examples/point_3d_aae/runs/point_3d_ae_run-0
+resume_checkpoint: null
+num_points: 28
+num_features: 0
+dataset_name: point_cloud
+scalar_dset_names:
+- rmsd
+cms_transform: false
+scalar_requires_grad: false
+in_memory: true
+split_pct: 0.8
+seed: 333
+shuffle: true
+epochs: 10
+batch_size: 256
+init_weights: null
+ae_optimizer:
+    name: Adam
+    hparams:
+        lr: 0.001
+disc_optimizer:
+    name: Adam
+    hparams:
+        lr: 0.001
+scheduler: null
+wandb: null
+#wandb_project_name: null
+#    wandb_entity_name: null
+#    model_tag: null
+latent_dim: 10
+encoder_bias: true
+encoder_relu_slope: 0.0
+encoder_filters:
+- 64
+- 128
+- 256
+encoder_kernels:
+- 5
+- 5
+- 3
+decoder_bias: true
+decoder_relu_slope: 0.0
+decoder_affine_widths:
+- 32
+- 64
+discriminator_bias: true
+discriminator_relu_slope: 0.0
+discriminator_affine_widths:
+- 64
+- 32
+noise_mu: 0.0
+noise_std: 1.0
+lambda_gp: 10.0
+lambda_rec: 0.5
+num_data_workers: 2
+prefetch_factor: 8
+ignore_gpu: false
+checkpoint_log_every: 2
+plot_log_every: 2
+plot_method: TSNE
+plot_n_samples: 10000

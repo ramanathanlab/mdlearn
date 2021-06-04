@@ -41,8 +41,6 @@ class Point3dAAEConfig(BaseSettings):
     epochs: int = 10
     # Training batch size
     batch_size: int = 64
-    # Gradient clipping (max_norm parameter of torch.nn.utils.clip_grad_norm_)
-    clip_grad_max_norm: float = 5.0
     # Pretrained model weights
     init_weights: Optional[str] = None
     # AE (encoder/decoder) optimizer params
