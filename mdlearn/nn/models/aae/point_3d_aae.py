@@ -4,6 +4,7 @@ from mdlearn.nn.models.aae import AAE
 from mdlearn.nn.modules.conv1d_encoder import Conv1dEncoder
 from mdlearn.nn.modules.conv1d_decoder import Conv1dDecoder
 from mdlearn.nn.modules.linear_discriminator import LinearDiscriminator
+from mdlearn.nn.models.aae.loss.chamfer_loss import ChamferLoss
 
 
 class AAE3d(AAE):
@@ -51,6 +52,8 @@ class AAE3d(AAE):
         )
 
         super().__init__(encoder, decoder, discriminator)
+
+        self._recon_loss = ChamferLoss()
 
     def forward(self, x: torch.Tensor):
         z = self.encode(x)
@@ -106,3 +109,38 @@ class AAE3d(AAE):
         slopes = torch.sqrt(torch.sum(gradients ** 2, dim=1))
         gradient_penalty = ((slopes - 1) ** 2).mean()
         return gradient_penalty
+
+    def recon_loss(self, x: torch.Tensor, recon_x: torch.Tensor) -> torch.Tensor:
+        """Reconstruction loss using ChamferLoss.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            The original input tensor.
+        recon_x : torch.Tensor
+            The reconstructed output tensor.
+
+        Returns
+        -------
+        torch.Tensor
+            Reconstruction loss measured by Chamfer distance.
+        """
+        # Here we need input shape (batch_size, num_points, points_dim)
+        return torch.mean(
+            self._recon_loss(recon_x.permute(0, 2, 1), x.permute(0, 2, 1))
+        )
+
+    def decoder_loss(self, fake_logit: torch.Tensor) -> torch.Tensor:
+        """Decoder/Generator loss.
+
+        Parameters
+        ----------
+        fake_logit : torch.Tensor
+            Output of discriminator.
+
+        Returns
+        -------
+        torch.Tensor
+            Negative mean of the fake logits.
+        """
+        return -torch.mean(fake_logit)
