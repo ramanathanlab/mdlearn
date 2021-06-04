@@ -4,6 +4,7 @@ import wandb
 import random
 import itertools
 import numpy as np
+from tqdm import tqdm
 from collections import defaultdict
 from torchsummary import summary
 from mdlearn.utils import (
@@ -190,7 +191,6 @@ def train(train_loader, model: AAE3d, disc_optimizer, ae_optimizer, device):
     avg_disc_loss, avg_ae_loss = 0.0, 0.0
     # Create prior noise buffer array
     noise = torch.FloatTensor(cfg.batch_size, cfg.latent_dim).to(device)
-    from tqdm import tqdm
     for batch in tqdm(train_loader):
 
         x = batch["X"].to(device, non_blocking=True)
