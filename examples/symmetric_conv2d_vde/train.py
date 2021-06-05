@@ -2,6 +2,7 @@ import torch
 import wandb
 import random
 import numpy as np
+from tqdm import tqdm
 from torchsummary import summary
 from collections import defaultdict
 from mdlearn.utils import (
@@ -192,7 +193,7 @@ def main(cfg: SymmetricConv2dVDEConfig):
 
 def train(train_loader, model: SymmetricConv2dVDE, optimizer, device):
     avg_loss, avg_recon_loss, avg_kld_loss, avg_ac_loss = 0.0, 0.0, 0.0, 0.0
-    for batch in train_loader:
+    for batch in tqdm(train_loader):
 
         x_t = batch["X_t"].to(device, non_blocking=True)
         x_t_tau = batch["X_t_tau"].to(device, non_blocking=True)

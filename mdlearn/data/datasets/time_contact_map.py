@@ -68,7 +68,7 @@ class ContactMapTimeSeriesDataset(ContactMapDataset):
         self.lag_time = lag_time
 
     def __len__(self):
-        self.len - self.lag_time
+        return self.len - self.lag_time
 
     def __getitem__(self, idx):
 
