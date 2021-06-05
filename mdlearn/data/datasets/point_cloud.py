@@ -9,7 +9,7 @@ from mdlearn.utils import PathLike
 
 class PointCloudDataset(Dataset):
     """
-    PyTorch Dataset class to load point clouds data. Optionally, uses HDF5
+    PyTorch Dataset class to load point cloud data. Optionally, uses HDF5
     files to only read into memory what is necessary for one batch.
     """
 

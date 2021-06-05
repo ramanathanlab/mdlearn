@@ -25,7 +25,13 @@ class AAE3d(AAE):
         discriminator_relu_slope: float = 0.0,
         discriminator_affine_widths: List[int] = [512, 128, 64],
     ):
-        """Adversarial Autoencoder module for point cloud data.
+        """Adversarial Autoencoder module for point cloud data from
+        the `"Adversarial Autoencoders for Compact Representations of 3D Point Clouds"
+        <https://arxiv.org/abs/1811.07605>`_ paper and adapted to work on
+        atomic coordinate data in the
+        `"AI-Driven Multiscale Simulations Illuminate Mechanisms of SARS-CoV-2 Spike Dynamics"
+        <https://www.biorxiv.org/content/10.1101/2020.11.19.390187v1.abstract>`_ paper.
+        Inherits from :obj:`mdlearn.nn.models.aae.AAE`.
 
         Parameters
         ----------
