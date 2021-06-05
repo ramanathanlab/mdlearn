@@ -59,7 +59,7 @@ class SymmetricConv2dVDEConfig(BaseSettings):
     affine_widths: List[int] = [64]
     affine_dropouts: List[float] = [0.0]
     activation: str = "ReLU"
-    output_activation: str = "None"  # Identity function
+    output_activation: str = "Sigmoid"  # None is Identity function
     lambda_rec: float = 1.0
 
     # Training settings
