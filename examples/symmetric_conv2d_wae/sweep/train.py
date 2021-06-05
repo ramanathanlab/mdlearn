@@ -36,6 +36,28 @@ def main(cfg: SymmetricConv2dWAEConfig):
 
     torch.set_num_threads(cfg.num_data_workers)
 
+    # Load training and validation data
+    dataset = ContactMapDataset(
+        path=cfg.input_path,
+        shape=cfg.input_shape,
+        dataset_name=cfg.dataset_name,
+        scalar_dset_names=cfg.scalar_dset_names,
+        values_dset_name=cfg.values_dset_name,
+        scalar_requires_grad=cfg.scalar_requires_grad,
+        in_memory=cfg.in_memory,
+    )
+    train_loader, valid_loader = train_valid_split(
+        dataset,
+        cfg.split_pct,
+        batch_size=cfg.batch_size,
+        shuffle=cfg.shuffle,
+        num_workers=cfg.num_data_workers,
+        drop_last=True,
+        pin_memory=True,
+        persistent_workers=True,
+        prefetch_factor=cfg.prefetch_factor,
+    )
+
     # Hardware
     device = torch.device(
         "cuda:0" if torch.cuda.is_available() and not cfg.ignore_gpu else "cpu"
@@ -60,28 +82,6 @@ def main(cfg: SymmetricConv2dWAEConfig):
     print(model)
     summary(model, cfg.input_shape)
     wandb.watch(model)  # Must run after summary()
-
-    # Load training and validation data
-    dataset = ContactMapDataset(
-        path=cfg.input_path,
-        shape=cfg.input_shape,
-        dataset_name=cfg.dataset_name,
-        scalar_dset_names=cfg.scalar_dset_names,
-        values_dset_name=cfg.values_dset_name,
-        scalar_requires_grad=cfg.scalar_requires_grad,
-        in_memory=cfg.in_memory,
-    )
-    train_loader, valid_loader = train_valid_split(
-        dataset,
-        cfg.split_pct,
-        batch_size=cfg.batch_size,
-        shuffle=cfg.shuffle,
-        num_workers=cfg.num_data_workers,
-        drop_last=True,
-        pin_memory=True,
-        persistent_workers=True,
-        prefetch_factor=cfg.prefetch_factor,
-    )
 
     optimizer = get_torch_optimizer(
         cfg.optimizer.name, cfg.optimizer.hparams, model.parameters()
@@ -181,7 +181,7 @@ def main(cfg: SymmetricConv2dWAEConfig):
                 checkpoint_path / f"checkpoint-epoch-{epoch}.pt",
                 epoch,
                 model,
-                optimizer,
+                {"optimizer": optimizer},
                 scheduler,
             )
 

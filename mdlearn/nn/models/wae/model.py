@@ -14,7 +14,26 @@ class WAE(VAE):
     def mmdrf_loss(
         self, z: torch.Tensor, sigma: float, kernel: str, rf_dim: int, rf_resample: bool
     ) -> torch.Tensor:
-        """Computes the loss |mu_real - mu_fake|_H"""
+        r"""Computes the loss :math:`|\mu_{real} - \mu_{fake}|_H`
+
+        Parameters
+        ----------
+        z : torch.Tensor
+            The :math:`z`-latent vector.
+        sigma : float
+            TODO
+        kernel : str
+            The type of kernel function to use.
+        rf_dim : int
+            Random features kernel dimension.
+        rf_resample : bool
+            Whether ot not to resample the random features.
+
+        Returns
+        -------
+        torch.Tensor
+            MMD RF loss.
+        """
         z_prior = torch.randn_like(z)  # shape and device
         mu_real = self._compute_mmd_mean_rf(z, sigma, kernel, rf_dim, rf_resample)
         mu_fake = self._compute_mmd_mean_rf(z_prior, sigma, kernel, rf_dim, rf_resample)

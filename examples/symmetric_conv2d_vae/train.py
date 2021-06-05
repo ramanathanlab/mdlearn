@@ -32,6 +32,28 @@ def main(cfg: SymmetricConv2dVAEConfig):
     np.random.seed(cfg.seed)
     random.seed(cfg.seed)
 
+    torch.set_num_threads(cfg.num_data_workers)
+
+    # Load training and validation data
+    dataset = ContactMapDataset(
+        path=cfg.input_path,
+        shape=cfg.input_shape,
+        dataset_name=cfg.dataset_name,
+        scalar_dset_names=cfg.scalar_dset_names,
+        values_dset_name=cfg.values_dset_name,
+        scalar_requires_grad=cfg.scalar_requires_grad,
+        in_memory=cfg.in_memory,
+    )
+    train_loader, valid_loader = train_valid_split(
+        dataset,
+        cfg.split_pct,
+        batch_size=cfg.batch_size,
+        shuffle=cfg.shuffle,
+        num_workers=cfg.num_data_workers,
+        drop_last=True,
+        pin_memory=True,
+    )
+
     # Hardware
     device = torch.device(
         "cuda:0" if torch.cuda.is_available() and not cfg.ignore_gpu else "cpu"
@@ -59,26 +81,6 @@ def main(cfg: SymmetricConv2dVAEConfig):
     print(model)
     summary(model, cfg.input_shape)
 
-    # Load training and validation data
-    dataset = ContactMapDataset(
-        path=cfg.input_path,
-        shape=cfg.input_shape,
-        dataset_name=cfg.dataset_name,
-        scalar_dset_names=cfg.scalar_dset_names,
-        values_dset_name=cfg.values_dset_name,
-        scalar_requires_grad=cfg.scalar_requires_grad,
-        in_memory=cfg.in_memory,
-    )
-    train_loader, valid_loader = train_valid_split(
-        dataset,
-        cfg.split_pct,
-        batch_size=cfg.batch_size,
-        shuffle=cfg.shuffle,
-        num_workers=cfg.num_data_workers,
-        drop_last=True,
-        pin_memory=True,
-    )
-
     optimizer = get_torch_optimizer(
         cfg.optimizer.name, cfg.optimizer.hparams, model.parameters()
     )
@@ -98,7 +100,7 @@ def main(cfg: SymmetricConv2dVAEConfig):
     # Optionally resume training from a checkpoint
     if cfg.resume_checkpoint is not None:
         start_epoch = resume_checkpoint(
-            cfg.resume_checkpoint, model, optimizer, scheduler
+            cfg.resume_checkpoint, model, {"optimizer": optimizer}, scheduler
         )
         print(f"Resume training at epoch {start_epoch} from {cfg.resume_checkpoint}")
     else:
@@ -140,7 +142,7 @@ def main(cfg: SymmetricConv2dVAEConfig):
                 checkpoint_path / f"checkpoint-epoch-{epoch}.pt",
                 epoch,
                 model,
-                optimizer,
+                {"optimizer": optimizer},
                 scheduler,
             )
 

@@ -191,8 +191,8 @@ def log_checkpoint(
     checkpoint_file: PathLike,
     epoch: int,
     model: torch.nn.Module,
-    optimizer: torch.optim.Optimizer,
-    scheduler: Optional[torch.optim.lr_scheduler._LRScheduler],
+    optimizers: Dict[str, torch.optim.Optimizer],
+    scheduler: Optional[torch.optim.lr_scheduler._LRScheduler] = None,
 ):
     """Write a torch .pt file containing the epoch, model, optimizer,
     and scheduler.
@@ -205,16 +205,17 @@ def log_checkpoint(
         The current training epoch.
     model : torch.nn.Module
         The model whose parameters are saved.
-    optimizer : torch.optim.Optimizer
-        The optimizer whose parameters are saved.
+    optimizers : Dict[str, torch.optim.Optimizer]
+        The optimizers whose parameters are saved.
     scheduler : Optional[torch.optim.lr_scheduler._LRScheduler]
         Optional scheduler whose parameters are saved.
     """
     checkpoint = {
         "epoch": epoch,  # To resume training, (see resume_checkpoint)
         "model_state_dict": model.state_dict(),
-        "optimizer_state_dict": optimizer.state_dict(),
     }
+    for name, optimizer in optimizers.items():
+        checkpoint[name + "_state_dict"] = optimizer.state_dict()
     if scheduler is not None:
         checkpoint["scheduler_state_dict"] = scheduler.state_dict()
     torch.save(checkpoint, checkpoint_file)
@@ -223,7 +224,7 @@ def log_checkpoint(
 def resume_checkpoint(
     checkpoint_file: PathLike,
     model: torch.nn.Module,
-    optimizer: torch.optim.Optimizer,
+    optimizers: Dict[str, torch.optim.Optimizer],
     scheduler: Optional[torch.optim.lr_scheduler._LRScheduler] = None,
 ) -> int:
     """Modifies :obj:`model`, :obj:`optimizer`, and :obj:`scheduler` with
@@ -236,8 +237,8 @@ def resume_checkpoint(
         Path to checkpoint file to resume from.
     model : torch.nn.Module
         Module to update the parameters of.
-    optimizer : torch.optim.Optimizer
-        Optimizer to update.
+    optimizers : Dict[str, torch.optim.Optimizer]
+        Optimizers to update.
     scheduler : Optional[torch.optim.lr_scheduler._LRScheduler]
         Optional scheduler to update.
 
@@ -250,7 +251,8 @@ def resume_checkpoint(
     checkpoint = torch.load(checkpoint_file, map_location="cpu")
     start_epoch = checkpoint["epoch"] + 1
     model.load_state_dict(checkpoint["model_state_dict"])
-    optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+    for name, optimizer in optimizers.items():
+        optimizer.load_state_dict(checkpoint[name + "_state_dict"])
     if scheduler is not None:
         scheduler_state_dict = checkpoint.get("scheduler_state_dict")
         if scheduler_state_dict is not None:

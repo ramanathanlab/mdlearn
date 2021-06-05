@@ -18,7 +18,7 @@ class ContactMapDataset(Dataset):
         scalar_dset_names: List[str] = [],
         values_dset_name: Optional[str] = None,
         scalar_requires_grad: bool = False,
-        in_memory: bool = False,
+        in_memory: bool = True,
     ):
         """
         Parameters
@@ -47,13 +47,13 @@ class ContactMapDataset(Dataset):
         --------
         >>> dataset = ContactMapDataset("contact_maps.h5", (28, 28))
         >>> dataset[0]
-        {"X": torch.Tensor(...), "index": 0}
+        {'X': torch.Tensor(..., dtype=float32), 'index': tensor(0)}
         >>> dataset[0]["X"].shape
         (28, 28)
 
         >>> dataset = ContactMapDataset("contact_maps.h5", (28, 28), scalar_dset_names=["rmsd"])
         >>> dataset[0]
-        {"X": torch.Tensor(...), "index": 0, "rmsd": 8.67}
+        {'X': torch.Tensor(..., dtype=float32), 'index': tensor(0), 'rmsd': tensor(8.7578, dtype=torch.float16)}
         """
         self.file_path = str(path)
         self.dataset_name = dataset_name
