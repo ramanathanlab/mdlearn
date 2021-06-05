@@ -247,6 +247,7 @@ def validate(valid_loader, model, device):
         avg_loss += loss.item()
         avg_recon_loss += recon_loss.item()
         avg_kld_loss += kld_loss.item()
+        avg_ac_loss += ac_loss.item()
 
         # Collect latent vectors for visualization
         latent_vectors.append(z_t.cpu().numpy())
