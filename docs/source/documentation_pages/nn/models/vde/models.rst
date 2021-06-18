@@ -1,6 +1,9 @@
 Variational Dynamics Encoders
 *****************************
 
+.. warning::
+    VDE models are still under development, use with caution!
+
 .. autoclass:: mdlearn.nn.models.vde.model.VDE
     :members: 
 
