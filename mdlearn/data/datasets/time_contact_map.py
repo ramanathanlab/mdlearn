@@ -29,7 +29,7 @@ class ContactMapTimeSeriesDataset(ContactMapDataset):
             Shape of contact matrices required by the model (H, W), may be (1, H, W).
         lag_time: int
             Delay time forward or backward in the input data. The time-lagged
-            correlations is computed between datas :obj:`X[t]` and :obj:`X[t+lag_time]`.
+            correlations is computed between :obj:`X[t]` and :obj:`X[t+lag_time]`.
         dataset_name : str
             Name of contact map dataset in HDF5 file.
         scalar_dset_names : List[str]

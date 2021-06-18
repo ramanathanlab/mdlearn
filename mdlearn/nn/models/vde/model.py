@@ -4,6 +4,11 @@ from mdlearn.nn.models.vae import VAE
 
 
 class VDE(VAE):
+    """Variational dynamics encoder base class module
+    based off the `"Variational Encoding of Complex Dynamics"
+    <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7398762/>`_ paper
+    Inherits from :obj:`mdlearn.nn.models.vae.VAE`."""
+
     def __init__(self, encoder: nn.Module, decoder: nn.Module):
         super().__init__(encoder, decoder)
 
