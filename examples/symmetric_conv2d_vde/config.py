@@ -3,7 +3,7 @@ from typing import Optional, List, Tuple
 from mdlearn.utils import BaseSettings, WandbConfig, OptimizerConfig, SchedulerConfig
 
 
-class SymmetricConv2dVAEConfig(BaseSettings):
+class SymmetricConv2dVDEConfig(BaseSettings):
     # File paths
     # Path to HDF5 training file
     input_path: Path = Path("TODO")
@@ -14,6 +14,8 @@ class SymmetricConv2dVAEConfig(BaseSettings):
 
     # Input image shapes
     input_shape: Tuple[int, ...] = (1, 28, 28)
+    # Lag time for prediction
+    lag_time: int = 1
     # Name of the dataset in the HDF5 file.
     dataset_name: str = "contact_map"
     # Name of scalar datasets in the HDF5 file.
@@ -63,11 +65,21 @@ class SymmetricConv2dVAEConfig(BaseSettings):
     # Training settings
     # Number of data loaders for training
     num_data_workers: int = 0
+    # Number of samples loaded in advance by each worker
+    prefetch_factor: int = 2
     # Whether or not to ignore the GPU while training.
     ignore_gpu: bool = False
     # Log checkpoint file every `checkpoint_log_every` epochs
     checkpoint_log_every: int = 1
+    # Log latent space plot `plot_log_every` epochs
+    plot_log_every: int = 1
+
+    # Validation settings
+    # Method used to visualize latent space
+    plot_method: str = "TSNE"
+    # Number of validation samples to run visualization on
+    plot_n_samples: Optional[int] = None
 
 
 if __name__ == "__main__":
-    SymmetricConv2dVAEConfig().dump_yaml("symmetric_conv2d_vae_template.yaml")
+    SymmetricConv2dVDEConfig().dump_yaml("symmetric_conv2d_vde_template.yaml")

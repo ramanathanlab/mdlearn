@@ -1,5 +1,5 @@
-Autoencoder
-***********
+Autoencoders
+************
 
 .. autoclass:: mdlearn.nn.models.ae.model.AE
     :members: 

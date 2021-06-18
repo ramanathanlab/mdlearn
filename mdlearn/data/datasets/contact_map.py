@@ -97,15 +97,7 @@ class ContactMapDataset(Dataset):
 
         self._initialized = True
 
-    def __len__(self):
-        return self.len
-
-    def __getitem__(self, idx):
-
-        # Only happens once. Need to open h5 file in current process
-        if not self._initialized:
-            self._init_dataset()
-
+    def _get_data(self, idx) -> torch.Tensor:
         # Data is stored as np.concatenate((row_inds, col_inds))
         ind = self.dset[idx] if self.in_memory else self.dset[idx, ...]
         indices = torch.from_numpy(ind.reshape(2, -1)).to(torch.long)
@@ -118,8 +110,18 @@ class ContactMapDataset(Dataset):
         # Set shape to the last 2 elements of self.shape. Handles (1, W, H) and (W, H)
         data = torch.sparse.FloatTensor(indices, values, self.shape[-2:]).to_dense()
         data = data.view(self.shape)
+        return data
 
-        sample = {"X": data}
+    def __len__(self):
+        return self.len
+
+    def __getitem__(self, idx):
+
+        # Only happens once. Need to open h5 file in current process
+        if not self._initialized:
+            self._init_dataset()
+
+        sample = {"X": self._get_data(idx)}
         # Add index into dataset to sample
         sample["index"] = torch.tensor(idx, requires_grad=False)
         # Add scalars
