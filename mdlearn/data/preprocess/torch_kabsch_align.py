@@ -31,7 +31,10 @@ def torch_kabsch(toXYZ: torch.Tensor, fromXYZ: torch.Tensor):
 
     R = torch.matmul(
         torch.matmul(
-            u, [[1, 0, 0], [0, 1, 0], [0, 0, torch.linalg.det(torch.matmul(u, vh))]]
+            u,
+            torch.Tensor(
+                [[1, 0, 0], [0, 1, 0], [0, 0, torch.linalg.det(torch.matmul(u, vh))]]
+            ),
         ),
         vh,
     )
