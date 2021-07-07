@@ -7,18 +7,17 @@ def kabsch(toXYZ: np.ndarray, fromXYZ: np.ndarray):
     Input is a 3 x N array of coordinates.
     """
     # This file has been edited to produce identical results as the original matlab implementation.
-    len1 = np.shape(fromXYZ)
-    len2 = np.shape(toXYZ)
+    shape1 = np.shape(fromXYZ)
+    shape2 = np.shape(toXYZ)
 
-    if not (len1[1] == len2[1]):
-        print("KABSCH: unequal array sizes")
-        return
+    if not (shape1[1] == shape2[1]):
+        raise ValueError("KABSCH: unequal array sizes")
 
-    m1 = np.mean(fromXYZ, 1).reshape((len1[0], 1))
+    m1 = np.mean(fromXYZ, 1).reshape((shape1[0], 1))
     # print np.shape(m1);
-    m2 = np.mean(toXYZ, 1).reshape((len2[0], 1))
-    tmp1 = np.tile(m1, len1[1])
-    tmp2 = np.tile(m1, len2[1])
+    m2 = np.mean(toXYZ, 1).reshape((shape2[0], 1))
+    tmp1 = np.tile(m1, shape1[1])
+    tmp2 = np.tile(m1, shape2[1])
 
     assert np.allclose(tmp1, tmp2)
     assert tmp1.shape == fromXYZ.shape
@@ -35,11 +34,10 @@ def kabsch(toXYZ: np.ndarray, fromXYZ: np.ndarray):
     )
     T = m2 - np.dot(R, m1)
 
-    tmp3 = np.reshape(np.tile(T, (len2[1])), (len1[0], len1[1]))
+    tmp3 = np.reshape(np.tile(T, (shape2[1])), (shape1[0], shape1[1]))
     err = toXYZ - np.dot(R, fromXYZ) - tmp3
 
-    # eRMSD = math.sqrt(sum(sum((np.dot(err,err.T))))/len2[1]);
-    eRMSD = math.sqrt(sum(sum(err ** 2)) / len2[1])
+    eRMSD = np.sqrt(np.sum(err ** 2) / shape2[1])
     return R, T, eRMSD, err.T
 
 

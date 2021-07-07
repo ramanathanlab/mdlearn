@@ -1,4 +1,3 @@
-import math
 import torch
 
 
@@ -11,12 +10,10 @@ def torch_kabsch(toXYZ: torch.Tensor, fromXYZ: torch.Tensor):
     shape2 = toXYZ.shape
 
     if not (shape1[1] == shape2[1]):
-        print("KABSCH: unequal array sizes")
-        return
+        raise ValueError("KABSCH: unequal array sizes")
 
-    m1 = torch.mean(fromXYZ, dim=1).reshape((shape1[0], 1))
-    # print np.shape(m1);
-    m2 = torch.mean(toXYZ, dim=1).reshape((shape2[0], 1))
+    m1 = torch.mean(fromXYZ, dim=1).view((shape1[0], 1))
+    m2 = torch.mean(toXYZ, dim=1).view((shape2[0], 1))
     tmp1 = torch.tile(m1, (shape1[1],))
     tmp2 = torch.tile(m1, (shape2[1],))
 
@@ -26,8 +23,7 @@ def torch_kabsch(toXYZ: torch.Tensor, fromXYZ: torch.Tensor):
     t1 = fromXYZ - tmp1
     t2 = toXYZ - tmp2
 
-    u, s, vh = torch.linalg.svd(torch.matmul(t2, t1.T))
-    # v = vh.T
+    u, _, vh = torch.linalg.svd(torch.matmul(t2, t1.T))
 
     R = torch.matmul(
         torch.matmul(
@@ -43,6 +39,5 @@ def torch_kabsch(toXYZ: torch.Tensor, fromXYZ: torch.Tensor):
     tmp3 = torch.tile(T, (shape2[1],)).view(shape1)
     err = toXYZ - torch.matmul(R, fromXYZ) - tmp3
 
-    # eRMSD = math.sqrt(sum(sum((np.dot(err,err.T))))/shape2[1]);
-    eRMSD = math.sqrt(sum(sum(err ** 2)) / shape2[1])
+    eRMSD = torch.sqrt(torch.sum(err ** 2) / shape2[1])
     return R, T, eRMSD, err.T
