@@ -16,6 +16,7 @@ class LinearAE(AE):
         inplace_activation: bool = False,
     ):
         """A symmetric autoencoder with all linear layers.
+        Applies a ReLU activation between encoder and decoder.
 
         Parameters
         ----------
