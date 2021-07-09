@@ -162,7 +162,7 @@ class LinearAETrainer:
 
         exist_ok = checkpoint is not None
         # Create output directory
-        output_path = Path(output_path)
+        output_path = Path(output_path).resolve()
         output_path.mkdir(exist_ok=exist_ok)
         # Create checkpoint directory
         checkpoint_path = output_path / "checkpoints"
