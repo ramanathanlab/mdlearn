@@ -148,8 +148,8 @@ class LinearAETrainer:
         self,
         X: np.ndarray,
         scalars: Dict[str, np.ndarray] = {},
-        checkpoint: Optional[PathLike] = None,
         output_path: PathLike = "./",
+        checkpoint: Optional[PathLike] = None,
     ):
 
         from mdlearn.utils import (
