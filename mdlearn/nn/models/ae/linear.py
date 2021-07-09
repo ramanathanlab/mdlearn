@@ -86,7 +86,7 @@ class LinearAETrainer:
         inplace_activation: bool = False,
         seed: int = 42,
         num_data_workers: int = 2,
-        split_pct: float = 8.0,
+        split_pct: float = 0.8,
         batch_size: int = 128,
         shuffle: bool = True,
         device: str = "cuda",
@@ -102,7 +102,8 @@ class LinearAETrainer:
         plot_n_samples: int = 10000,
         plot_method: str = "TSNE",
     ):
-
+        if 0 > split_pct or 1 < split_pct:
+            raise ValueError("split_pct should be between 0 and 1")
         if "cuda" in device and not torch.cuda.is_available():
             raise ValueError("Specified cuda, but it is unavailable.")
 
