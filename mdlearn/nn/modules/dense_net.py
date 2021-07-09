@@ -9,7 +9,7 @@ class DenseNet(nn.Module):
     def __init__(
         self,
         input_dim: int,
-        affine_widths: List[int] = [128],
+        neurons: List[int] = [128],
         bias: bool = True,
         relu_slope: float = 0.0,
         inplace_activation: bool = False,
@@ -23,7 +23,7 @@ class DenseNet(nn.Module):
         ----------
         input_dim : int
             Dimension of input tensor (should be flattened).
-        affine_widths : List[int], optional
+        neurons : List[int], optional
             Linear layers :obj:`in_features`, by default [128].
         bias : bool, optional
             Use a bias term in the Linear layers, by default True.
@@ -36,9 +36,14 @@ class DenseNet(nn.Module):
         super().__init__()
 
         self.input_dim = input_dim
-        self.affine_widths = affine_widths
+        self.neurons = neurons
         self.bias = bias
         self.relu_slope = relu_slope
+
+        if len(self.neurons) == 0:
+            raise ValueError(
+                "Model must have atleast one layer, got an empty list for `neurons`."
+            )
 
         # Select activation
         self.activation_kwargs = {"inplace": inplace_activation}
@@ -58,7 +63,7 @@ class DenseNet(nn.Module):
         layers = []
 
         in_features = self.input_dim
-        for out_features in self.affine_widths:
+        for out_features in self.neurons:
             layers.append(
                 nn.Linear(
                     in_features=in_features,
