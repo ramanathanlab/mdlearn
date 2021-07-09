@@ -134,7 +134,7 @@ class FeatureVectorHDF5Dataset(Dataset):
             self._init_dataset()
 
         x = self.dset[idx] if self.in_memory else self.dset[idx, ...]
-        sample = {"X": torch.from_numpy(x.astype(np.float32))}
+        sample = {"X": torch.from_numpy(x).float()}
         # Add index into dataset to sample
         sample["index"] = torch.tensor(idx, requires_grad=False)
         # Add scalars
