@@ -9,6 +9,7 @@ class LinearAE(AE):
     def __init__(
         self,
         input_dim: int,
+        latent_dim: int = 8,
         neurons: List[int] = [128],
         bias: bool = True,
         relu_slope: float = 0.0,
@@ -20,6 +21,8 @@ class LinearAE(AE):
         ----------
         input_dim : int
             Dimension of input tensor (should be flattened).
+        latent_dim: int
+            Dimension of the latent space.
         neurons : List[int], optional
             Linear layers :obj:`in_features`, by default [128].
         bias : bool, optional
@@ -31,6 +34,7 @@ class LinearAE(AE):
             Sets the inplace option for the activation function.
         """
 
+        neurons = neurons.copy() + [latent_dim]
         encoder = DenseNet(input_dim, neurons, bias, relu_slope, inplace_activation)
         decoder_neurons = list(reversed(neurons))[1:] + [input_dim]
         decoder = DenseNet(
