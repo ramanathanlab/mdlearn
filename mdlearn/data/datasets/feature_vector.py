@@ -133,7 +133,8 @@ class FeatureVectorHDF5Dataset(Dataset):
         if not self._initialized:
             self._init_dataset()
 
-        sample = {"X": self.dset[idx] if self.in_memory else self.dset[idx, ...]}
+        x = self.dset[idx] if self.in_memory else self.dset[idx, ...]
+        sample = {"X": torch.from_numpy(x)}
         # Add index into dataset to sample
         sample["index"] = torch.tensor(idx, requires_grad=False)
         # Add scalars
