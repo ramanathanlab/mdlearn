@@ -42,7 +42,7 @@ class DenseNet(nn.Module):
 
         if len(self.neurons) == 0:
             raise ValueError(
-                "Model must have atleast one layer, got an empty list for `neurons`."
+                "Model must have atleast one layer, received an empty list for `neurons`."
             )
 
         # Select activation
