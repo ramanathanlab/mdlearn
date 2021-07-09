@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 
 
 class FeatureVectorDataset(Dataset):
-    """PyTorch Dataset class to load vector or scalar data diretly
+    """PyTorch Dataset class to load vector or scalar data directly
     from a np.ndarray."""
 
     def __init__(
@@ -33,7 +33,7 @@ class FeatureVectorDataset(Dataset):
             learning. If scalars are only required for plotting, then set it as False.
         """
 
-        if not all(len(dset) == len(data) for dset in scalars):
+        if not all(len(scalars[key]) == len(data) for key in scalars):
             raise ValueError(
                 "Dimension of scalar arrays should match "
                 "the number of input feature vectors."
