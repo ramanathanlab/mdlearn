@@ -48,7 +48,7 @@ class FeatureVectorDataset(Dataset):
 
     def __getitem__(self, idx):
 
-        sample = {"X": self.data[idx]}
+        sample = {"X": torch.from_numpy(self.data[idx]).float()}
         # Add index into dataset to sample
         sample["index"] = torch.tensor(idx, requires_grad=False)
         # Add scalars
