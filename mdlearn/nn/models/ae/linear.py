@@ -78,9 +78,9 @@ class LinearAE(AE):
 class LinearAETrainer:
     def __init__(
         self,
-        input_dim: int,
-        latent_dim: int = 8,
-        neurons: List[int] = [128],
+        input_dim: int = 40,
+        latent_dim: int = 4,
+        neurons: List[int] = [32, 16, 8],
         bias: bool = True,
         relu_slope: float = 0.0,
         inplace_activation: bool = False,
