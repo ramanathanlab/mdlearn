@@ -197,7 +197,7 @@ class LinearAETrainer:
             shuffle=self.shuffle,
             num_workers=self.num_data_workers,
             prefetch_factor=self.prefetch_factor,
-            persistent_workers=True,
+            persistent_workers=not self.in_gpu_memory,
             drop_last=True,
             pin_memory=not self.in_gpu_memory,
         )
