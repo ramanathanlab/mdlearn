@@ -144,6 +144,9 @@ class LinearAETrainer:
         else:
             self.scheduler = None
 
+        # Log the train and validation loss each epoch
+        self.loss_curve_ = {"train": [], "validation": []}
+
     def fit(
         self,
         X: np.ndarray,
@@ -259,6 +262,10 @@ class LinearAETrainer:
                     self.plot_n_samples,
                     self.plot_method,
                 )
+
+            # Log the losses
+            self.loss_curve_["train"].append(avg_train_loss)
+            self.loss_curve_["validation"].append(avg_valid_loss)
 
     def _train(self, train_loader) -> float:
         avg_loss = 0.0
