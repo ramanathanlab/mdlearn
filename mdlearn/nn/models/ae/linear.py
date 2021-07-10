@@ -211,7 +211,7 @@ class LinearAETrainer:
             if self.verbose:
                 print(f"Resume training at epoch {start_epoch} from {checkpoint}")
         else:
-            start_epoch = 0
+            start_epoch = 1
 
         # Start training
         for epoch in range(start_epoch, self.epochs):
