@@ -1,5 +1,6 @@
 import h5py
 import torch
+import warnings
 import numpy as np
 from typing import List, Dict
 from mdlearn.utils import PathLike
@@ -15,6 +16,7 @@ class FeatureVectorDataset(Dataset):
         data: np.ndarray,
         scalars: Dict[str, np.ndarray] = {},
         scalar_requires_grad: bool = False,
+        in_gpu_memory: bool = False,
     ):
         """
         Parameters
@@ -22,15 +24,17 @@ class FeatureVectorDataset(Dataset):
         data : np.ndarray
             Input features vectors of shape (N, D) where N is the number
             of data examples, and D is the dimension of the feature vector.
-        scalars : Dict[str, np.ndarray]
+        scalars : Dict[str, np.ndarray], default {}
             Dictionary of scalar arrays. For instance, the root mean squared
             deviation (RMSD) for each feature vector can be passed via
             :obj:`{"rmsd": np.array(...)}`. The dimension of each scalar array
             should match the number of input feature vectors N.
-        scalar_requires_grad : bool
+        scalar_requires_grad : bool, default False
             Sets requires_grad torch.Tensor parameter for scalars specified by
             :obj:`scalars`. Set to True, to use scalars for multi-task
             learning. If scalars are only required for plotting, then set it as False.
+        in_gpu_memory : bool, default: False
+            If True, will pre-load the entire :obj:`data` array to GPU memory.
         """
 
         if not all(len(scalars[key]) == len(data) for key in scalars):
@@ -39,16 +43,24 @@ class FeatureVectorDataset(Dataset):
                 "the number of input feature vectors."
             )
 
-        self.data = data
         self.scalars = scalars
         self._scalar_requires_grad = scalar_requires_grad
+        self.data = torch.from_numpy(data).float()
+
+        if in_gpu_memory:
+            try:
+                self.data = self.data.to(device="cuda")
+            except RuntimeError:
+                warnings.warn(
+                    "Failed to load the full dataset to GPU memory. Try setting in_gpu_memory to False"
+                )
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
 
-        sample = {"X": torch.from_numpy(self.data[idx]).float()}
+        sample = {"X": self.data[idx]}
         # Add index into dataset to sample
         sample["index"] = torch.tensor(idx, requires_grad=False)
         # Add scalars

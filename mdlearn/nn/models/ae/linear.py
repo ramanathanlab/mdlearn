@@ -85,7 +85,9 @@ class LinearAETrainer:
         relu_slope: float = 0.0,
         inplace_activation: bool = False,
         seed: int = 42,
+        in_gpu_memory: bool = False,
         num_data_workers: int = 2,
+        prefetch_factor: int = 2,
         split_pct: float = 0.8,
         batch_size: int = 128,
         shuffle: bool = True,
@@ -108,7 +110,9 @@ class LinearAETrainer:
             raise ValueError("Specified cuda, but it is unavailable.")
 
         self.seed = seed
-        self.num_data_workers = num_data_workers
+        self.in_gpu_memory = in_gpu_memory
+        self.num_data_workers = 0 if in_gpu_memory else num_data_workers
+        self.prefetch_factor = prefetch_factor
         self.split_pct = split_pct
         self.batch_size = batch_size
         self.shuffle = shuffle
@@ -185,15 +189,17 @@ class LinearAETrainer:
         )
 
         # Load training and validation data
-        dataset = FeatureVectorDataset(X, scalars)
+        dataset = FeatureVectorDataset(X, scalars, in_gpu_memory=self.in_gpu_memory)
         train_loader, valid_loader = train_valid_split(
             dataset,
             self.split_pct,
             batch_size=self.batch_size,
             shuffle=self.shuffle,
             num_workers=self.num_data_workers,
+            prefetch_factor=self.prefetch_factor,
+            persistent_workers=True,
             drop_last=True,
-            pin_memory=True,
+            pin_memory=not self.in_gpu_memory,
         )
         self.scalar_dset_names = list(scalars.keys())
 
@@ -271,7 +277,7 @@ class LinearAETrainer:
         avg_loss = 0.0
         for batch in train_loader:
 
-            x = batch["X"].to(self.device)
+            x = batch["X"].to(self.device, non_blocking=True)
 
             # Forward pass
             _, recon_x = self.model(x)
@@ -300,7 +306,7 @@ class LinearAETrainer:
         avg_loss = 0.0
         for batch in valid_loader:
 
-            x = batch["X"].to(self.device)
+            x = batch["X"].to(self.device, non_blocking=True)
 
             # Forward pass
             z, recon_x = self.model(x)
