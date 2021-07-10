@@ -214,7 +214,7 @@ class LinearAETrainer:
             start_epoch = 1
 
         # Start training
-        for epoch in range(start_epoch, self.epochs):
+        for epoch in range(start_epoch, self.epochs + 1):
             # Training
             self.model.train()
             avg_train_loss = self._train(train_loader)
