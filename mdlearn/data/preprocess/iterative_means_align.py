@@ -1,7 +1,5 @@
-import math
 import itertools
 import numpy as np
-from typing import Tuple
 from mdlearn.data.preprocess.kabsch_align import kabsch
 
 
@@ -9,46 +7,53 @@ def iterative_means(
     coords: np.ndarray,
     eps: float = 0.001,
     max_iter: int = 10,
-    mapped: bool = False,
-    fname: str = "na",
-    shape: Tuple[int, int, int] = (0, 0, 0),
 ):
+    r"""Run iterative means alignment which aligns :obj:`coords`
+    to the mean coordinate structure using the kabsch alignment
+    algorithm implemented here: :obj:`mdlearn.data.preprocess.kabsch_align.kabsch`.
+    Algorithm converges if either the difference of means coordinates
+    computed from consecutive iterations is less than :obj:`eps` or
+    if :obj:`max_iter` iterations have finished.
 
-    if mapped:
-        coords = np.memmap(fname, dtype="float64", mode="r+").reshape(shape)
-    # all coordinates are expected to be passed as a (Ns x 3 x Na)  array
-    # where Na = number of atoms; Ns = number of snapshots
+    Parameters
+    ----------
+    coords : np.ndarray
+        Array of atomic coordinates with dimension (n_frames, 3, n_atoms)
+    eps : float, default=0.001
+        Error tolerance of the difference between mean coordinates computed
+        from consecutive iterations, used to define convergence.
+    max_iter : int, default=10
+        Number of iterations before convergence.
 
-    # This file has been edited to produce identical results as the original matlab implementation.
+    Returns
+    -------
+    [type]
+        [description]
+    """
+    n_frames, _, n_atoms = coords.shape
 
-    Ns = np.shape(coords)[0]
-    # dim = np.shape(coords)[1] # dim = 3
-    Na = np.shape(coords)[2]
+    print("Shape of coords array in iterative_means:", coords.shape)
 
-    print("Shape of array in IterativeMeans: {0}".format(np.shape(coords)))
+    avg_coords = []  # track average coordinates
 
-    avgCoords = []  # track average coordinates
-
-    eRMSD = []
+    e_rmsd = []
 
     for itr in itertools.count(1):
-        tmpRMSD = []
-        mnC = np.mean(coords, 0)
-        avgCoords.append(mnC)
-        for i in range(Ns):
-            fromXYZ = coords[i]
-            R, T, xRMSD, err = kabsch(mnC, fromXYZ)
-            tmpRMSD.append(xRMSD)
-            tmp = np.tile(T.flatten(), (Na, 1)).T
-            pxyz = np.dot(R, fromXYZ) + tmp
+        tmp_rmsd = []
+        mean_coord = np.mean(coords, 0)
+        avg_coords.append(mean_coord)
+        for i in range(n_frames):
+            from_xyz = coords[i]
+            R, T, x_rmsd, err = kabsch(mean_coord, from_xyz)
+            tmp_rmsd.append(x_rmsd)
+            tmp = np.tile(T.flatten(), (n_atoms, 1)).T
+            pxyz = np.dot(R, from_xyz) + tmp
             coords[i, :, :] = pxyz
-        eRMSD.append(np.array(tmpRMSD).T)
-        newMnC = np.mean(coords, 0)
-        err = math.sqrt(sum((mnC.flatten() - newMnC.flatten()) ** 2))
+        e_rmsd.append(np.array(tmp_rmsd).T)
+        new_mean_coord = np.mean(coords, 0)
+        err = np.sqrt(np.sum((mean_coord.flatten() - new_mean_coord.flatten()) ** 2))
         print(f"Iteration #{itr} with an error of {err}")
         if err <= eps or itr == max_iter:
             break  # Algorithm has converged
-    if mapped:
-        del coords
-        coords = 0
-    return [itr, avgCoords, eRMSD, coords]
+
+    return itr, avg_coords, e_rmsd, coords
