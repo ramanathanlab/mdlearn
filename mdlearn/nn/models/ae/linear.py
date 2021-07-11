@@ -30,7 +30,7 @@ class LinearAE(AE):
         ----------
         input_dim : int
             Dimension of input tensor (should be flattened).
-        latent_dim: int
+        latent_dim: int, default=8
             Dimension of the latent space.
         neurons : List[int], deafult=[128]
             Linear layers :obj:`in_features`.

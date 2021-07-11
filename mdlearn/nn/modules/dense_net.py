@@ -32,6 +32,11 @@ class DenseNet(nn.Module):
             :obj:`negative_slope` set to :obj:`relu_slope`, by default 0.0.
         inplace_activation : bool, default=False
             Sets the inplace option for the activation function.
+
+        Raises
+        ------
+        ValueError
+            :obj:`neurons` should specify atleast one layer.
         """
         super().__init__()
 
