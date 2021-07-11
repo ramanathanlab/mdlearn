@@ -6,6 +6,7 @@ from pathlib import Path
 from collections import defaultdict
 from typing import List, Tuple, Dict, Any, Optional
 from torch.nn import functional as F
+from torch.utils.data import DataLoader
 from mdlearn.utils import PathLike
 from mdlearn.nn.models.ae import AE
 from mdlearn.nn.modules.dense_net import DenseNet
@@ -371,6 +372,53 @@ class LinearAETrainer:
             # Log the losses
             self.loss_curve_["train"].append(avg_train_loss)
             self.loss_curve_["validation"].append(avg_valid_loss)
+
+    def predict(
+        self, X: np.ndarray, inference_batch_size: int = 512
+    ) -> Tuple[np.ndarray, float]:
+        """Predict using the LinearAE
+
+        Parameters
+        ----------
+        X : np.ndarray
+            The input data to predict on.
+        inference_batch_size : int
+            The batch size for inference, by default 512
+
+        Returns
+        -------
+        Tuple[np.ndarray, float]
+            The :obj:`z` latent vectors corresponding to the
+            input data :obj:`X` and average reconstruction loss.
+        """
+        from mdlearn.data.datasets.feature_vector import FeatureVectorDataset
+
+        dataset = FeatureVectorDataset(X, in_gpu_memory=self.in_gpu_memory)
+        data_loader = DataLoader(
+            dataset,
+            batch_size=inference_batch_size,
+            shuffle=False,
+            num_workers=self.num_data_workers,
+            prefetch_factor=self.prefetch_factor,
+            persistent_workers=self.persistent_workers,
+            drop_last=False,
+            pin_memory=not self.in_gpu_memory,
+        )
+
+        # Make copy of class state incase of failure during inference
+        tmp = self.scalar_dset_names.copy()
+        self.model.eval()
+        with torch.no_grad():
+            try:
+                # Set to empty list to avoid storage of paint scalars
+                # that are not convenient to pass to the predict function.
+                self.scalar_dset_names = []
+                avg_loss, latent_vectors, _ = self._validate(data_loader)
+                return latent_vectors, avg_loss
+            except Exception as e:
+                # Restore class state incase of failure
+                self.scalar_dset_names = tmp
+                raise e
 
     def _train(self, train_loader) -> float:
         avg_loss = 0.0
