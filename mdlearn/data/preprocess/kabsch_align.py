@@ -22,14 +22,17 @@ def kabsch(to_xyz: np.ndarray, from_xyz: np.ndarray):
     ValueError
         If the arrays differ in the number of coordinates N.
     """
-    shape1, shape2 = from_xyz.shape, to_xyz.shape
 
-    if shape1[1] != shape2[1]:
-        raise ValueError("KABSCH: unequal array sizes")
+    if from_xyz.shape != to_xyz.shape:
+        raise ValueError(
+            f"KABSCH: unequal array sizes: {to_xyz.shape} mismatch {from_xyz.shape}"
+        )
 
-    m1 = np.mean(from_xyz, 1).reshape((shape1[0], 1))
-    m2 = np.mean(to_xyz, 1).reshape((shape2[0], 1))
-    mean = np.tile(m1, shape1[1])
+    dim, n_atoms = from_xyz.shape
+
+    m1 = np.mean(from_xyz, 1).reshape((dim, 1))
+    m2 = np.mean(to_xyz, 1).reshape((dim, 1))
+    mean = np.tile(m1, n_atoms)
 
     t1 = from_xyz - mean
     t2 = to_xyz - mean
@@ -42,8 +45,9 @@ def kabsch(to_xyz: np.ndarray, from_xyz: np.ndarray):
     )
     T = m2 - np.dot(R, m1)
 
-    tmp3 = np.reshape(np.tile(T, (shape2[1])), shape1)
-    err = to_xyz - np.dot(R, from_xyz) - tmp3
-
-    eRMSD = np.sqrt(np.sum(err ** 2) / shape2[1])
-    return R, T, eRMSD, err.T
+    tmp = np.reshape(np.tile(T, (n_atoms)), (dim, n_atoms))
+    rotation = np.dot(R, from_xyz)
+    err = to_xyz - rotation - tmp
+    eRMSD = np.sqrt(np.sum(err ** 2) / n_atoms)
+    new_xyz = rotation + tmp
+    return eRMSD, err.T, new_xyz

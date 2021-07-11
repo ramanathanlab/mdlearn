@@ -39,7 +39,7 @@ def iterative_means(
 
     coords_ = coords if inplace else coords.copy()
 
-    n_frames, _, n_atoms = coords_.shape
+    n_frames = coords_.shape[0]
 
     if verbose:
         print("Shape of coords array in iterative_means:", coords_.shape)
@@ -54,11 +54,9 @@ def iterative_means(
         avg_coords.append(mean_coord)
         for i in range(n_frames):
             from_xyz = coords_[i]
-            R, T, x_rmsd, err = kabsch(mean_coord, from_xyz)
+            x_rmsd, err, new_xyz = kabsch(mean_coord, from_xyz)
             tmp_rmsd.append(x_rmsd)
-            tmp = np.tile(T.flatten(), (n_atoms, 1)).T
-            pxyz = np.dot(R, from_xyz) + tmp
-            coords_[i, :, :] = pxyz
+            coords_[i, :, :] = new_xyz
         e_rmsd.append(np.array(tmp_rmsd).T)
         new_mean_coord = np.mean(coords_, 0)
         err = np.sqrt(np.sum((mean_coord.flatten() - new_mean_coord.flatten()) ** 2))
