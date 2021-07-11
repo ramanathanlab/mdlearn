@@ -23,14 +23,14 @@ class DenseNet(nn.Module):
         ----------
         input_dim : int
             Dimension of input tensor (should be flattened).
-        neurons : List[int], optional
+        neurons : List[int], default=[128]
             Linear layers :obj:`in_features`, by default [128].
-        bias : bool, optional
+        bias : bool, default=True
             Use a bias term in the Linear layers, by default True.
-        relu_slope : float, optional
+        relu_slope : float, default=0.0
             If greater than 0.0, will use LeakyReLU activiation with
             :obj:`negative_slope` set to :obj:`relu_slope`, by default 0.0.
-        inplace_activation : bool, optional
+        inplace_activation : bool, default=False
             Sets the inplace option for the activation function.
         """
         super().__init__()
@@ -56,6 +56,18 @@ class DenseNet(nn.Module):
         self.model = nn.Sequential(*self._affine_layers())
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass through dense network.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input data.
+
+        Returns
+        -------
+        torch.Tensor
+            The output of the neural network with dimension (batch size, last neuron size).
+        """
         output = self.model(x.squeeze())
         return output
 

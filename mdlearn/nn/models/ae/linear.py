@@ -13,6 +13,9 @@ from mdlearn.nn.modules.dense_net import DenseNet
 
 
 class LinearAE(AE):
+    """A symmetric autoencoder with all linear layers.
+    Applies a ReLU activation between encoder and decoder."""
+
     def __init__(
         self,
         input_dim: int,
@@ -22,24 +25,22 @@ class LinearAE(AE):
         relu_slope: float = 0.0,
         inplace_activation: bool = False,
     ):
-        """A symmetric autoencoder with all linear layers.
-        Applies a ReLU activation between encoder and decoder.
-
+        r"""
         Parameters
         ----------
         input_dim : int
             Dimension of input tensor (should be flattened).
         latent_dim: int
             Dimension of the latent space.
-        neurons : List[int], optional
-            Linear layers :obj:`in_features`, by default [128]
-        bias : bool, optional
-            Use a bias term in the Linear layers, by default True
-        relu_slope : float, optional
+        neurons : List[int], deafult=[128]
+            Linear layers :obj:`in_features`.
+        bias : bool, deafult=True
+            Use a bias term in the Linear layers.
+        relu_slope : float, default=0.0
             If greater than 0.0, will use LeakyReLU activiation with
-            :obj:`negative_slope` set to :obj:`relu_slope`, by default 0.0
-        inplace_activation : bool, optional
-            Sets the inplace option for the activation function, by default False
+            :obj:`negative_slope` set to :obj:`relu_slope`.
+        inplace_activation : bool, default=False
+            Sets the inplace option for the activation function.
         """
 
         neurons = neurons.copy() + [latent_dim]
@@ -52,6 +53,18 @@ class LinearAE(AE):
         super().__init__(encoder, decoder)
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Forward pass of autoencoder.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input data.
+
+        Returns
+        -------
+        Tuple[torch.Tensor, torch.Tensor]
+            The batch of latent vectors :obj:`z` and the reconstructions :obj:`recon_x`.
+        """
         z = self.encode(x)
         z = F.relu(z)
         recon_x = self.decode(z)
@@ -68,8 +81,8 @@ class LinearAE(AE):
             The input data.
         recon_x : torch.Tensor
             The reconstruction of the input data :obj:`x`
-        reduction : str, optional
-            The reduction strategy for the F.mse_loss function, by default "mean"
+        reduction : str, default="mean"
+            The reduction strategy for the F.mse_loss function.
 
         Returns
         -------
@@ -80,10 +93,12 @@ class LinearAE(AE):
 
 
 class LinearAETrainer:
+    """Trainer class to fit a linear autoencoder to a set of feature vectors."""
+
     def __init__(
         self,
         input_dim: int = 40,
-        latent_dim: int = 4,
+        latent_dim: int = 3,
         neurons: List[int] = [32, 16, 8],
         bias: bool = True,
         relu_slope: float = 0.0,
@@ -108,85 +123,79 @@ class LinearAETrainer:
         plot_n_samples: int = 10000,
         plot_method: str = "TSNE",
     ):
-        r"""Trainer class to fit a linear autoencoder to a set of feature vectors.
-
+        r"""
         Parameters
         ----------
-        input_dim : int, optional
-            Dimension of input tensor (should be flattened), by default 40
-        latent_dim : int, optional
-            Dimension of the latent space, by default 4
-        neurons : List[int], optional
+        input_dim : int, default=40
+            Dimension of input tensor (should be flattened).
+        latent_dim : int, default=3
+            Dimension of the latent space.
+        neurons : List[int], default=[32, 16, 8]
             Linear layers :obj:`in_features`. Defines the shape of the autoencoder.
-            The encoder and decoder are symmetric, by default [32, 16, 8]
-        bias : bool, optional
-            Use a bias term in the Linear layers, by default True
-        relu_slope : float, optional
+            The encoder and decoder are symmetric.
+        bias : bool, default=True
+            Use a bias term in the Linear layers.
+        relu_slope : float, default=0.0
             If greater than 0.0, will use LeakyReLU activiation with
-            :obj:`negative_slope` set to :obj:`relu_slope`, by default 0.0
-        inplace_activation : bool, optional
-            Sets the inplace option for the activation function, by default False
-        seed : int, optional
-            Random seed for torch, numpy, and random module, by default 42
-        in_gpu_memory : bool, optional
-            If True, will pre-load the entire :obj:`data` array to GPU memory, by default False
-        num_data_workers : int, optional
+            :obj:`negative_slope` set to :obj:`relu_slope`.
+        inplace_activation : bool, default=False
+            Sets the inplace option for the activation function.
+        seed : int, default=42
+            Random seed for torch, numpy, and random module.
+        in_gpu_memory : bool, default=False
+            If True, will pre-load the entire :obj:`data` array to GPU memory.
+        num_data_workers : int, default=0
             How many subprocesses to use for data loading. 0 means that
-            the data will be loaded in the main process, by default 0
-        prefetch_factor : int, optional
+            the data will be loaded in the main process.
+        prefetch_factor : int, by default=2
             Number of samples loaded in advance by each worker. 2 means there will be a
-            total of 2 * num_workers samples prefetched across all workers., by default 2
-        split_pct : float, optional
-            Proportion of data set to use for training. The rest goes to validation, by default 0.8
-        batch_size : int, optional
-            Mini-batch size for training, by default 128
-        shuffle : bool, optional
-            Whether to shuffle training data or not, by default True
-        device : str, optional
-            Specify training hardware either :obj:`cpu`
-            or :obj:`cuda` for GPU devices, by default "cpu"
-        optimizer_name : str, optional
-            Name of the PyTorch optimizer to use. Matches
-            PyTorch optimizer class name, by default "RMSprop"
-        optimizer_hparams : Dict[str, Any], optional
-            Dictionary of hyperparameters to pass to the chosen
-            PyTorch optimizer, by default {"lr": 0.001, "weight_decay": 0.00001}
-        scheduler_name : Optional[str], optional
-            Name of the PyTorch learning rate scheduler to use. Matches
-            PyTorch optimizer class name, by default None
-        scheduler_hparams : Dict[str, Any], optional
-            Dictionary of hyperparameters to pass to the chosen
-            PyTorch learning rate scheduler, by default {}
-        epochs : int, optional
-            Number of epochs to train for, by default 100
-        verbose : bool, optional
-            If True, will print training and validation loss
-            at each epoch, by default False
-        clip_grad_max_norm : float, optional
+            total of 2 * num_workers samples prefetched across all workers.
+        split_pct : float, default=0.8
+            Proportion of data set to use for training. The rest goes to validation.
+        batch_size : int, default=128
+            Mini-batch size for training.
+        shuffle : bool, default=True
+            Whether to shuffle training data or not.
+        device : str, default="cpu"
+            Specify training hardware either :obj:`cpu` or :obj:`cuda` for GPU devices.
+        optimizer_name : str, default="RMSprop"
+            Name of the PyTorch optimizer to use. Matches PyTorch optimizer class name.
+        optimizer_hparams : Dict[str, Any], default={"lr": 0.001, "weight_decay": 0.00001}
+            Dictionary of hyperparameters to pass to the chosen PyTorch optimizer.
+        scheduler_name : Optional[str], default=None
+            Name of the PyTorch learning rate scheduler to use.
+            Matches PyTorch optimizer class name.
+        scheduler_hparams : Dict[str, Any], default={}
+            Dictionary of hyperparameters to pass to the chosen PyTorch learning rate scheduler.
+        epochs : int, default=100
+            Number of epochs to train for.
+        verbose : bool, default False
+            If True, will print training and validation loss at each epoch.
+        clip_grad_max_norm : float, default=10.0
             Max norm of the gradients for gradient clipping for more information
-            see: :obj:`torch.nn.utils.clip_grad_norm_` documentation, by default 10.0
-        checkpoint_log_every : int, optional
+            see: :obj:`torch.nn.utils.clip_grad_norm_` documentation.
+        checkpoint_log_every : int, default=10
             Epoch interval to log a checkpoint file containing the model
-            weights, optimizer, and scheduler parameters, by default 10
-        plot_log_every : int, optional
-            Epoch interval to log a visualization plot of the latent space, by default 10
-        plot_n_samples : int, optional
-            Number of validation samples to use for plotting, by default 10000
-        plot_method : str, optional
+            weights, optimizer, and scheduler parameters.
+        plot_log_every : int, default=10
+            Epoch interval to log a visualization plot of the latent space.
+        plot_n_samples : int, default=10000
+            Number of validation samples to use for plotting.
+        plot_method : str, default="TSNE"
             The method for visualizing the latent space. If using TSNE,
             it will attempt to use the RAPIDS.ai GPU implementation and
             will fallback to the sklearn CPU implementation if RAPIDS.ai
-            is unavailable, by default "TSNE"
+            is unavailable.
 
         Raises
         ------
         ValueError
-            :obj:`split_pct` should be between 0 and 1
+            :obj:`split_pct` should be between 0 and 1.
         ValueError
             Specified :obj:`device` as :obj:`cuda`, but it is unavailable.
         """
         if 0 > split_pct or 1 < split_pct:
-            raise ValueError("split_pct should be between 0 and 1")
+            raise ValueError("split_pct should be between 0 and 1.")
         if "cuda" in device and not torch.cuda.is_available():
             raise ValueError("Specified cuda, but it is unavailable.")
 
@@ -241,30 +250,30 @@ class LinearAETrainer:
         output_path: PathLike = "./",
         checkpoint: Optional[PathLike] = None,
     ):
-        """Trains the autoencoder on the input data :obj:`X`.
+        r"""Trains the autoencoder on the input data :obj:`X`.
 
         Parameters
         ----------
         X : np.ndarray
             Input features vectors of shape (N, D) where N is the number
             of data examples, and D is the dimension of the feature vector.
-        scalars : Dict[str, np.ndarray], optional
+        scalars : Dict[str, np.ndarray], default={}
             Dictionary of scalar arrays. For instance, the root mean squared
             deviation (RMSD) for each feature vector can be passed via
             :obj:`{"rmsd": np.array(...)}`. The dimension of each scalar array
-            should match the number of input feature vectors N, by default {}
-        output_path : PathLike, optional
+            should match the number of input feature vectors N.
+        output_path : PathLike, default="./"
             Path to write training results to. Makes an :obj:`output_path/checkpoints`
             folder to save model checkpoint files, and :obj:`output_path/plots` folder
-            to store latent space visualizations, by default "./"
-        checkpoint : Optional[PathLike], optional
-            Path to a specific model checkpoint file to restore training, by default None
+            to store latent space visualizations.
+        checkpoint : Optional[PathLike], default=None
+            Path to a specific model checkpoint file to restore training.
 
         Raises
         ------
         NotImplementedError
             If using a learning rate scheduler other than :obj:`ReduceLROnPlateau`,
-            a step function will need to be added.
+            a step function will need to be implemented.
         """
 
         from mdlearn.utils import (
@@ -380,22 +389,22 @@ class LinearAETrainer:
         inference_batch_size: int = 512,
         checkpoint: Optional[PathLike] = None,
     ) -> Tuple[np.ndarray, float]:
-        """Predict using the LinearAE
+        r"""Predict using the LinearAE
 
         Parameters
         ----------
         X : np.ndarray
             The input data to predict on.
-        inference_batch_size : int
-            The batch size for inference, by default 512
-        checkpoint : Optional[PathLike], optional
-            Path to a specific model checkpoint file, by default None
+        inference_batch_size : int, default=512
+            The batch size for inference.
+        checkpoint : Optional[PathLike], default=None
+            Path to a specific model checkpoint file.
 
         Returns
         -------
         Tuple[np.ndarray, float]
             The :obj:`z` latent vectors corresponding to the
-            input data :obj:`X` and average reconstruction loss.
+            input data :obj:`X` and the average reconstruction loss.
         """
         from mdlearn.utils import resume_checkpoint
         from mdlearn.data.datasets.feature_vector import FeatureVectorDataset
@@ -487,7 +496,7 @@ class LinearAETrainer:
         return avg_loss, latent_vectors, paints
 
     def step_scheduler(self, epoch: int, avg_train_loss: float, avg_valid_loss: float):
-        """Implements the logic to step the learning rate scheduler.
+        r"""Implements the logic to step the learning rate scheduler.
         Different schedulers may have different update logic. Please
         subclass :obj:`LinearAETrainer` and re-implement this function
         for support of additional logic.

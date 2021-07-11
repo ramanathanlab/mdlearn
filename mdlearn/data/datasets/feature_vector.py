@@ -18,22 +18,22 @@ class FeatureVectorDataset(Dataset):
         scalar_requires_grad: bool = False,
         in_gpu_memory: bool = False,
     ):
-        """
+        r"""
         Parameters
         ----------
         data : np.ndarray
             Input features vectors of shape (N, D) where N is the number
             of data examples, and D is the dimension of the feature vector.
-        scalars : Dict[str, np.ndarray], default {}
+        scalars : Dict[str, np.ndarray], default={}
             Dictionary of scalar arrays. For instance, the root mean squared
             deviation (RMSD) for each feature vector can be passed via
             :obj:`{"rmsd": np.array(...)}`. The dimension of each scalar array
             should match the number of input feature vectors N.
-        scalar_requires_grad : bool, default False
+        scalar_requires_grad : bool, default=False
             Sets requires_grad torch.Tensor parameter for scalars specified by
             :obj:`scalars`. Set to True, to use scalars for multi-task
             learning. If scalars are only required for plotting, then set it as False.
-        in_gpu_memory : bool, default: False
+        in_gpu_memory : bool, default=False
             If True, will pre-load the entire :obj:`data` array to GPU memory.
         """
 
@@ -90,14 +90,14 @@ class FeatureVectorHDF5Dataset(Dataset):
             Path to h5 file containing contact matrices.
         dataset_name : str
             Path to contact maps in HDF5 file.
-        scalar_dset_names : List[str]
+        scalar_dset_names : List[str], default=[]
             List of scalar dataset names inside HDF5 file to be passed
             to training logs.
-        scalar_requires_grad : bool
+        scalar_requires_grad : bool, default=False
             Sets requires_grad torch.Tensor parameter for scalars specified by
             `scalar_dset_names`. Set to True, to use scalars for multi-task
             learning. If scalars are only required for plotting, then set it as False.
-        in_memory: bool
+        in_memory: bool, default=True
             If True, pull data stored in HDF5 from disk to numpy arrays. Otherwise,
             read each batch from HDF5 on the fly.
         """
