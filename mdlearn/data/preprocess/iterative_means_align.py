@@ -7,6 +7,8 @@ def iterative_means(
     coords: np.ndarray,
     eps: float = 0.001,
     max_iter: int = 10,
+    inplace: bool = False,
+    verbose: bool = False,
 ):
     r"""Run iterative means alignment which aligns :obj:`coords`
     to the mean coordinate structure using the kabsch alignment
@@ -24,15 +26,23 @@ def iterative_means(
         from consecutive iterations, used to define convergence.
     max_iter : int, default=10
         Number of iterations before convergence.
+    inplace : bool, default=False
+        If True, modifies :obj:`coords` inplace.
+    verbose : bool, default=False
+        If True, prints verbose output
 
     Returns
     -------
     [type]
         [description]
     """
-    n_frames, _, n_atoms = coords.shape
 
-    print("Shape of coords array in iterative_means:", coords.shape)
+    coords_ = coords if inplace else coords.copy()
+
+    n_frames, _, n_atoms = coords_.shape
+
+    if verbose:
+        print("Shape of coords array in iterative_means:", coords_.shape)
 
     avg_coords = []  # track average coordinates
 
@@ -40,20 +50,21 @@ def iterative_means(
 
     for itr in itertools.count(1):
         tmp_rmsd = []
-        mean_coord = np.mean(coords, 0)
+        mean_coord = np.mean(coords_, 0)
         avg_coords.append(mean_coord)
         for i in range(n_frames):
-            from_xyz = coords[i]
+            from_xyz = coords_[i]
             R, T, x_rmsd, err = kabsch(mean_coord, from_xyz)
             tmp_rmsd.append(x_rmsd)
             tmp = np.tile(T.flatten(), (n_atoms, 1)).T
             pxyz = np.dot(R, from_xyz) + tmp
-            coords[i, :, :] = pxyz
+            coords_[i, :, :] = pxyz
         e_rmsd.append(np.array(tmp_rmsd).T)
-        new_mean_coord = np.mean(coords, 0)
+        new_mean_coord = np.mean(coords_, 0)
         err = np.sqrt(np.sum((mean_coord.flatten() - new_mean_coord.flatten()) ** 2))
-        print(f"Iteration #{itr} with an error of {err}")
+        if verbose:
+            print(f"Iteration #{itr} with an error of {err}")
         if err <= eps or itr == max_iter:
             break  # Algorithm has converged
 
-    return itr, avg_coords, e_rmsd, coords
+    return itr, avg_coords, e_rmsd, coords_
