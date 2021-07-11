@@ -10,8 +10,9 @@ Function and class API documentation.
     utils
     data/datasets
     data/utils
-    nn/models/ae/model
+    nn/models/ae/models
     nn/models/vae/models
     nn/models/vde/models
     nn/models/wae/models
     nn/models/aae/models
+    nn/modules/modules
