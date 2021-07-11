@@ -191,6 +191,7 @@ class LinearAETrainer:
             raise ValueError("Specified cuda, but it is unavailable.")
 
         self.seed = seed
+        self.scalar_dset_names = []
         self.in_gpu_memory = in_gpu_memory
         self.num_data_workers = 0 if in_gpu_memory else num_data_workers
         self.persistent_workers = (self.num_data_workers > 0) and not self.in_gpu_memory
