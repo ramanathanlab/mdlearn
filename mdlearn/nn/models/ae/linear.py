@@ -374,7 +374,10 @@ class LinearAETrainer:
             self.loss_curve_["validation"].append(avg_valid_loss)
 
     def predict(
-        self, X: np.ndarray, inference_batch_size: int = 512
+        self,
+        X: np.ndarray,
+        inference_batch_size: int = 512,
+        checkpoint: Optional[PathLike] = None,
     ) -> Tuple[np.ndarray, float]:
         """Predict using the LinearAE
 
@@ -384,6 +387,8 @@ class LinearAETrainer:
             The input data to predict on.
         inference_batch_size : int
             The batch size for inference, by default 512
+        checkpoint : Optional[PathLike], optional
+            Path to a specific model checkpoint file, by default None
 
         Returns
         -------
@@ -391,6 +396,7 @@ class LinearAETrainer:
             The :obj:`z` latent vectors corresponding to the
             input data :obj:`X` and average reconstruction loss.
         """
+        from mdlearn.utils import resume_checkpoint
         from mdlearn.data.datasets.feature_vector import FeatureVectorDataset
 
         dataset = FeatureVectorDataset(X, in_gpu_memory=self.in_gpu_memory)
@@ -404,6 +410,11 @@ class LinearAETrainer:
             drop_last=False,
             pin_memory=not self.in_gpu_memory,
         )
+
+        if checkpoint is not None:
+            resume_checkpoint(
+                checkpoint, self.model, {"optimizer": self.optimizer}, self.scheduler
+            )
 
         # Make copy of class state incase of failure during inference
         tmp = self.scalar_dset_names.copy()
