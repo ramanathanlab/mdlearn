@@ -15,3 +15,13 @@ Datasets
     :members: 
 
     .. automethod:: __init__
+
+.. autoclass:: mdlearn.data.datasets.feature_vector.FeatureVectorDataset
+    :members:
+
+    .. automethod:: __init__
+
+.. autoclass:: mdlearn.data.datasets.feature_vector.FeatureVectorHDF5Dataset
+    :members:
+
+    .. automethod:: __init__
