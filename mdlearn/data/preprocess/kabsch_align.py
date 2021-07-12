@@ -1,7 +1,10 @@
 import numpy as np
+from typing import Tuple, Optional
 
 
-def kabsch(to_xyz: np.ndarray, from_xyz: np.ndarray):
+def kabsch(
+    to_xyz: np.ndarray, from_xyz: np.ndarray, return_err: bool = True
+) -> Tuple[float, np.ndarray, Optional[np.ndarray]]:
     r"""Aligns a single frame :obj:`fromXYZ` to another frame :obj:`toXYZ`
     using the kabsch method.
 
@@ -11,11 +14,18 @@ def kabsch(to_xyz: np.ndarray, from_xyz: np.ndarray):
         3 x N array of coordinates to align to.
     from_xyz : np.ndarray
         A 3 x N array of coordinates to align.
+    return_err : bool, default=True
+        Will return the errors.
 
     Returns
     -------
-    [type]
-        [description]
+    eRMSD : float
+        The root mean squared deviation (RMSD).
+    new_xyz : np.ndarray
+        The newly aligned coordinates with the same shape as :obj:`fromXYZ`.
+    err : Optinal[np.ndarray]
+        Returns the raw error values if :obj:`return_err` is True, otherwise
+        returns :obj:`None`.
 
     Raises
     ------
@@ -50,4 +60,6 @@ def kabsch(to_xyz: np.ndarray, from_xyz: np.ndarray):
     err = to_xyz - rotation - tmp
     eRMSD = np.sqrt(np.sum(err ** 2) / n_atoms)
     new_xyz = rotation + tmp
-    return eRMSD, err.T, new_xyz
+    if return_err:
+        return eRMSD, new_xyz, err.T
+    return eRMSD, new_xyz, None
