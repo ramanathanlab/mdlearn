@@ -22,7 +22,7 @@ def _process_chunk(
     return rmsds, chunk
 
 
-def iterative_means_parallel(
+def iterative_means_align(
     coords: np.ndarray,
     eps: float = 0.001,
     max_iter: int = 10,
@@ -77,12 +77,12 @@ def iterative_means_parallel(
     avg_coords, e_rmsd = [], []
 
     # Precompute the first mean coordinate
-    new_mean_coord = np.mean(coords_, axis=0)
+    # new_mean_coord = np.mean(coords_, axis=0)
 
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
         for itr in itertools.count(1):
             # Reuse the previous mean calculation if possible
-            mean_coord = new_mean_coord
+            mean_coord = np.mean(coords_, 0)  # new_mean_coord
             avg_coords.append(mean_coord)
 
             # Process trajectory in parallel chunks
