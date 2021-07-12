@@ -2,6 +2,8 @@
 import numpy as np
 from typing import Optional
 
+# TODO: get rid of np.matrix
+
 
 def sd2(data: np.ndarray, m: Optional[int] = None, verbose: bool = False):
     r"""Perform spatial decorrelation of 2nd order of real signals.
@@ -9,9 +11,9 @@ def sd2(data: np.ndarray, m: Optional[int] = None, verbose: bool = False):
     Parameters
     ==========
     data :  np.ndarray
-        3N x T data matrix (number 3 is due to the x,y,z coordinates for each atom).
-        May be a numpy array or matrix where n: size of the protein T: Number of
-        snapshots of MD trajectory
+        data array of shape (T, 3N) where T is the number of frames in the MD
+        trajectory, N is the number of atoms in the system and 3 is due to the
+        x,y,z coordinates for each atom.
 
     m : Optional[int], default=None
         Dimensionality of the subspace we are interested in. Default value is None,
