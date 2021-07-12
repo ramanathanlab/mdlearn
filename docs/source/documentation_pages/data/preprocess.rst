@@ -1,8 +1,8 @@
 Preprocessing
 *************
 
-.. automodule:: mdlearn.data.preprocess.iterative_means_align
+.. automodule:: mdlearn.data.preprocess.align.iterative_means_align
     :members:
 
-.. automodule:: mdlearn.data.preprocess.kabsch_align
+.. automodule:: mdlearn.data.preprocess.align.kabsch_align
     :members:

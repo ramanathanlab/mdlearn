@@ -2,7 +2,7 @@ import itertools
 import numpy as np
 from typing import List, Tuple
 from concurrent.futures import ProcessPoolExecutor
-from mdlearn.data.preprocess.kabsch_align import kabsch
+from mdlearn.data.preprocess.align.kabsch_align import kabsch
 
 
 def _chunk_data(data: np.ndarray, partitions: int) -> List[np.ndarray]:
