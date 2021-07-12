@@ -5,7 +5,7 @@ from typing import Tuple, Optional
 def kabsch(
     to_xyz: np.ndarray, from_xyz: np.ndarray, return_err: bool = True
 ) -> Tuple[float, np.ndarray, Optional[np.ndarray]]:
-    r"""Aligns a single frame :obj:`fromXYZ` to another frame :obj:`toXYZ`
+    r"""Aligns a single frame :obj:`from_xyz` to another frame :obj:`to_xyz`
     using the kabsch method.
 
     Parameters
@@ -19,11 +19,11 @@ def kabsch(
 
     Returns
     -------
-    eRMSD : float
+    e_rmsd : float
         The root mean squared deviation (RMSD).
     new_xyz : np.ndarray
         The newly aligned coordinates with the same shape as :obj:`fromXYZ`.
-    err : Optinal[np.ndarray]
+    err : Optional[np.ndarray]
         Returns the raw error values if :obj:`return_err` is True, otherwise
         returns :obj:`None`.
 
@@ -58,8 +58,8 @@ def kabsch(
     tmp = np.reshape(np.tile(T, (n_atoms)), (dim, n_atoms))
     rotation = np.dot(R, from_xyz)
     err = to_xyz - rotation - tmp
-    eRMSD = np.sqrt(np.sum(err ** 2) / n_atoms)
+    e_rmsd = np.sqrt(np.sum(err ** 2) / n_atoms)
     new_xyz = rotation + tmp
     if return_err:
-        return eRMSD, new_xyz, err.T
-    return eRMSD, new_xyz, None
+        return e_rmsd, new_xyz, err.T
+    return e_rmsd, new_xyz, None

@@ -47,7 +47,8 @@ def iterative_means_align(
     max_iter : int, default=10
         Number of iterations before convergence.
     inplace : bool, default=False
-        If True, modifies :obj:`coords` inplace.
+        If True, modifies :obj:`coords` inplace. Inplace operations may
+        offer the ability to fit larger systems into memory.
     verbose : bool, default=False
         If True, prints verbose output
     num_workers : int, 1
