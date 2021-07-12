@@ -77,27 +77,28 @@ def iterative_means_align(
     avg_coords, e_rmsd = [], []
 
     # Precompute the first mean coordinate
-    # new_mean_coord = np.mean(coords_, axis=0)
+    new_mean_coord = np.mean(coords_, axis=0)
 
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
         for itr in itertools.count(1):
             # Reuse the previous mean calculation if possible
-            mean_coord = np.mean(coords_, 0)  # new_mean_coord
+            mean_coord = new_mean_coord
             avg_coords.append(mean_coord)
 
             # Process trajectory in parallel chunks
             start_ind = 0
-            tmp_rmsds = []  # TODO: make np.array
+            itr_rmsds = np.zeros(len(coords_))
             chunks = _chunk_data(coords_, num_workers)
             for rmsds, chunk in executor.map(
                 _process_chunk, chunks, [mean_coord] * len(chunks)
             ):
-                tmp_rmsds.append(rmsds)
+                # Collect RMSDs and aligned coordinates
+                itr_rmsds[start_ind : start_ind + len(chunk)] = rmsds
                 coords_[start_ind : start_ind + len(chunk)] = chunk
                 start_ind += len(chunk)
 
-            e_rmsd.append(np.concatenate(tmp_rmsds))
-            new_mean_coord = np.mean(coords_, 0)
+            e_rmsd.append(itr_rmsds)
+            new_mean_coord = np.mean(coords_, axis=0)
             err = np.linalg.norm(mean_coord - new_mean_coord)
             if verbose:
                 print(f"Iteration #{itr} with an error of {err}")
