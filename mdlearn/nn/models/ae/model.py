@@ -42,7 +42,7 @@ class AE(nn.Module):
         x : torch.Tensor
             The input data.
         recon_x : torch.Tensor
-            The reconstruction of the input data :obj:`x`
+            The reconstruction of the input data :obj:`x`.
 
         Returns
         -------

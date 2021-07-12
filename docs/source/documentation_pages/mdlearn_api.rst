@@ -9,6 +9,7 @@ Function and class API documentation.
 
     utils
     data/datasets
+    data/preprocess
     data/utils
     nn/models/ae/models
     nn/models/vae/models
