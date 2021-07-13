@@ -47,12 +47,13 @@ def sd2(data: np.ndarray, m: Optional[int] = None, verbose: bool = False):
         )
 
     # Need to make a copy of the input array and use double precision (float64) .
-    data = np.matrix(data.astype(np.float64))
+    data_ = data.astype(np.float64)
 
-    if data.ndim != 2:
-        raise ValueError(f"X has {data.ndim} dimensions, should be 2")
+    if len(data_.shape) != 2:
+        raise ValueError(f"X has {len(data_.shape)} dimensions, should be 2")
 
-    T, n = data.shape  # GB: n is number of input signals, T is number of samples
+    # T is number of samples, n is number of input signals
+    T, n = data_.shape
 
     # Number of sources defaults to # of sensors
     if m is None:
@@ -67,17 +68,16 @@ def sd2(data: np.ndarray, m: Optional[int] = None, verbose: bool = False):
         print(f"2nd order Spatial Decorrelation -> Looking for {m} sources")
         print("2nd order Spatial Decorrelation -> Removing the mean value")
 
-    data = data.T
+    data_ = data_.T
 
-    # remove the mean from data
-    data -= data.mean(1)
+    # Remove the mean from data
+    data_ -= data_.mean(1)
 
-    # whitening & projection onto signal subspace
-    # ===========================================
+    # Whitening & projection onto signal subspace
     if verbose:
         print("2nd order Spatial Decorrelation -> Whitening the data")
     # An eigen basis for the sample covariance matrix
-    [D, U] = np.linalg.eigh((data * data.T) / float(T))
+    [D, U] = np.linalg.eigh((data_ * data_.T) / float(T))
     # Sort by increasing variances
     k = D.argsort()
     Ds = D[k]
@@ -92,6 +92,6 @@ def sd2(data: np.ndarray, m: Optional[int] = None, verbose: bool = False):
     # Now, B does PCA followed by a rescaling = sphering
     U = np.diag(1.0 / scales) * B
     # Sphering
-    Y = U * data
+    Y = U * data_
     # B is a whitening matrix and Y is white.
     return Y, S, B.T, U
