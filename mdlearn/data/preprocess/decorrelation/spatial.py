@@ -2,8 +2,6 @@
 import numpy as np
 from typing import Optional
 
-# TODO: get rid of np.matrix
-
 
 def sd2(data: np.ndarray, m: Optional[int] = None, verbose: bool = False):
     r"""Perform spatial decorrelation of 2nd order of real signals.
@@ -71,13 +69,13 @@ def sd2(data: np.ndarray, m: Optional[int] = None, verbose: bool = False):
     data_ = data_.T
 
     # Remove the mean from data
-    data_ -= data_.mean(1)
+    data_ -= data_.mean(1).reshape(-1, 1)
 
     # Whitening & projection onto signal subspace
     if verbose:
         print("2nd order Spatial Decorrelation -> Whitening the data")
     # An eigen basis for the sample covariance matrix
-    [D, U] = np.linalg.eigh((data_ * data_.T) / float(T))
+    [D, U] = np.linalg.eigh((np.dot(data_, data_.T)) / float(T))
     # Sort by increasing variances
     k = D.argsort()
     Ds = D[k]
@@ -90,8 +88,8 @@ def sd2(data: np.ndarray, m: Optional[int] = None, verbose: bool = False):
     # The scales of the principal components
     scales = np.sqrt(S)
     # Now, B does PCA followed by a rescaling = sphering
-    U = np.diag(1.0 / scales) * B
+    U = np.dot(np.diag(1.0 / scales), B)
     # Sphering
-    Y = U * data_
+    Y = np.dot(U, data_)
     # B is a whitening matrix and Y is white.
     return Y, S, B.T, U
