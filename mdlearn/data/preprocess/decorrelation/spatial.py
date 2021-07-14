@@ -149,6 +149,11 @@ def SD4(
         If :obj:`m` is greater than :obj:`n`, the first dimension of :obj:`Y`.
     """
     warnings.simplefilter("ignore", np.ComplexWarning)
+
+    # TODO: update all computations to np.ndarray
+    Y = np.matrix(Y)
+    U = np.matrix(U)
+
     # n is number of input signals, T is number of samples
     [n, T] = Y.shape
 
@@ -247,12 +252,12 @@ def SD4(
     # Joint diagonalization proper
 
     if verbose:
-        print("TD4 -> Contrast optimization by joint diagonalization")
+        print("SD4 -> Contrast optimization by joint diagonalization")
 
     while encore:
         encore = False
         if verbose:
-            print(f"TD4 -> Sweep #{sweep}")
+            print(f"SD4 -> Sweep #{sweep}")
         sweep = sweep + 1
         upds = 0
 
@@ -292,7 +297,7 @@ def SD4(
             print(f"completed in {upds} rotations")
         updates = updates + upds
     if verbose:
-        print(f"TD4 -> Total of {updates} Givens rotations")
+        print(f"SD4 -> Total of {updates} Givens rotations")
 
     # A separating matrix
     W = V.T * U
@@ -302,7 +307,7 @@ def SD4(
     # according to the norm of the columns of A = pinv(W)
 
     if verbose:
-        print("TD4 -> Sorting the components")
+        print("SD4 -> Sorting the components")
 
     A = np.linalg.pinv(W)
     keys = np.array(np.argsort(np.multiply(A, A).sum(axis=0)[0]))[0]
@@ -310,8 +315,10 @@ def SD4(
     W = W[::-1, :]  # Is this smart ?
 
     if verbose:
-        print("TD4 -> Fixing the signs")
+        print("SD4 -> Fixing the signs")
     b = W[:, 0]
     signs = np.array(np.sign(np.sign(b) + 0.1).T)[0]  # just a trick to deal with sign=0
     W = np.diag(signs) * W
+    # TODO: update W to be np.ndarray
+    W = np.asarray(W)
     return W
