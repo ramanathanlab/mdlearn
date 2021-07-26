@@ -147,9 +147,28 @@ def get_torch_optimizer(
 
 
 def get_torch_scheduler(
-    name: str, hparams: Dict[str, Any], optimizer: torch.optim.Optimizer
-):
-    """Construct a PyTorch lr_scheduler specified by :obj:`name` and :obj:`hparams`."""
+    name: Optional[str], hparams: Dict[str, Any], optimizer: torch.optim.Optimizer
+) -> Optional[torch.optim.lr_scheduler._LRScheduler]:
+    """Construct a PyTorch lr_scheduler specified by :obj:`name` and :obj:`hparams`.
+
+    Parameters
+    ----------
+    name : Optional[str]
+        Name of PyTorch lr_scheduler class to use. If :obj:`name` is :obj:`None`,
+        simply return None.
+    hparams : Dict[str, Any]
+        Hyperparameters to pass to the lr_scheduler.
+    optimizer : torch.optim.Optimizer
+        The initialized optimizer.
+
+    Returns
+    -------
+    Optional[torch.optim.lr_scheduler._LRScheduler]
+        The initialized PyTorch scheduler, or None if :obj:`name` is :obj:`None`.
+    """
+    if name is None:
+        return None
+
     from torch.optim import lr_scheduler
 
     if name == "ReduceLROnPlateau":

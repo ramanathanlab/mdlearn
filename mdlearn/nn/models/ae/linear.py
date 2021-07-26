@@ -260,14 +260,10 @@ class LinearAETrainer:
             self.optimizer_name, self.optimizer_hparams, self.model.parameters()
         )
 
-        # TODO: update get_torch_scheduler to take None scheduler_name and return None
         # Setup learning rate scheduler
-        if self.scheduler_name is not None:
-            self.scheduler = get_torch_scheduler(
-                self.scheduler_name, self.scheduler_hparams, self.optimizer
-            )
-        else:
-            self.scheduler = None
+        self.scheduler = get_torch_scheduler(
+            self.scheduler_name, self.scheduler_hparams, self.optimizer
+        )
 
         # Log the train and validation loss each epoch
         self.loss_curve_ = {"train": [], "validation": []}
@@ -620,7 +616,7 @@ class LinearAETrainer:
             a step function will need to be added.
         """
         if self.scheduler is None:
-            pass
+            return
         elif self.scheduler_name == "ReduceLROnPlateau":
             self.scheduler.step(avg_valid_loss)
         else:
