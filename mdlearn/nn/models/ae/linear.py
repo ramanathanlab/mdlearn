@@ -124,6 +124,7 @@ class LinearAETrainer:
         plot_method: str = "TSNE",
         train_subsample_pct: float = 1.0,
         valid_subsample_pct: float = 1.0,
+        use_wandb: bool = False,
     ):
         r"""
         Parameters
@@ -192,6 +193,8 @@ class LinearAETrainer:
             Percentage of training data to use during hyperparameter sweeps.
         valid_subsample_pct : float, default=1.0
             Percentage of validation data to use during hyperparameter sweeps.
+        use_wandb : bool, default=False
+            If True, will log results to wandb.
 
         Raises
         ------
@@ -236,6 +239,7 @@ class LinearAETrainer:
         self.plot_method = plot_method
         self.train_subsample_pct = train_subsample_pct
         self.valid_subsample_pct = valid_subsample_pct
+        self.use_wandb = use_wandb
 
         from mdlearn.utils import get_torch_optimizer, get_torch_scheduler
 
@@ -246,11 +250,17 @@ class LinearAETrainer:
             input_dim, latent_dim, neurons, bias, relu_slope, inplace_activation
         ).to(self.device)
 
+        if self.use_wandb:
+            import wandb
+
+            wandb.watch(self.model)
+
         # Setup optimizer
         self.optimizer = get_torch_optimizer(
             self.optimizer_name, self.optimizer_hparams, self.model.parameters()
         )
 
+        # TODO: update get_torch_scheduler to take None scheduler_name and return None
         # Setup learning rate scheduler
         if self.scheduler_name is not None:
             self.scheduler = get_torch_scheduler(
@@ -446,9 +456,12 @@ class LinearAETrainer:
                     self.scheduler,
                 )
 
+            if self.use_wandb:
+                metrics = {"train_loss": avg_train_loss, "valid_loss": avg_valid_loss}
+
             # Log a visualization of the latent space
             if epoch % self.plot_log_every == 0:
-                log_latent_visualization(
+                htmls = log_latent_visualization(
                     z,
                     paints,
                     plot_path,
@@ -456,8 +469,15 @@ class LinearAETrainer:
                     self.plot_n_samples,
                     self.plot_method,
                 )
+                if self.use_wandb:
+                    # Optionally, log visualizations to wandb
+                    for name, html in htmls.items():
+                        metrics[name] = wandb.Html(html, inject=False)  # noqa
 
-            # Log the losses
+            if self.use_wandb:
+                wandb.log(metrics)  # noqa
+
+            # Save the losses
             self.loss_curve_["train"].append(avg_train_loss)
             self.loss_curve_["validation"].append(avg_valid_loss)
 
