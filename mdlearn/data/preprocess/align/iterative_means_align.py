@@ -32,7 +32,7 @@ def iterative_means_align(
 ) -> Tuple[int, List[np.ndarray], List[np.ndarray], np.ndarray]:
     r"""Run iterative means alignment which aligns :obj:`coords`
     to the mean coordinate structure using the kabsch alignment
-    algorithm implemented here: :obj:`mdlearn.data.preprocess.kabsch_align.kabsch`.
+    algorithm implemented here: :obj:`mdlearn.data.preprocess.align.kabsch_align`.
     Algorithm converges if either the difference of means coordinates
     computed from consecutive iterations is less than :obj:`eps` or
     if :obj:`max_iter` iterations have finished.
