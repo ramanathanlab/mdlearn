@@ -122,6 +122,8 @@ class LinearAETrainer:
         plot_log_every: int = 10,
         plot_n_samples: int = 10000,
         plot_method: str = "TSNE",
+        train_subsample_pct: float = 1.0,
+        valid_subsample_pct: float = 1.0,
     ):
         r"""
         Parameters
@@ -186,16 +188,28 @@ class LinearAETrainer:
             it will attempt to use the RAPIDS.ai GPU implementation and
             will fallback to the sklearn CPU implementation if RAPIDS.ai
             is unavailable.
+        train_subsample_pct : float, default=1.0
+            Percentage of training data to use during hyperparameter sweeps.
+        valid_subsample_pct : float, default=1.0
+            Percentage of validation data to use during hyperparameter sweeps.
 
         Raises
         ------
         ValueError
             :obj:`split_pct` should be between 0 and 1.
         ValueError
+            :obj:`train_subsample_pct` should be between 0 and 1.
+        ValueError
+            :obj:`valid_subsample_pct` should be between 0 and 1.
+        ValueError
             Specified :obj:`device` as :obj:`cuda`, but it is unavailable.
         """
         if 0 > split_pct or 1 < split_pct:
             raise ValueError("split_pct should be between 0 and 1.")
+        if 0 > train_subsample_pct or 1 < train_subsample_pct:
+            raise ValueError("train_subsample_pct should be between 0 and 1")
+        if 0 > valid_subsample_pct or 1 < valid_subsample_pct:
+            raise ValueError("valid_subsample_pct should be between 0 and 1")
         if "cuda" in device and not torch.cuda.is_available():
             raise ValueError("Specified cuda, but it is unavailable.")
 
@@ -220,6 +234,8 @@ class LinearAETrainer:
         self.plot_log_every = plot_log_every
         self.plot_n_samples = plot_n_samples
         self.plot_method = plot_method
+        self.train_subsample_pct = train_subsample_pct
+        self.valid_subsample_pct = valid_subsample_pct
 
         from mdlearn.utils import get_torch_optimizer, get_torch_scheduler
 
@@ -502,7 +518,10 @@ class LinearAETrainer:
 
     def _train(self, train_loader) -> float:
         avg_loss = 0.0
-        for batch in train_loader:
+        for i, batch in enumerate(train_loader):
+
+            if i / len(train_loader) > self.train_subsample_pct:
+                break  # Early stop for sweeps
 
             x = batch["X"].to(self.device, non_blocking=True)
 
@@ -531,7 +550,10 @@ class LinearAETrainer:
         paints = defaultdict(list)
         latent_vectors = []
         avg_loss = 0.0
-        for batch in valid_loader:
+        for i, batch in enumerate(valid_loader):
+
+            if i / len(valid_loader) > self.valid_subsample_pct:
+                break  # Early stop for sweeps
 
             x = batch["X"].to(self.device, non_blocking=True)
 
