@@ -95,6 +95,8 @@ class LinearAE(AE):
 class LinearAETrainer:
     """Trainer class to fit a linear autoencoder to a set of feature vectors."""
 
+    # TODO: Add example usage in documentation.
+
     def __init__(
         self,
         input_dim: int = 40,
@@ -387,8 +389,9 @@ class LinearAETrainer:
         from mdlearn.data.utils import train_valid_split
         from mdlearn.data.datasets.feature_vector import FeatureVectorDataset
 
+        exist_ok = (checkpoint is not None) or self.use_wandb
         output_path, checkpoint_path, plot_path = self._make_output_dir(
-            output_path, checkpoint is not None
+            output_path, exist_ok
         )
 
         # Set available number of cores
