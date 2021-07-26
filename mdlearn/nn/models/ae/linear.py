@@ -223,6 +223,9 @@ class LinearAETrainer:
 
         from mdlearn.utils import get_torch_optimizer, get_torch_scheduler
 
+        # Set random seeds
+        self._set_seed()
+
         self.model = LinearAE(
             input_dim, latent_dim, neurons, bias, relu_slope, inplace_activation
         ).to(self.device)
@@ -242,6 +245,88 @@ class LinearAETrainer:
 
         # Log the train and validation loss each epoch
         self.loss_curve_ = {"train": [], "validation": []}
+
+    def _set_seed(self):
+        """Set random seed of torch, numpy, and random."""
+        torch.manual_seed(self.seed)
+        np.random.seed(self.seed)
+        random.seed(self.seed)
+
+    def _make_output_dir(
+        self,
+        output_path: PathLike,
+        exist_ok: bool = False,
+    ) -> Tuple[Path, Path, Path]:
+        """Creates output directory structure.
+
+        Parameters
+        ----------
+        output_path : PathLike
+            The root output path to store training results.
+        exist_ok : bool, default=False
+            Set to True if resuming from a checkpoint, otherwise
+            should be False for a fresh training run.
+
+        Returns
+        -------
+        Path
+            Root directory path for the training results.
+        Path
+            Directory path to store checkpoint files :obj:`output_path/checkpoints`.
+        Path
+            Directory path to store plotting results :obj:`output_path/plots`.
+        """
+        output_path = Path(output_path).resolve()
+        output_path.mkdir(exist_ok=exist_ok)
+        # Create checkpoint directory
+        checkpoint_path = output_path / "checkpoints"
+        checkpoint_path.mkdir(exist_ok=exist_ok)
+        # Create plot directory
+        plot_path = output_path / "plots"
+        plot_path.mkdir(exist_ok=exist_ok)
+        return output_path, checkpoint_path, plot_path
+
+    def _load_checkpoint(self, checkpoint: PathLike) -> int:
+        """Load parameters from a checkpoint file.
+
+        Parameters
+        ----------
+        checkpoint : PathLike
+            PyTorch checkpoint file (.pt) to load model, optimizer
+            and scheduler parameters from.
+
+        Returns
+        -------
+        int
+            Epoch where training left off.
+        """
+        from mdlearn.utils import resume_checkpoint
+
+        return resume_checkpoint(
+            checkpoint, self.model, {"optimizer": self.optimizer}, self.scheduler
+        )
+
+    def _resume_training(self, checkpoint: Optional[PathLike] = None) -> int:
+        """Optionally resume training from a checkpoint
+
+        Parameters
+        ----------
+        checkpoint : Optional[PathLike], default=None
+            PyTorch checkpoint file (.pt) to resume training from.
+
+        Returns
+        -------
+        int
+            Epoch where training left off or 1 if :obj:`checkpoint` is :obj:`None`.
+        """
+        if checkpoint is not None:
+            start_epoch = self._load_checkpoint(checkpoint)
+            if self.verbose:
+                print(f"Resume training at epoch {start_epoch} from {checkpoint}")
+        else:
+            start_epoch = 1
+
+        return start_epoch
 
     def fit(
         self,
@@ -276,29 +361,13 @@ class LinearAETrainer:
             a step function will need to be implemented.
         """
 
-        from mdlearn.utils import (
-            resume_checkpoint,
-            log_checkpoint,
-            log_latent_visualization,
-        )
+        from mdlearn.utils import log_checkpoint, log_latent_visualization
         from mdlearn.data.utils import train_valid_split
         from mdlearn.data.datasets.feature_vector import FeatureVectorDataset
 
-        exist_ok = checkpoint is not None
-        # Create output directory
-        output_path = Path(output_path).resolve()
-        output_path.mkdir(exist_ok=exist_ok)
-        # Create checkpoint directory
-        checkpoint_path = output_path / "checkpoints"
-        checkpoint_path.mkdir(exist_ok=exist_ok)
-        # Create plot directory
-        plot_path = output_path / "plots"
-        plot_path.mkdir(exist_ok=exist_ok)
-
-        # Set random seeds
-        torch.manual_seed(self.seed)
-        np.random.seed(self.seed)
-        random.seed(self.seed)
+        output_path, checkpoint_path, plot_path = self._make_output_dir(
+            output_path, checkpoint is not None
+        )
 
         # Set available number of cores
         torch.set_num_threads(
@@ -321,14 +390,7 @@ class LinearAETrainer:
         self.scalar_dset_names = list(scalars.keys())
 
         # Optionally resume training from a checkpoint
-        if checkpoint is not None:
-            start_epoch = resume_checkpoint(
-                checkpoint, self.model, {"optimizer": self.optimizer}, self.scheduler
-            )
-            if self.verbose:
-                print(f"Resume training at epoch {start_epoch} from {checkpoint}")
-        else:
-            start_epoch = 1
+        start_epoch = self._resume_training(checkpoint)
 
         # Start training
         for epoch in range(start_epoch, self.epochs + 1):
@@ -406,7 +468,6 @@ class LinearAETrainer:
             The :obj:`z` latent vectors corresponding to the
             input data :obj:`X` and the average reconstruction loss.
         """
-        from mdlearn.utils import resume_checkpoint
         from mdlearn.data.datasets.feature_vector import FeatureVectorDataset
 
         dataset = FeatureVectorDataset(X, in_gpu_memory=self.in_gpu_memory)
@@ -422,9 +483,7 @@ class LinearAETrainer:
         )
 
         if checkpoint is not None:
-            resume_checkpoint(
-                checkpoint, self.model, {"optimizer": self.optimizer}, self.scheduler
-            )
+            self._load_checkpoint(checkpoint)
 
         # Make copy of class state incase of failure during inference
         tmp = self.scalar_dset_names.copy()
