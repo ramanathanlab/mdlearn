@@ -115,8 +115,8 @@ def SD4(
     SD4 does joint diagonalization of cumulant matrices of order 4 to
     decorrelate the signals in spatial domain. It allows us to extract
     signals which are as independent as possible and which were not
-    obtained while performing SD2. Here we consider signals which are s
-    patially decorrelated of order 2, meaning that SD2 should be run first.
+    obtained while performing SD2. Here we consider signals which are
+    spatially decorrelated of order 2, meaning that SD2 should be run first.
 
     Parameters
     ----------
