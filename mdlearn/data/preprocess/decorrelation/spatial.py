@@ -20,12 +20,12 @@ def SD2(data: np.ndarray, m: Optional[int] = None, verbose: bool = False):
         sources as sensors).
 
     verbose : bool, default=False
-        Print information on progress.
+        Print progress.
 
     Returns
     -------
     Y : np.ndarray
-        A 3n x m matrix U (NumPy matrix type), such that :math:`Y = U x data` is a
+        A 3n x m matrix U (NumPy matrix type), such that :math:`Y = U \times`:obj:`data` is a
         2nd order spatially whitened source extracted from the 3n x T data matrix
         :obj:`data` by performing PCA on :obj:`m` components of the real data.
         :obj:`Y` is a matrix of spatially uncorrelated components.
@@ -35,7 +35,7 @@ def SD2(data: np.ndarray, m: Optional[int] = None, verbose: bool = False):
         Eigen vectors of the :obj:`data` covariance matrix. The eigen vectors are
         orthogonal.
     U : np.ndarray
-        The sphering matrix used to transform :obj:`data` by :math:`Y = U x data`.
+        The sphering matrix used to transform :obj:`data` by :math:`Y = U \times`:obj:`data`.
 
     Raises
     ------
@@ -124,7 +124,7 @@ def SD4(
     Y : np.ndarray
         An :obj:`n x T` spatially whitened matrix (:obj:`n` subspaces,
         :obj:`T` samples). May be a numpy array or matrix where :obj:`n`
-        is number of subspaces we are interested in and :obj:`T` is the
+        is the number of subspaces we are interested in and :obj:`T` is the
         number of frames in the MD trajectory.
 
     m : Optional[int], default=None
@@ -136,7 +136,7 @@ def SD4(
         components of real data.
 
     verbose : bool, default=False
-        Print info on progress.
+        Print progress.
 
     Returns
     -------

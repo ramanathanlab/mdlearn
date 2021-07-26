@@ -6,3 +6,6 @@ Preprocessing
 
 .. automodule:: mdlearn.data.preprocess.align.kabsch_align
     :members:
+
+.. automodule:: mdlearn.data.preprocess.decorrelation.spatial
+    :members:
