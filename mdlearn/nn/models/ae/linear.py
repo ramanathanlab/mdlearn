@@ -510,6 +510,8 @@ class LinearAETrainer:
                 # that are not convenient to pass to the predict function.
                 self.scalar_dset_names = []
                 avg_loss, latent_vectors, _ = self._validate(data_loader)
+                # Restore class state
+                self.scalar_dset_names = tmp
                 return latent_vectors, avg_loss
             except Exception as e:
                 # Restore class state incase of failure
