@@ -389,6 +389,9 @@ class LinearAETrainer:
         from mdlearn.data.utils import train_valid_split
         from mdlearn.data.datasets.feature_vector import FeatureVectorDataset
 
+        if self.use_wandb:
+            import wandb
+
         exist_ok = (checkpoint is not None) or self.use_wandb
         output_path, checkpoint_path, plot_path = self._make_output_dir(
             output_path, exist_ok
