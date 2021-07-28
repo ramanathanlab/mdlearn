@@ -4,7 +4,7 @@ mdlearn: Machine learning for molecular dynamics
 
 [![Documentation Status](https://readthedocs.org/projects/mdlearn/badge/?version=latest)](https://mdlearn.readthedocs.io/en/latest/?badge=latest)
 
-Details can be found in the [ducumentation](https://mdlearn.readthedocs.io/en/latest/).
+Details can be found in the [documentation](https://mdlearn.readthedocs.io/en/latest/).
 
 ## How to run
 
