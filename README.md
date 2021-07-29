@@ -32,24 +32,6 @@ Then install mdlearn via: `pip install mdlearn`.
 
 Some systems require [PyTorch](https://pytorch.org/) to be built from source instead of installed via PyPI or Conda, for this reason we made torch an optional dependency. However, it can be installed with mdlearn by running `pip install 'mdlearn[torch]'` for convenience.
 
-
-### Development
-
-First, follow the above steps to create the conda environment and then install mdlearn with the following commands:
-```
-git clone https://github.com/ramanathanlab/mdlearn.git
-cd mdlearn
-pip install -r requirements_dev.txt
-pip install -e '.[torch]'
-```
-
-Then, install pre-commit hooks: this will auto-format and auto-lint _on commit_ to enforce consistent code style:
-
-```
-pre-commit install
-pre-commit autoupdate
-```
-
 ## Usage
 
 Train an autoencoder model with only a few lines of code!
@@ -73,13 +55,7 @@ z, loss = trainer.predict(X)
 
 Please report **bugs**, **enhancement requests**, or **questions** through the [Issue Tracker](https://github.com/ramanathanlab/mdlearn/issues).
 
-If you are looking to contribute, please follow these steps:
-
-1. Fork it!
-2. Create your feature branch: `git checkout -b feature/my-new-feature`
-3. Commit your changes: `git commit -am 'Add some feature'`
-4. Push to the branch: `git push origin feature/my-new-feature`
-5. Submit a pull request :D
+If you are looking to contribute, please see [`CONTRIBUTING.md`](https://github.com/ramanathanlab/mdlearn/blob/main/CONTRIBUTING.md).
 
 
 ## Acknowledgments
