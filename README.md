@@ -10,9 +10,8 @@ For more details and specific examples of how to use mdlearn, please see our [do
 1. [Installation](#installation)
 2. [Usage](#usage)
 3. [Contributing](#contributing)
-4. [History](#history)
-5. [Acknowledgments](#acknowledgments)
-6. [License](#license)
+4. [Acknowledgments](#acknowledgments)
+5. [License](#license)
 
 ## Installation
 
@@ -52,7 +51,22 @@ pre-commit autoupdate
 
 ## Usage
 
-TODO
+Train an autoencoder model with only a few lines of code!
+
+```python
+from mdlearn.nn.models.ae.linear import LinearAETrainer
+
+# Initialize autoencoder model
+trainer = LinearAETrainer(
+    input_dim=40, latent_dim=3, neurons=[32, 16, 8], epochs=100
+)
+
+# Train autoencoder on (N, 40) dimensional data
+trainer.fit(X, output_path="./run")
+
+# Generate latent embeddings in inference mode
+z, loss = trainer.predict(X)
+```
 
 ## Contributing
 
@@ -66,9 +80,6 @@ If you are looking to contribute, please follow these steps:
 4. Push to the branch: `git push origin feature/my-new-feature`
 5. Submit a pull request :D
 
-## History
-
-TODO
 
 ## Acknowledgments
 
