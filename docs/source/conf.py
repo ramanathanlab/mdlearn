@@ -22,7 +22,7 @@ import mdlearn  # noqa
 # -- Project information -----------------------------------------------------
 
 project = "mdlearn"
-author = "Alexander Brace, Arvind Ramanathan"
+author = "Alexander Brace, Heng Ma, Debsindhu Bhowmik, Chakra Chennubhotla, Arvind Ramanathan"
 now = datetime.datetime.now()
 copyright = "{}, ".format(now.year) + author
 
