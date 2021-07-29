@@ -7,4 +7,8 @@ from setuptools.config import read_configuration
 
 setup_cfg = Path(__file__).parent.joinpath("setup.cfg")
 conf_dict = read_configuration(setup_cfg)
-setup()
+
+url = conf_dict["metadata"]["version"]
+version = conf_dict["metadata"]["version"]
+
+setup(download_url=f"{url}/archive/refs/tags/{version}.tar.gz")
