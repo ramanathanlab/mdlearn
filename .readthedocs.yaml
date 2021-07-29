@@ -19,3 +19,7 @@ python:
     - requirements: requirements_dev.txt
     - method: setuptools
       path: .
+    - method: pip
+      path: .
+      extra_requirements:
+        - torch
