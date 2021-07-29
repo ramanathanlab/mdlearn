@@ -1,10 +1,10 @@
 # mdlearn
 
-Machine learning for molecular dynamics.
-
 [![Documentation Status](https://readthedocs.org/projects/mdlearn/badge/?version=latest)](https://mdlearn.readthedocs.io/en/latest/?badge=latest)
 
-Details can be found in the [documentation](https://mdlearn.readthedocs.io/en/latest/).
+mdlearn is a Python library for analyzing molecular dynamics with machine learning. It contains [PyTorch](https://pytorch.org/) implementations of several deep learning methods such as autoencoders, as well as preprocessing functions which include the [kabsch alignment](https://en.wikipedia.org/wiki/Kabsch_algorithm) algorithm and higher-order statistical methods like [quasi-anharmonic analysis](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0015827).
+
+For more details and specific examples of how to use mdlearn, please see our [documentation](https://mdlearn.readthedocs.io/en/latest/).
 
 ## Table of Contents
 1. [Installation](#installation)
@@ -16,14 +16,29 @@ Details can be found in the [documentation](https://mdlearn.readthedocs.io/en/la
 
 ## Installation
 
-Install `mdlearn` into a conda-env with:
+### Install latest version with PyPI 
 
-*Note*: For latest rapidsai install, see:  https://rapids.ai/start.html#get-rapids
+If you have access to an NVIDIA GPU, we highly recommend installing mdlearn into a Conda environment which contains [RAPIDS](https://rapids.ai/) to accelerate t-SNE computations useful for visualizing the model results during training. For the latest [RAPIDS](https://rapids.ai/) version, see [here](https://rapids.ai/start.html#get-rapids). If you don't have GPU support, mdlearn will still work on CPU by using the [scikit-learn](https://scikit-learn.org/stable/) implementation.
+
+Run the following commands with updated versions to create a conda environment:
 ```
 conda create -p conda-env -c rapidsai -c nvidia -c conda-forge cuml=0.19 python=3.7 cudatoolkit=11.2
 conda activate conda-env
 export IBM_POWERAI_LICENSE_ACCEPT=yes
 pip install -U scikit-learn
+```
+
+Then install mdlearn via: `pip install mdlearn`. 
+
+Some systems require [PyTorch](https://pytorch.org/) to be built from source instead of installed via PyPI or Conda, for this reason we made torch optional dependency. However, it can be installed with mdlearn by running `pip install 'mdlearn[torch]'` for convenience.
+
+
+### Development
+
+First, follow the above steps to create the conda environment and then install mdlearn with the following commands:
+```
+git clone https://github.com/ramanathanlab/mdlearn.git
+cd mdlearn
 pip install -r requirements_dev.txt
 pip install -e '.[torch]'
 ```
@@ -57,7 +72,7 @@ TODO
 
 ## Acknowledgments
 
-- We thank [Matthias Fey](https://github.com/rusty1s) from [*PyTorch Geometric*](https://github.com/rusty1s/pytorch_geometric) for inspiring the design of our neural network base classes and other PyTorch helper functions.
+- We thank [Matthias Fey](https://github.com/rusty1s) from [*PyTorch Geometric*](https://github.com/rusty1s/pytorch_geometric) for inspiring the design of our neural network base classes and other [PyTorch](https://pytorch.org/) helper functions.
 
 ## License
 
