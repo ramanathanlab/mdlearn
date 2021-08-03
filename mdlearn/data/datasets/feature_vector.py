@@ -72,6 +72,63 @@ class FeatureVectorDataset(Dataset):
         return sample
 
 
+class TimeFeatureVectorDataset(FeatureVectorDataset):
+    """PyTorch Dataset class to handle time series feature vectors
+    and optional scalars directly from a np.ndarray."""
+
+    def __init__(
+        self,
+        data: np.ndarray,
+        scalars: Dict[str, np.ndarray] = {},
+        scalar_requires_grad: bool = False,
+        in_gpu_memory: bool = False,
+        window_size: int = 10,
+        horizon: int = 1,
+    ):
+        """
+        Parameters
+        ----------
+        window_size : int, default=10
+            Number of timesteps considered for prediction.
+        horizon : int, default=1
+            How many time steps to predict ahead.
+
+        Raises
+        ------
+        ValueError
+            If the sum of :obj:`window_size` and :obj:`horizon` is longer
+            than the input data.
+        """
+        super().__init__(data, scalars, scalar_requires_grad, in_gpu_memory)
+
+        self.window_size = window_size
+        self.horizon = horizon
+
+        if len(self.data) - self.window_size - self.horizon + 1 < 0:
+            raise ValueError(
+                "The sum of window_size and horizon is longer than the input data"
+            )
+
+    def __len__(self):
+        return len(self.data) - self.window_size - self.horizon + 1
+
+    def __getitem__(self, idx):
+
+        sample = {
+            "X": self.data[idx : idx + self.window_size],
+            "y": self.data[idx + self.window_size + self.horizon - 1],
+        }
+        # Add index into dataset to sample
+        sample["index"] = torch.tensor(idx, requires_grad=False)
+        # Add scalars
+        for name, dset in self.scalars.items():
+            sample[name] = torch.tensor(
+                dset[idx], requires_grad=self._scalar_requires_grad
+            )
+
+        return sample
+
+
 class FeatureVectorHDF5Dataset(Dataset):
     """PyTorch Dataset class to load vector or scalar data from an HDF5 file."""
 

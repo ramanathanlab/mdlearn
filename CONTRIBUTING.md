@@ -53,7 +53,15 @@ python -c "import mdlearn; print(mdlearn.__version__)"
 
 ## Unit Testing
 
-We are planning to add a test suite in a future release which uses pytest for unit testing.
+To run the test suite:
+
+1. [Build and install](#developing-mdlearn) mdlearn from source.
+2. The `requirements_dev.txt` contains the additional testing dependencies.
+3. Run the test suite: `pytest test`
+
+If contributing, please add a `test_<module_name>.py` in the `test/` directory
+in a subdirectory that matches the mdlearn package directory structure. Inside,
+`test_<module_name>.py` implement test functions using pytest.
 
 ## Building Documentation
 
