@@ -203,7 +203,7 @@ class LSTMTrainer(Trainer):
             Dictionary of hyperparameters to pass to the chosen PyTorch learning rate scheduler.
         epochs : int, default=100
             Number of epochs to train for.
-        verbose : bool, default False
+        verbose : bool, default=False
             If True, will print training and validation loss at each epoch.
         clip_grad_max_norm : float, default=10.0
             Max norm of the gradients for gradient clipping for more information

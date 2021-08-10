@@ -320,6 +320,44 @@ def log_latent_visualization(
     n_samples: Optional[int] = None,
     method: str = "TSNE",
 ) -> Dict[str, str]:
+    """Make a scatter plots of the latent space using the specified
+    method of dimensionality reduction.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        The latent embeddings to visualize of shape (N, D) where
+        N  is the number of examples and D is the number of dimensions.
+    colors : Dict[str, np.ndarray]
+        Each item in the dictionary will generate a different plot labeled
+        with the key name. Each inner array should be of size N.
+    output_path : PathLike
+        The output directory path to save plots to.
+    epoch : int, default=0
+        The current epoch of training to label plots with.
+    n_samples : Optional[int], default=None
+        Number of samples to plot, will take a random sample of the
+        :obj:`data` if :obj:`n_samples < N`. Otherwise, if :obj:`n_samples`
+        is None, use all the data.
+    method : str, default="TSNE"
+        Method of dimensionality reduction used to plot. Currently supports:
+        "PCA", "TSNE", "LLE", or "raw" for plotting the raw embeddings (or
+        up to the first 3 dimensions if D > 3). If "TSNE" is specified, then
+        the GPU accelerated RAPIDS.ai implementation will be tryed first and
+        if it is unavailable then the sklearn version will be used instead.
+
+    Returns
+    -------
+    Dict[str, str]
+        A dictionary mapping each key in color to a raw HTML string containing
+        the scatter plot data. These can be saved directly for visualization
+        and logged to wandb during training.
+
+    Raises
+    ------
+    ValueError
+        If dimensionality reduction :obj:`method` is not supported.
+    """
     from plotly.io import to_html
 
     # Make temp variables to not mutate input data
@@ -357,6 +395,13 @@ def log_latent_visualization(
         data_proj, _ = manifold.locally_linear_embedding(
             _data, n_neighbors=12, n_components=3
         )
+    elif method == "raw":
+        if _data.shape[1] <= 3:
+            # If _data only has 2 or 3 dimensions, use it directly.
+            data_proj = _data
+        else:
+            # Use the first 3 dimensions of the raw data.
+            data_proj = _data[:, :3]
     else:
         raise ValueError(f"Invalid dimensionality reduction method {method}")
 
