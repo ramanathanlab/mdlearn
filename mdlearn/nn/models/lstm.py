@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
+from torch.nn.modules.activation import ReLU
 from torch.utils.data import DataLoader
 from typing import Optional, Tuple, Dict, Any
 import numpy as np
@@ -62,7 +63,11 @@ class LSTM(nn.Module):
             bidirectional=bidirectional,
         )
 
-        self.head = nn.Linear(hidden_size, input_size)
+        self.head = nn.Sequential(
+            nn.Linear(hidden_size, hidden_size // 2),
+            nn.ReLU(),
+            nn.Linear(hidden_size // 2, input_size),
+        )
 
         # TODO: Could try adding on a linear layer at the end and outputing logits.
 
