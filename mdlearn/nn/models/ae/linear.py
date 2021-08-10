@@ -380,10 +380,18 @@ class LinearAETrainer:
 
         Raises
         ------
+        TypeError
+            If :obj:`scalars` is not type dict. A common error is to pass
+            :obj:`output_path` as the second argument.
         NotImplementedError
             If using a learning rate scheduler other than :obj:`ReduceLROnPlateau`,
             a step function will need to be implemented.
         """
+        if not isinstance(scalars, dict):
+            raise TypeError(
+                "scalars should be of type dict. A common error"
+                " is to pass output_path as the second argument."
+            )
 
         from mdlearn.utils import log_checkpoint, log_latent_visualization
         from mdlearn.data.utils import train_valid_split
