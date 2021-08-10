@@ -62,6 +62,8 @@ class LSTM(nn.Module):
             bidirectional=bidirectional,
         )
 
+        self.head = nn.Linear(hidden_size, input_size)
+
         # TODO: Could try adding on a linear layer at the end and outputing logits.
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -81,6 +83,8 @@ class LSTM(nn.Module):
 
         # Handle bidirectional and num_layers
         pred = h_n[self.num_layers - 1, ...]
+
+        pred = self.head(pred)
         return pred
 
     def mse_loss(
