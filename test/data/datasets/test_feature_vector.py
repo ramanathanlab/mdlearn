@@ -111,3 +111,21 @@ def test_dataset_horizon():
     dataset = TimeFeatureVectorDataset(data, window_size=2, horizon=2)
     assert torch.equal(dataset[0]["X"], torch.tensor([[1], [2]]).float())
     assert torch.equal(dataset[0]["y"], torch.tensor([4]).float())
+
+
+def test_scalar_index():
+    from mdlearn.data.datasets.feature_vector import TimeFeatureVectorDataset
+
+    data = np.array([1, 2, 3, 4, 5])
+    scalars = {"scalar": np.array([5, 6, 7, 8, 9])}
+    # data = [1, 2, 3, 4, 5]
+    # window = 2
+    # horizon = 2
+    # dataset[0]: {"X": [1, 2], "y": 4, "scalar": 8, "index": 3}
+    # dataset[1]: {"X": [2, 3], "y": 5, "scalar": 9, "index": 4}
+    dataset = TimeFeatureVectorDataset(data, scalars, window_size=2, horizon=2)
+    assert len(dataset) == 2
+    assert torch.equal(dataset[0]["scalar"], torch.tensor(8))
+    assert torch.equal(dataset[1]["scalar"], torch.tensor(9))
+    assert torch.equal(dataset[0]["index"], torch.tensor(3))
+    assert torch.equal(dataset[1]["index"], torch.tensor(4))

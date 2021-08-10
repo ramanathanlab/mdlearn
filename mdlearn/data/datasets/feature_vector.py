@@ -114,16 +114,17 @@ class TimeFeatureVectorDataset(FeatureVectorDataset):
 
     def __getitem__(self, idx):
 
+        pred_idx = idx + self.window_size + self.horizon - 1
         sample = {
             "X": self.data[idx : idx + self.window_size],
-            "y": self.data[idx + self.window_size + self.horizon - 1],
+            "y": self.data[pred_idx],
         }
         # Add index into dataset to sample
-        sample["index"] = torch.tensor(idx, requires_grad=False)
+        sample["index"] = torch.tensor(pred_idx, requires_grad=False)
         # Add scalars
         for name, dset in self.scalars.items():
             sample[name] = torch.tensor(
-                dset[idx], requires_grad=self._scalar_requires_grad
+                dset[pred_idx], requires_grad=self._scalar_requires_grad
             )
 
         return sample
