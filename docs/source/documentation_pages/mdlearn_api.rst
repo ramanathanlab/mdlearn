@@ -1,6 +1,6 @@
-***************
+***********
 mdlearn API
-***************
+***********
 
 Function and class API documentation.
 
@@ -16,4 +16,5 @@ Function and class API documentation.
     nn/models/vde/models
     nn/models/wae/models
     nn/models/aae/models
+    nn/models/lstm
     nn/modules/modules
