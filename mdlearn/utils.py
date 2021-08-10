@@ -320,7 +320,7 @@ def log_latent_visualization(
     n_samples: Optional[int] = None,
     method: str = "TSNE",
 ) -> Dict[str, str]:
-    """Make a scatter plots of the latent space using the specified
+    """Make scatter plots of the latent space using the specified
     method of dimensionality reduction.
 
     Parameters
