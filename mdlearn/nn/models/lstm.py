@@ -1,13 +1,12 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
-from torch.nn.modules.activation import ReLU
 from torch.utils.data import DataLoader
 from typing import Optional, Tuple, Dict, Any
 import numpy as np
+from collections import defaultdict
 from mdlearn.utils import PathLike
 from mdlearn.nn.utils import Trainer
-from collections import defaultdict
 
 
 class LSTM(nn.Module):
