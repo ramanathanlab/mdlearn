@@ -1,91 +1,88 @@
 import torch
-from torch import nn
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-from typing import Optional, Tuple, Dict, Any
+from typing import Optional, Tuple, Dict, List, Any
 import numpy as np
 from collections import defaultdict
 from mdlearn.utils import PathLike
 from mdlearn.nn.utils import Trainer
+from mdlearn.nn.models.ae import AE
+from mdlearn.nn.modules.dense_net import DenseNet
+from mdlearn.nn.modules.lstm_net import LSTMNet
 
 
-class LSTM(nn.Module):
+class LSTMAE(AE):
     """LSTM model to predict the dynamics for a
     time series of feature vectors."""
 
     def __init__(
         self,
-        input_size: int,
-        hidden_size: Optional[int] = None,
-        num_layers: int = 1,
-        bias: bool = True,
+        input_dim: int,
+        latent_dim: int = 8,
+        hidden_neurons: List[int] = [128],
+        lstm_bias: bool = True,
         dropout: float = 0.0,
-        bidirectional: bool = False,
+        relu_slope: float = 0.0,
+        inplace_activation: bool = False,
+        dense_bias: bool = True,
     ):
         """
         Parameters
         ----------
-        input_size: int
+        input_dim: int
             The number of expected features in the input :obj:`x`.
-        hidden_size: Optional[int], default=None
-            The number of features in the hidden state h. By default, the
-            :obj:`hidden_size` will be equal to the :obj:`input_size` in
-            order to propogate the dynamics.
-        num_layers: int, default=1
-            Number of recurrent layers. E.g., setting num_layers=2 would mean
-            stacking two LSTMs together to form a stacked LSTM, with the second
-            LSTM taking in outputs of the first LSTM and computing the final
-            results.
-        bias: bool, default=True
-            If False, then the layer does not use bias weights b_ih and b_hh.
-            Default: True
+        latent_dim: int, default=8
+            Dimension of the latent space.
+        hidden_neurons: List[int], default=[128]
+            The dimension of the hidden states for each LSTM block
+            in the stacked LSTM encoder. This list defines how deep
+            the encoder is i.e. how many LSTM blocks to use. The
+            reverse of this list also defines the shape of the
+            :obj:`DenseNet` decoder.
+        lstm_bias: bool, default=True
+            If False, then the stacked LSTM encoder does not use bias
+            weights b_ih and b_hh.
         dropout: float, default=0.0
             If non-zero, introduces a Dropout layer on the outputs of each
             LSTM layer except the last layer, with dropout probability equal
             to dropout.
-        bidirectional: bool, default=False
-            If True, becomes a bidirectional LSTM.
+        relu_slope : float, default=0.0
+            If greater than 0.0, will use LeakyReLU activiation in the
+            :obj:`DenseNet` decoder with :obj:`negative_slope` set to
+            :obj:`relu_slope`.
+        inplace_activation : bool, default=False
+            Sets the inplace option for the activation function in the
+            :obj:`DenseNet` decoder.
+        dense_bias : bool, default=True
+            If False, then the :obj:`DenseNet` decoder does not use bias.
         """
-        super().__init__()
 
-        self.num_layers = num_layers
-        if hidden_size is None:
-            hidden_size = input_size
-
-        self.lstm = nn.LSTM(
-            input_size,
-            hidden_size,
-            num_layers,
-            bias,
-            batch_first=True,
-            dropout=dropout,
-            bidirectional=bidirectional,
+        neurons = hidden_neurons.copy() + [latent_dim]
+        encoder = LSTMNet(input_dim, neurons, lstm_bias, dropout)
+        decoder_neurons = list(reversed(neurons))[1:] + [input_dim]
+        decoder = DenseNet(
+            neurons[-1], decoder_neurons, dense_bias, relu_slope, inplace_activation
         )
+        super().__init__(encoder, decoder)
 
-        # Linear prediction head to map LSTM activation
-        # function outputs to the correct output range
-        self.head = nn.Linear(hidden_size, input_size)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Parameters
         ----------
         x : torch.Tensor
-            Tensor of shape BxNxD for B batches of N examples
-            by D feature dimensions.
+            Tensor of shape BxNxD for B batches of length N
+            sequences with D feature dimensions.
 
         Returns
         -------
         torch.Tensor
-            The predicted tensor of size (B, N, hidden_size).
+            The latent embedding of size (B, :obj:`latent_dim`).
+        torch.Tensor
+            The predicted future time step of size (B, D).
         """
-        _, (h_n, _) = self.lstm(x)  # output, (h_n, c_n)
-
-        # Handle bidirectional and num_layers
-        pred = h_n[self.num_layers - 1, ...]
-
-        pred = self.head(pred)
-        return pred
+        z = self.encode(x)
+        y_pred = self.decode(z)
+        return z, y_pred
 
     def mse_loss(
         self, y_true: torch.Tensor, y_pred: torch.Tensor, reduction: str = "mean"
@@ -109,19 +106,21 @@ class LSTM(nn.Module):
         return F.mse_loss(y_true, y_pred, reduction=reduction)
 
 
-class LSTMTrainer(Trainer):
+class LSTMAETrainer(Trainer):
     """Trainer class to fit an LSTM model to a time series of feature vectors."""
 
     # TODO: Add example usage in documentation.
 
     def __init__(
         self,
-        input_size: int,
-        hidden_size: Optional[int] = None,
-        num_layers: int = 1,
-        bias: bool = True,
+        input_dim: int,
+        latent_dim: int = 8,
+        hidden_neurons: List[int] = [128],
+        lstm_bias: bool = True,
         dropout: float = 0.0,
-        bidirectional: bool = False,
+        relu_slope: float = 0.0,
+        inplace_activation: bool = False,
+        dense_bias: bool = True,
         window_size: int = 10,
         horizon: int = 1,
         seed: int = 42,
@@ -151,26 +150,32 @@ class LSTMTrainer(Trainer):
         """
         Parameters
         ----------
-        input_size: int
-            The number of expected features in the input x.
-        hidden_size: Optional[int], default=None
-            The number of features in the hidden state h. By default, the
-            :obj:`hidden_size` will be equal to the :obj:`input_size` in
-            order to propogate the dynamics.
-        num_layers: int, default=1
-            Number of recurrent layers. E.g., setting num_layers=2 would mean
-            stacking two LSTMs together to form a stacked LSTM, with the second
-            LSTM taking in outputs of the first LSTM and computing the final
-            results.
-        bias: bool, default=True
-            If False, then the layer does not use bias weights b_ih and b_hh.
-            Default: True
+        input_dim: int
+            The number of expected features in the input :obj:`x`.
+        latent_dim: int, default=8
+            Dimension of the latent space.
+        hidden_neurons: List[int], default=[128]
+            The dimension of the hidden states for each LSTM block
+            in the stacked LSTM encoder. This list defines how deep
+            the encoder is i.e. how many LSTM blocks to use. The
+            reverse of this list also defines the shape of the
+            :obj:`DenseNet` decoder.
+        lstm_bias: bool, default=True
+            If False, then the stacked LSTM encoder does not use bias
+            weights b_ih and b_hh.
         dropout: float, default=0.0
             If non-zero, introduces a Dropout layer on the outputs of each
             LSTM layer except the last layer, with dropout probability equal
             to dropout.
-        bidirectional: bool, default=False
-            If True, becomes a bidirectional LSTM.
+        relu_slope : float, default=0.0
+            If greater than 0.0, will use LeakyReLU activiation in the
+            :obj:`DenseNet` decoder with :obj:`negative_slope` set to
+            :obj:`relu_slope`.
+        inplace_activation : bool, default=False
+            Sets the inplace option for the activation function in the
+            :obj:`DenseNet` decoder.
+        dense_bias : bool, default=True
+            If False, then the :obj:`DenseNet` decoder does not use bias.
         window_size : int, default=10
             Number of timesteps considered for prediction.
         horizon : int, default=1
@@ -277,8 +282,15 @@ class LSTMTrainer(Trainer):
         # Set random seeds
         self._set_seed()
 
-        self.model = LSTM(
-            input_size, hidden_size, num_layers, bias, dropout, bidirectional
+        self.model = LSTMAE(
+            input_dim,
+            latent_dim,
+            hidden_neurons,
+            lstm_bias,
+            dropout,
+            relu_slope,
+            inplace_activation,
+            dense_bias,
         ).to(self.device)
 
         if self.use_wandb:
@@ -306,7 +318,7 @@ class LSTMTrainer(Trainer):
         output_path: PathLike = "./",
         checkpoint: Optional[PathLike] = None,
     ):
-        """Trains the LSTM on the input data :obj:`X`.
+        """Trains the LSTMAE on the input data :obj:`X`.
 
         Parameters
         ----------
@@ -402,7 +414,7 @@ class LSTMTrainer(Trainer):
             # Validation
             self.model.eval()
             with torch.no_grad():
-                avg_valid_loss, z, paints = self._validate(valid_loader)
+                avg_valid_loss, _, z, paints = self._validate(valid_loader)
 
             if self.verbose:
                 print(
@@ -454,8 +466,8 @@ class LSTMTrainer(Trainer):
         X: np.ndarray,
         inference_batch_size: int = 512,
         checkpoint: Optional[PathLike] = None,
-    ) -> Tuple[np.ndarray, float]:
-        """Predict using the LSTM.
+    ) -> Tuple[np.ndarray, np.ndarray, float]:
+        """Predict using the LSTMAE.
 
         Parameters
         ----------
@@ -468,8 +480,12 @@ class LSTMTrainer(Trainer):
 
         Returns
         -------
-        Tuple[np.ndarray, float]
-            The predictions and the average MSE loss.
+        np.ndarray
+            The predictions.
+        np.ndarray
+            The latenet embeddings.
+        float
+            The average MSE loss.
         """
         from mdlearn.data.datasets.feature_vector import TimeFeatureVectorDataset
 
@@ -501,10 +517,10 @@ class LSTMTrainer(Trainer):
                 # Set to empty list to avoid storage of paint scalars
                 # that are not convenient to pass to the predict function.
                 self.scalar_dset_names = []
-                avg_loss, preds, _ = self._validate(data_loader)
+                avg_loss, preds, embeddings, _ = self._validate(data_loader)
                 # Restore class state
                 self.scalar_dset_names = tmp
-                return preds, avg_loss
+                return preds, embeddings, avg_loss
             except Exception as e:
                 # Restore class state incase of failure
                 self.scalar_dset_names = tmp
@@ -521,7 +537,7 @@ class LSTMTrainer(Trainer):
             y = batch["y"].to(self.device, non_blocking=True)
 
             # Forward pass
-            y_pred = self.model(x)
+            _, y_pred = self.model(x)
             loss = self.model.mse_loss(y, y_pred)
 
             # Backward pass
@@ -541,9 +557,9 @@ class LSTMTrainer(Trainer):
 
     def _validate(
         self, valid_loader
-    ) -> Tuple[float, np.ndarray, Dict[str, np.ndarray]]:
+    ) -> Tuple[float, np.ndarray, np.ndarray, Dict[str, np.ndarray]]:
         paints = defaultdict(list)
-        preds = []
+        preds, embeddings = [], []
         avg_loss = 0.0
         for i, batch in enumerate(valid_loader):
 
@@ -554,20 +570,22 @@ class LSTMTrainer(Trainer):
             y = batch["y"].to(self.device, non_blocking=True)
 
             # Forward pass
-            y_pred = self.model(x)
+            z, y_pred = self.model(x)
             loss = self.model.mse_loss(y, y_pred)
 
             # Collect loss
             avg_loss += loss.item()
 
-            # Collect latent vectors for visualization
+            # Collect embeddings and predictions for visualization
             preds.append(y_pred.cpu().numpy())
+            embeddings.append(z.cpu().numpy())
             for name in self.scalar_dset_names:
                 paints[name].append(batch[name].cpu().numpy())
 
         avg_loss /= len(valid_loader)
-        # Group latent vectors and paints
+        # Group predictions, embeddings, and paints
         preds = np.concatenate(preds)
+        embeddings = np.concatenate(embeddings)
         paints = {name: np.concatenate(scalar) for name, scalar in paints.items()}
 
-        return avg_loss, preds, paints
+        return avg_loss, preds, embeddings, paints

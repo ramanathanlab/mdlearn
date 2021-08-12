@@ -25,16 +25,16 @@ class LinearAE(AE):
         relu_slope: float = 0.0,
         inplace_activation: bool = False,
     ):
-        r"""
+        """
         Parameters
         ----------
         input_dim : int
             Dimension of input tensor (should be flattened).
         latent_dim: int, default=8
             Dimension of the latent space.
-        neurons : List[int], deafult=[128]
+        neurons : List[int], default=[128]
             Linear layers :obj:`in_features`.
-        bias : bool, deafult=True
+        bias : bool, default=True
             Use a bias term in the Linear layers.
         relu_slope : float, default=0.0
             If greater than 0.0, will use LeakyReLU activiation with
