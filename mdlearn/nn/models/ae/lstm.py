@@ -142,7 +142,7 @@ class LSTMAETrainer(Trainer):
         checkpoint_log_every: int = 10,
         plot_log_every: int = 10,
         plot_n_samples: int = 10000,
-        plot_method: str = "TSNE",
+        plot_method: Optional[str] = "TSNE",
         train_subsample_pct: float = 1.0,
         valid_subsample_pct: float = 1.0,
         use_wandb: bool = False,
@@ -224,8 +224,9 @@ class LSTMAETrainer(Trainer):
             Epoch interval to log a visualization plot of the latent space.
         plot_n_samples : int, default=10000
             Number of validation samples to use for plotting.
-        plot_method : str, default="TSNE"
-            The method for visualizing the latent space. If using TSNE,
+        plot_method : Optional[str], default="TSNE"
+            The method for visualizing the latent space or if visualization
+            should not be run, set :obj:`plot_method=None`. If using :obj:`"TSNE"`,
             it will attempt to use the RAPIDS.ai GPU implementation and
             will fallback to the sklearn CPU implementation if RAPIDS.ai
             is unavailable.
@@ -440,7 +441,7 @@ class LSTMAETrainer(Trainer):
                 metrics = {"train_loss": avg_train_loss, "valid_loss": avg_valid_loss}
 
             # Log a visualization of the latent space
-            if epoch % self.plot_log_every == 0:
+            if (self.plot_method is not None) and (epoch % self.plot_log_every == 0):
                 htmls = log_latent_visualization(
                     z,
                     paints,
