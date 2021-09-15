@@ -21,6 +21,12 @@ Datasets
 
     .. automethod:: __init__
 
+.. autoclass:: mdlearn.data.datasets.feature_vector.TimeFeatureVectorDataset
+    :show-inheritance:
+    :members:
+
+    .. automethod:: __init__
+
 .. autoclass:: mdlearn.data.datasets.feature_vector.FeatureVectorHDF5Dataset
     :members:
 

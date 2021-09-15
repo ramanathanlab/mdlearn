@@ -24,12 +24,12 @@ class DenseNet(nn.Module):
         input_dim : int
             Dimension of input tensor (should be flattened).
         neurons : List[int], default=[128]
-            Linear layers :obj:`in_features`, by default [128].
+            Linear layers :obj:`in_features`.
         bias : bool, default=True
-            Use a bias term in the Linear layers, by default True.
+            Use a bias term in the Linear layers.
         relu_slope : float, default=0.0
             If greater than 0.0, will use LeakyReLU activiation with
-            :obj:`negative_slope` set to :obj:`relu_slope`, by default 0.0.
+            :obj:`negative_slope` set to :obj:`relu_slope`.
         inplace_activation : bool, default=False
             Sets the inplace option for the activation function.
 
@@ -45,7 +45,7 @@ class DenseNet(nn.Module):
         self.bias = bias
         self.relu_slope = relu_slope
 
-        if len(self.neurons) == 0:
+        if not self.neurons:
             raise ValueError(
                 "Model must have atleast one layer, received an empty list for `neurons`."
             )
