@@ -66,8 +66,7 @@ class LinearAE(AE):
             The batch of latent vectors :obj:`z` and the reconstructions :obj:`recon_x`.
         """
         z = self.encode(x)
-        z = F.relu(z)
-        recon_x = self.decode(z)
+        recon_x = self.decode(F.relu(z))
         return z, recon_x
 
     def recon_loss(
