@@ -32,8 +32,9 @@ git pull
 ```
 python3 -m venv env
 source env/bin/activate
-pip install -r requirements_dev.txt
-pip install -e '.[torch]'
+pip3 install --upgrade pip setuptools wheel
+pip3 install -r requirements_dev.txt
+pip3 install -e '.[torch]'
 ```
 
 This mode will symlink the Python files from the current local source tree into the Python install.
