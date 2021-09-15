@@ -343,7 +343,7 @@ def log_latent_visualization(
         Method of dimensionality reduction used to plot. Currently supports:
         "PCA", "TSNE", "LLE", or "raw" for plotting the raw embeddings (or
         up to the first 3 dimensions if D > 3). If "TSNE" is specified, then
-        the GPU accelerated RAPIDS.ai implementation will be tryed first and
+        the GPU accelerated RAPIDS.ai implementation will be tried first and
         if it is unavailable then the sklearn version will be used instead.
 
     Returns
