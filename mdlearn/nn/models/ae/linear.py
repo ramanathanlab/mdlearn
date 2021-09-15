@@ -20,7 +20,7 @@ class LinearAE(AE):
         self,
         input_dim: int,
         latent_dim: int = 8,
-        neurons: List[int] = [128],
+        hidden_neurons: List[int] = [128],
         bias: bool = True,
         relu_slope: float = 0.0,
         inplace_activation: bool = False,
@@ -32,7 +32,7 @@ class LinearAE(AE):
             Dimension of input tensor (should be flattened).
         latent_dim: int, default=8
             Dimension of the latent space.
-        neurons : List[int], default=[128]
+        hidden_neurons : List[int], default=[128]
             Linear layers :obj:`in_features`.
         bias : bool, default=True
             Use a bias term in the Linear layers.
@@ -43,11 +43,17 @@ class LinearAE(AE):
             Sets the inplace option for the activation function.
         """
 
-        neurons = neurons.copy() + [latent_dim]
-        encoder = DenseNet(input_dim, neurons, bias, relu_slope, inplace_activation)
-        decoder_neurons = list(reversed(neurons))[1:] + [input_dim]
+        hidden_neurons = hidden_neurons.copy() + [latent_dim]
+        encoder = DenseNet(
+            input_dim, hidden_neurons, bias, relu_slope, inplace_activation
+        )
+        decoder_neurons = list(reversed(hidden_neurons))[1:] + [input_dim]
         decoder = DenseNet(
-            neurons[-1], decoder_neurons, bias, relu_slope, inplace_activation
+            hidden_neurons[-1],
+            decoder_neurons,
+            bias,
+            relu_slope,
+            inplace_activation,
         )
 
         super().__init__(encoder, decoder)
@@ -100,7 +106,7 @@ class LinearAETrainer:
         self,
         input_dim: int = 40,
         latent_dim: int = 3,
-        neurons: List[int] = [32, 16, 8],
+        hidden_neurons: List[int] = [32, 16, 8],
         bias: bool = True,
         relu_slope: float = 0.0,
         inplace_activation: bool = False,
@@ -134,9 +140,9 @@ class LinearAETrainer:
             Dimension of input tensor (should be flattened).
         latent_dim : int, default=3
             Dimension of the latent space.
-        neurons : List[int], default=[32, 16, 8]
-            Linear layers :obj:`in_features`. Defines the shape of the autoencoder.
-            The encoder and decoder are symmetric.
+        hidden_neurons : List[int], default=[32, 16, 8]
+            Linear layers :obj:`in_features`. Defines the shape of the autoencoder
+            (does not include latent dimension). The encoder and decoder are symmetric.
         bias : bool, default=True
             Use a bias term in the Linear layers.
         relu_slope : float, default=0.0
@@ -249,7 +255,7 @@ class LinearAETrainer:
         self._set_seed()
 
         self.model = LinearAE(
-            input_dim, latent_dim, neurons, bias, relu_slope, inplace_activation
+            input_dim, latent_dim, hidden_neurons, bias, relu_slope, inplace_activation
         ).to(self.device)
 
         if self.use_wandb:
