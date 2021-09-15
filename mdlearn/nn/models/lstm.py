@@ -1,122 +1,135 @@
-"""Linear-layer autoencoder model with trainer class."""
 import torch
-import random
-import numpy as np
-from pathlib import Path
-from collections import defaultdict
-from typing import List, Tuple, Dict, Any, Optional
+from torch import nn
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
+from typing import Optional, Tuple, Dict, Any
+import numpy as np
+from collections import defaultdict
 from mdlearn.utils import PathLike
 from mdlearn.nn.utils import Trainer
-from mdlearn.nn.models.ae import AE
-from mdlearn.nn.modules.dense_net import DenseNet
 
 
-class LinearAE(AE):
-    """A symmetric autoencoder with all linear layers.
-    Applies a ReLU activation between encoder and decoder."""
+class LSTM(nn.Module):
+    """LSTM model to predict the dynamics for a
+    time series of feature vectors."""
 
     def __init__(
         self,
-        input_dim: int,
-        latent_dim: int = 8,
-        hidden_neurons: List[int] = [128],
+        input_size: int,
+        hidden_size: Optional[int] = None,
+        num_layers: int = 1,
         bias: bool = True,
-        relu_slope: float = 0.0,
-        inplace_activation: bool = False,
+        dropout: float = 0.0,
+        bidirectional: bool = False,
     ):
         """
         Parameters
         ----------
-        input_dim : int
-            Dimension of input tensor (should be flattened).
-        latent_dim: int, default=8
-            Dimension of the latent space.
-        hidden_neurons : List[int], default=[128]
-            Linear layers :obj:`in_features`.
-        bias : bool, default=True
-            Use a bias term in the Linear layers.
-        relu_slope : float, default=0.0
-            If greater than 0.0, will use LeakyReLU activiation with
-            :obj:`negative_slope` set to :obj:`relu_slope`.
-        inplace_activation : bool, default=False
-            Sets the inplace option for the activation function.
+        input_size: int
+            The number of expected features in the input :obj:`x`.
+        hidden_size: Optional[int], default=None
+            The number of features in the hidden state h. By default, the
+            :obj:`hidden_size` will be equal to the :obj:`input_size` in
+            order to propogate the dynamics.
+        num_layers: int, default=1
+            Number of recurrent layers. E.g., setting num_layers=2 would mean
+            stacking two LSTMs together to form a stacked LSTM, with the second
+            LSTM taking in outputs of the first LSTM and computing the final
+            results.
+        bias: bool, default=True
+            If False, then the layer does not use bias weights b_ih and b_hh.
+            Default: True
+        dropout: float, default=0.0
+            If non-zero, introduces a Dropout layer on the outputs of each
+            LSTM layer except the last layer, with dropout probability equal
+            to dropout.
+        bidirectional: bool, default=False
+            If True, becomes a bidirectional LSTM.
         """
+        super().__init__()
 
-        hidden_neurons = hidden_neurons.copy() + [latent_dim]
-        encoder = DenseNet(
-            input_dim, hidden_neurons, bias, relu_slope, inplace_activation
-        )
-        decoder_neurons = list(reversed(hidden_neurons))[1:] + [input_dim]
-        decoder = DenseNet(
-            hidden_neurons[-1],
-            decoder_neurons,
+        self.num_layers = num_layers
+        if hidden_size is None:
+            hidden_size = input_size
+
+        self.lstm = nn.LSTM(
+            input_size,
+            hidden_size,
+            num_layers,
             bias,
-            relu_slope,
-            inplace_activation,
+            batch_first=True,
+            dropout=dropout,
+            bidirectional=bidirectional,
         )
 
-        super().__init__(encoder, decoder)
+        # Linear prediction head to map LSTM activation
+        # function outputs to the correct output range
+        self.head = nn.Linear(hidden_size, input_size)
 
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Forward pass of autoencoder.
-
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
         Parameters
         ----------
         x : torch.Tensor
-            Input data.
+            Tensor of shape BxNxD for B batches of N examples
+            by D feature dimensions.
 
         Returns
         -------
-        Tuple[torch.Tensor, torch.Tensor]
-            The batch of latent vectors :obj:`z` and the reconstructions :obj:`recon_x`.
+        torch.Tensor
+            The predicted tensor of size (B, N, hidden_size).
         """
-        z = self.encode(x)
-        recon_x = self.decode(F.relu(z))
-        return z, recon_x
+        _, (h_n, _) = self.lstm(x)  # output, (h_n, c_n)
 
-    def recon_loss(
-        self, x: torch.Tensor, recon_x: torch.Tensor, reduction: str = "mean"
+        # Handle bidirectional and num_layers
+        pred = h_n[self.num_layers - 1, ...]
+
+        pred = self.head(pred)
+        return pred
+
+    def mse_loss(
+        self, y_true: torch.Tensor, y_pred: torch.Tensor, reduction: str = "mean"
     ) -> torch.Tensor:
-        r"""Compute the MSE reconstruction loss between :obj:`x` and :obj:`recon_x`.
+        """Compute the MSE loss between :obj:`y_true` and :obj:`y_pred`.
 
         Parameters
         ----------
-        x : torch.Tensor
-            The input data.
-        recon_x : torch.Tensor
-            The reconstruction of the input data :obj:`x`
+        y_true : torch.Tensor
+            The true data.
+        y_pred : torch.Tensor
+            The prediction.
         reduction : str, default="mean"
             The reduction strategy for the F.mse_loss function.
 
         Returns
         -------
         torch.Tensor
-            The reconstruction loss between :obj:`x` and :obj:`recon_x`.
+            The MSE loss between :obj:`y_true` and :obj:`y_pred`.
         """
-        return F.mse_loss(recon_x, x, reduction=reduction)
+        return F.mse_loss(y_true, y_pred, reduction=reduction)
 
 
-class LinearAETrainer(Trainer):
-    """Trainer class to fit a linear autoencoder to a set of feature vectors."""
+class LSTMTrainer(Trainer):
+    """Trainer class to fit an LSTM model to a time series of feature vectors."""
 
     # TODO: Add example usage in documentation.
 
     def __init__(
         self,
-        input_dim: int = 40,
-        latent_dim: int = 3,
-        hidden_neurons: List[int] = [32, 16, 8],
+        input_size: int,
+        hidden_size: Optional[int] = None,
+        num_layers: int = 1,
         bias: bool = True,
-        relu_slope: float = 0.0,
-        inplace_activation: bool = False,
+        dropout: float = 0.0,
+        bidirectional: bool = False,
+        window_size: int = 10,
+        horizon: int = 1,
         seed: int = 42,
         in_gpu_memory: bool = False,
         num_data_workers: int = 0,
         prefetch_factor: int = 2,
         split_pct: float = 0.8,
-        split_method: str = "random",
+        split_method: str = "partition",
         batch_size: int = 128,
         shuffle: bool = True,
         device: str = "cpu",
@@ -138,20 +151,30 @@ class LinearAETrainer(Trainer):
         """
         Parameters
         ----------
-        input_dim : int, default=40
-            Dimension of input tensor (should be flattened).
-        latent_dim : int, default=3
-            Dimension of the latent space.
-        hidden_neurons : List[int], default=[32, 16, 8]
-            Linear layers :obj:`in_features`. Defines the shape of the autoencoder
-            (does not include latent dimension). The encoder and decoder are symmetric.
-        bias : bool, default=True
-            Use a bias term in the Linear layers.
-        relu_slope : float, default=0.0
-            If greater than 0.0, will use LeakyReLU activiation with
-            :obj:`negative_slope` set to :obj:`relu_slope`.
-        inplace_activation : bool, default=False
-            Sets the inplace option for the activation function.
+        input_size: int
+            The number of expected features in the input x.
+        hidden_size: Optional[int], default=None
+            The number of features in the hidden state h. By default, the
+            :obj:`hidden_size` will be equal to the :obj:`input_size` in
+            order to propogate the dynamics.
+        num_layers: int, default=1
+            Number of recurrent layers. E.g., setting num_layers=2 would mean
+            stacking two LSTMs together to form a stacked LSTM, with the second
+            LSTM taking in outputs of the first LSTM and computing the final
+            results.
+        bias: bool, default=True
+            If False, then the layer does not use bias weights b_ih and b_hh.
+            Default: True
+        dropout: float, default=0.0
+            If non-zero, introduces a Dropout layer on the outputs of each
+            LSTM layer except the last layer, with dropout probability equal
+            to dropout.
+        bidirectional: bool, default=False
+            If True, becomes a bidirectional LSTM.
+        window_size : int, default=10
+            Number of timesteps considered for prediction.
+        horizon : int, default=1
+            How many time steps to predict ahead.
         seed : int, default=42
             Random seed for torch, numpy, and random module.
         in_gpu_memory : bool, default=False
@@ -184,7 +207,7 @@ class LinearAETrainer(Trainer):
             Dictionary of hyperparameters to pass to the chosen PyTorch learning rate scheduler.
         epochs : int, default=100
             Number of epochs to train for.
-        verbose : bool, default False
+        verbose : bool, default=False
             If True, will print training and validation loss at each epoch.
         clip_grad_max_norm : float, default=10.0
             Max norm of the gradients for gradient clipping for more information
@@ -220,6 +243,7 @@ class LinearAETrainer(Trainer):
         ValueError
             Specified :obj:`device` as :obj:`cuda`, but it is unavailable.
         """
+
         super().__init__(
             seed,
             in_gpu_memory,
@@ -242,6 +266,8 @@ class LinearAETrainer(Trainer):
             use_wandb,
         )
 
+        self.window_size = window_size
+        self.horizon = horizon
         self.optimizer_name = optimizer_name
         self.optimizer_hparams = optimizer_hparams
         self.scheduler_name = scheduler_name
@@ -249,8 +275,11 @@ class LinearAETrainer(Trainer):
 
         from mdlearn.utils import get_torch_optimizer, get_torch_scheduler
 
-        self.model = LinearAE(
-            input_dim, latent_dim, hidden_neurons, bias, relu_slope, inplace_activation
+        # Set random seeds
+        self._set_seed()
+
+        self.model = LSTM(
+            input_size, hidden_size, num_layers, bias, dropout, bidirectional
         ).to(self.device)
 
         if self.use_wandb:
@@ -278,7 +307,7 @@ class LinearAETrainer(Trainer):
         output_path: PathLike = "./",
         checkpoint: Optional[PathLike] = None,
     ):
-        r"""Trains the autoencoder on the input data :obj:`X`.
+        """Trains the LSTM on the input data :obj:`X`.
 
         Parameters
         ----------
@@ -299,6 +328,9 @@ class LinearAETrainer(Trainer):
 
         Raises
         ------
+        ValueError
+            If :obj:`X` does not have two dimensions. For scalar time series, please
+            reshape to (N, 1).
         TypeError
             If :obj:`scalars` is not type dict. A common error is to pass
             :obj:`output_path` as the second argument.
@@ -306,6 +338,9 @@ class LinearAETrainer(Trainer):
             If using a learning rate scheduler other than :obj:`ReduceLROnPlateau`,
             a step function will need to be implemented.
         """
+
+        if len(X.shape) != 2:
+            raise ValueError(f"X should be of dimension (N, D), got {X.shape}.")
         if not isinstance(scalars, dict):
             raise TypeError(
                 "scalars should be of type dict. A common error"
@@ -314,7 +349,7 @@ class LinearAETrainer(Trainer):
 
         from mdlearn.utils import log_checkpoint, log_latent_visualization
         from mdlearn.data.utils import train_valid_split
-        from mdlearn.data.datasets.feature_vector import FeatureVectorDataset
+        from mdlearn.data.datasets.feature_vector import TimeFeatureVectorDataset
 
         if self.use_wandb:
             import wandb
@@ -328,7 +363,13 @@ class LinearAETrainer(Trainer):
         self._set_num_threads()
 
         # Load training and validation data
-        dataset = FeatureVectorDataset(X, scalars, in_gpu_memory=self.in_gpu_memory)
+        dataset = TimeFeatureVectorDataset(
+            X,
+            scalars,
+            in_gpu_memory=self.in_gpu_memory,
+            window_size=self.window_size,
+            horizon=self.horizon,
+        )
         train_loader, valid_loader = train_valid_split(
             dataset,
             self.split_pct,
@@ -415,7 +456,7 @@ class LinearAETrainer(Trainer):
         inference_batch_size: int = 512,
         checkpoint: Optional[PathLike] = None,
     ) -> Tuple[np.ndarray, float]:
-        r"""Predict using the LinearAE
+        """Predict using the LSTM.
 
         Parameters
         ----------
@@ -429,12 +470,16 @@ class LinearAETrainer(Trainer):
         Returns
         -------
         Tuple[np.ndarray, float]
-            The :obj:`z` latent vectors corresponding to the
-            input data :obj:`X` and the average reconstruction loss.
+            The predictions and the average MSE loss.
         """
-        from mdlearn.data.datasets.feature_vector import FeatureVectorDataset
+        from mdlearn.data.datasets.feature_vector import TimeFeatureVectorDataset
 
-        dataset = FeatureVectorDataset(X, in_gpu_memory=self.in_gpu_memory)
+        dataset = TimeFeatureVectorDataset(
+            X,
+            in_gpu_memory=self.in_gpu_memory,
+            window_size=self.window_size,
+            horizon=self.horizon,
+        )
         data_loader = DataLoader(
             dataset,
             batch_size=inference_batch_size,
@@ -457,10 +502,10 @@ class LinearAETrainer(Trainer):
                 # Set to empty list to avoid storage of paint scalars
                 # that are not convenient to pass to the predict function.
                 self.scalar_dset_names = []
-                avg_loss, latent_vectors, _ = self._validate(data_loader)
+                avg_loss, preds, _ = self._validate(data_loader)
                 # Restore class state
                 self.scalar_dset_names = tmp
-                return latent_vectors, avg_loss
+                return preds, avg_loss
             except Exception as e:
                 # Restore class state incase of failure
                 self.scalar_dset_names = tmp
@@ -474,10 +519,11 @@ class LinearAETrainer(Trainer):
                 break  # Early stop for sweeps
 
             x = batch["X"].to(self.device, non_blocking=True)
+            y = batch["y"].to(self.device, non_blocking=True)
 
             # Forward pass
-            _, recon_x = self.model(x)
-            loss = self.model.recon_loss(x, recon_x)
+            y_pred = self.model(x)
+            loss = self.model.mse_loss(y, y_pred)
 
             # Backward pass
             self.optimizer.zero_grad()
@@ -498,7 +544,7 @@ class LinearAETrainer(Trainer):
         self, valid_loader
     ) -> Tuple[float, np.ndarray, Dict[str, np.ndarray]]:
         paints = defaultdict(list)
-        latent_vectors = []
+        preds = []
         avg_loss = 0.0
         for i, batch in enumerate(valid_loader):
 
@@ -506,22 +552,23 @@ class LinearAETrainer(Trainer):
                 break  # Early stop for sweeps
 
             x = batch["X"].to(self.device, non_blocking=True)
+            y = batch["y"].to(self.device, non_blocking=True)
 
             # Forward pass
-            z, recon_x = self.model(x)
-            loss = self.model.recon_loss(x, recon_x)
+            y_pred = self.model(x)
+            loss = self.model.mse_loss(y, y_pred)
 
             # Collect loss
             avg_loss += loss.item()
 
             # Collect latent vectors for visualization
-            latent_vectors.append(z.cpu().numpy())
+            preds.append(y_pred.cpu().numpy())
             for name in self.scalar_dset_names:
                 paints[name].append(batch[name].cpu().numpy())
 
         avg_loss /= len(valid_loader)
         # Group latent vectors and paints
-        latent_vectors = np.concatenate(latent_vectors)
+        preds = np.concatenate(preds)
         paints = {name: np.concatenate(scalar) for name, scalar in paints.items()}
 
-        return avg_loss, latent_vectors, paints
+        return avg_loss, preds, paints

@@ -41,7 +41,7 @@ from mdlearn.nn.models.ae.linear import LinearAETrainer
 
 # Initialize autoencoder model
 trainer = LinearAETrainer(
-    input_dim=40, latent_dim=3, neurons=[32, 16, 8], epochs=100
+    input_dim=40, latent_dim=3, hidden_neurons=[32, 16, 8], epochs=100
 )
 
 # Train autoencoder on (N, 40) dimensional data

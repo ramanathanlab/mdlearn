@@ -1,4 +1,10 @@
+import torch
 from torch import nn
+import numpy as np
+import random
+from pathlib import Path
+from typing import Tuple, Optional, Dict, Any
+from mdlearn.utils import PathLike
 
 
 def reset(nn):
@@ -157,3 +163,276 @@ def _init_weights(m):
         m.bias.data.fill_(0.01)
     elif type(m) in [nn.Conv2d, nn.ConvTranspose2d]:
         nn.init.xavier_uniform_(m.weight)
+
+
+class Trainer:
+    """Trainer base class which implements training utility functions."""
+
+    def __init__(
+        self,
+        seed: int = 42,
+        in_gpu_memory: bool = False,
+        num_data_workers: int = 0,
+        prefetch_factor: int = 2,
+        split_pct: float = 0.8,
+        split_method: str = "random",
+        batch_size: int = 128,
+        shuffle: bool = True,
+        device: str = "cpu",
+        epochs: int = 100,
+        verbose: bool = False,
+        clip_grad_max_norm: float = 10.0,
+        checkpoint_log_every: int = 10,
+        plot_log_every: int = 10,
+        plot_n_samples: int = 10000,
+        plot_method: Optional[str] = "TSNE",
+        train_subsample_pct: float = 1.0,
+        valid_subsample_pct: float = 1.0,
+        use_wandb: bool = False,
+    ):
+        """
+        Parameters
+        ----------
+        seed : int, default=42
+            Random seed for torch, numpy, and random module.
+        in_gpu_memory : bool, default=False
+            If True, will pre-load the entire :obj:`data` array to GPU memory.
+        num_data_workers : int, default=0
+            How many subprocesses to use for data loading. 0 means that
+            the data will be loaded in the main process.
+        prefetch_factor : int, by default=2
+            Number of samples loaded in advance by each worker. 2 means there will be a
+            total of 2 * num_workers samples prefetched across all workers.
+        split_pct : float, default=0.8
+            Proportion of data set to use for training. The rest goes to validation.
+        split_method : str, default="random"
+            Method to split the data. For random split use "random", for a simple
+            partition, use "partition".
+        batch_size : int, default=128
+            Mini-batch size for training.
+        shuffle : bool, default=True
+            Whether to shuffle training data or not.
+        device : str, default="cpu"
+            Specify training hardware either :obj:`cpu` or :obj:`cuda` for GPU devices.
+        epochs : int, default=100
+            Number of epochs to train for.
+        verbose : bool, default False
+            If True, will print training and validation loss at each epoch.
+        clip_grad_max_norm : float, default=10.0
+            Max norm of the gradients for gradient clipping for more information
+            see: :obj:`torch.nn.utils.clip_grad_norm_` documentation.
+        checkpoint_log_every : int, default=10
+            Epoch interval to log a checkpoint file containing the model
+            weights, optimizer, and scheduler parameters.
+        plot_log_every : int, default=10
+            Epoch interval to log a visualization plot of the latent space.
+        plot_n_samples : int, default=10000
+            Number of validation samples to use for plotting.
+        plot_method : Optional[str], default="TSNE"
+            The method for visualizing the latent space or if visualization
+            should not be run, set :obj:`plot_method=None`. If using :obj:`"TSNE"`,
+            it will attempt to use the RAPIDS.ai GPU implementation and
+            will fallback to the sklearn CPU implementation if RAPIDS.ai
+            is unavailable.
+        train_subsample_pct : float, default=1.0
+            Percentage of training data to use during hyperparameter sweeps.
+        valid_subsample_pct : float, default=1.0
+            Percentage of validation data to use during hyperparameter sweeps.
+        use_wandb : bool, default=False
+            If True, will log results to wandb.
+
+        Raises
+        ------
+        ValueError
+            :obj:`split_pct` should be between 0 and 1.
+        ValueError
+            :obj:`train_subsample_pct` should be between 0 and 1.
+        ValueError
+            :obj:`valid_subsample_pct` should be between 0 and 1.
+        ValueError
+            Specified :obj:`device` as :obj:`cuda`, but it is unavailable.
+
+        Note
+        ----
+        This base class does not receive optimizer or scheduler settings
+        because in general there could be multiple optimizers.
+        """
+        if 0 > split_pct or 1 < split_pct:
+            raise ValueError("split_pct should be between 0 and 1.")
+        if 0 > train_subsample_pct or 1 < train_subsample_pct:
+            raise ValueError("train_subsample_pct should be between 0 and 1")
+        if 0 > valid_subsample_pct or 1 < valid_subsample_pct:
+            raise ValueError("valid_subsample_pct should be between 0 and 1")
+        if "cuda" in device and not torch.cuda.is_available():
+            raise ValueError("Specified cuda, but it is unavailable.")
+
+        self.seed = seed
+        self.scalar_dset_names = []
+        self.in_gpu_memory = in_gpu_memory
+        self.num_data_workers = 0 if in_gpu_memory else num_data_workers
+        self.persistent_workers = (self.num_data_workers > 0) and not self.in_gpu_memory
+        self.prefetch_factor = prefetch_factor
+        self.split_pct = split_pct
+        self.split_method = split_method
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.device = torch.device(device)
+        self.epochs = epochs
+        self.verbose = verbose
+        self.clip_grad_max_norm = clip_grad_max_norm
+        self.checkpoint_log_every = checkpoint_log_every
+        self.plot_log_every = plot_log_every
+        self.plot_n_samples = plot_n_samples
+        self.plot_method = plot_method
+        self.train_subsample_pct = train_subsample_pct
+        self.valid_subsample_pct = valid_subsample_pct
+        self.use_wandb = use_wandb
+
+        # Set random seeds
+        self._set_seed()
+
+    def _set_seed(self):
+        """Set random seed of torch, numpy, and random."""
+        torch.manual_seed(self.seed)
+        np.random.seed(self.seed)
+        random.seed(self.seed)
+
+    def _set_num_threads(self):
+        """Set available number of cores."""
+        torch.set_num_threads(
+            1 if self.num_data_workers == 0 else self.num_data_workers
+        )
+
+    def _make_output_dir(
+        self,
+        output_path: PathLike,
+        exist_ok: bool = False,
+    ) -> Tuple[Path, Path, Path]:
+        """Creates output directory structure.
+
+        Parameters
+        ----------
+        output_path : PathLike
+            The root output path to store training results.
+        exist_ok : bool, default=False
+            Set to True if resuming from a checkpoint, otherwise
+            should be False for a fresh training run.
+
+        Returns
+        -------
+        Path
+            Root directory path for the training results.
+        Path
+            Directory path to store checkpoint files :obj:`output_path/checkpoints`.
+        Path
+            Directory path to store plotting results :obj:`output_path/plots`.
+        """
+        output_path = Path(output_path).resolve()
+        output_path.mkdir(exist_ok=exist_ok)
+        # Create checkpoint directory
+        checkpoint_path = output_path / "checkpoints"
+        checkpoint_path.mkdir(exist_ok=exist_ok)
+        # Create plot directory
+        plot_path = output_path / "plots"
+        plot_path.mkdir(exist_ok=exist_ok)
+        return output_path, checkpoint_path, plot_path
+
+    def _load_checkpoint(self, checkpoint: PathLike) -> int:
+        """Load parameters from a checkpoint file.
+
+        Parameters
+        ----------
+        checkpoint : PathLike
+            PyTorch checkpoint file (.pt) to load model, optimizer
+            and scheduler parameters from.
+
+        Returns
+        -------
+        int
+            Epoch where training left off.
+
+        Note
+        ----
+        This function works in the case of a single optimizer,
+        single model and single (or None) scheduler. If additional
+        functionality is needed, it can be implemented in the child class.
+        """
+        from mdlearn.utils import resume_checkpoint
+
+        return resume_checkpoint(
+            checkpoint, self.model, {"optimizer": self.optimizer}, self.scheduler
+        )
+
+    def _resume_training(self, checkpoint: Optional[PathLike] = None) -> int:
+        """Optionally resume training from a checkpoint.
+
+        Parameters
+        ----------
+        checkpoint : Optional[PathLike], default=None
+            PyTorch checkpoint file (.pt) to resume training from.
+
+        Returns
+        -------
+        int
+            Epoch where training left off or 1 if :obj:`checkpoint` is :obj:`None`.
+
+        Note
+        ----
+        Requires :obj:`self._load_checkpoint()` to be implemented.
+        """
+        if checkpoint is not None:
+            start_epoch = self._load_checkpoint(checkpoint)
+            if self.verbose:
+                print(f"Resume training at epoch {start_epoch} from {checkpoint}")
+        else:
+            start_epoch = 1
+
+        return start_epoch
+
+    def step_scheduler(self, epoch: int, avg_train_loss: float, avg_valid_loss: float):
+        """Implements the logic to step the learning rate scheduler.
+        Different schedulers may have different update logic. Please
+        subclass :obj:`LinearAETrainer` and re-implement this function
+        for support of additional logic.
+
+        Parameters
+        ----------
+        epoch : int
+            The current training epoch.
+        avg_train_loss : float
+            The current epochs average training loss.
+        avg_valid_loss : float
+            The current epochs average valiation loss.
+
+        Raises
+        ------
+        NotImplementedError
+            If using a learning rate scheduler other than :obj:`ReduceLROnPlateau`,
+            a step function will need to be added.
+        """
+        if self.scheduler is None:
+            return
+        elif self.scheduler_name == "ReduceLROnPlateau":
+            self.scheduler.step(avg_valid_loss)
+        else:
+            raise NotImplementedError(f"scheduler {self.scheduler_name} step function.")
+
+    def fit(self):
+        """Trains the model on the input dataset.
+
+        Raises
+        ------
+        NotImplementedError
+            Child class must implement this method.
+        """
+        raise NotImplementedError("Child class must implement this method")
+
+    def predict(self):
+        """Predicts using the trained model.
+
+        Raises
+        ------
+        NotImplementedError
+            Child class must implement this method.
+        """
+        raise NotImplementedError("Child class must implement this method")
