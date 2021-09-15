@@ -8,6 +8,7 @@ from typing import List, Tuple, Dict, Any, Optional
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from mdlearn.utils import PathLike
+from mdlearn.nn.utils import Trainer
 from mdlearn.nn.models.ae import AE
 from mdlearn.nn.modules.dense_net import DenseNet
 
@@ -97,7 +98,7 @@ class LinearAE(AE):
         return F.mse_loss(recon_x, x, reduction=reduction)
 
 
-class LinearAETrainer:
+class LinearAETrainer(Trainer):
     """Trainer class to fit a linear autoencoder to a set of feature vectors."""
 
     # TODO: Add example usage in documentation.
@@ -115,6 +116,7 @@ class LinearAETrainer:
         num_data_workers: int = 0,
         prefetch_factor: int = 2,
         split_pct: float = 0.8,
+        split_method: str = "random",
         batch_size: int = 128,
         shuffle: bool = True,
         device: str = "cpu",
@@ -162,6 +164,9 @@ class LinearAETrainer:
             total of 2 * num_workers samples prefetched across all workers.
         split_pct : float, default=0.8
             Proportion of data set to use for training. The rest goes to validation.
+        split_method : str, default="random"
+            Method to split the data. For random split use "random", for a simple
+            partition, use "partition".
         batch_size : int, default=128
             Mini-batch size for training.
         shuffle : bool, default=True
@@ -215,44 +220,34 @@ class LinearAETrainer:
         ValueError
             Specified :obj:`device` as :obj:`cuda`, but it is unavailable.
         """
-        if 0 > split_pct or 1 < split_pct:
-            raise ValueError("split_pct should be between 0 and 1.")
-        if 0 > train_subsample_pct or 1 < train_subsample_pct:
-            raise ValueError("train_subsample_pct should be between 0 and 1")
-        if 0 > valid_subsample_pct or 1 < valid_subsample_pct:
-            raise ValueError("valid_subsample_pct should be between 0 and 1")
-        if "cuda" in device and not torch.cuda.is_available():
-            raise ValueError("Specified cuda, but it is unavailable.")
+        super().__init__(
+            seed,
+            in_gpu_memory,
+            num_data_workers,
+            prefetch_factor,
+            split_pct,
+            split_method,
+            batch_size,
+            shuffle,
+            device,
+            epochs,
+            verbose,
+            clip_grad_max_norm,
+            checkpoint_log_every,
+            plot_log_every,
+            plot_n_samples,
+            plot_method,
+            train_subsample_pct,
+            valid_subsample_pct,
+            use_wandb,
+        )
 
-        self.seed = seed
-        self.scalar_dset_names = []
-        self.in_gpu_memory = in_gpu_memory
-        self.num_data_workers = 0 if in_gpu_memory else num_data_workers
-        self.persistent_workers = (self.num_data_workers > 0) and not self.in_gpu_memory
-        self.prefetch_factor = prefetch_factor
-        self.split_pct = split_pct
-        self.batch_size = batch_size
-        self.shuffle = shuffle
-        self.device = torch.device(device)
         self.optimizer_name = optimizer_name
         self.optimizer_hparams = optimizer_hparams
         self.scheduler_name = scheduler_name
         self.scheduler_hparams = scheduler_hparams
-        self.epochs = epochs
-        self.verbose = verbose
-        self.clip_grad_max_norm = clip_grad_max_norm
-        self.checkpoint_log_every = checkpoint_log_every
-        self.plot_log_every = plot_log_every
-        self.plot_n_samples = plot_n_samples
-        self.plot_method = plot_method
-        self.train_subsample_pct = train_subsample_pct
-        self.valid_subsample_pct = valid_subsample_pct
-        self.use_wandb = use_wandb
 
         from mdlearn.utils import get_torch_optimizer, get_torch_scheduler
-
-        # Set random seeds
-        self._set_seed()
 
         self.model = LinearAE(
             input_dim, latent_dim, hidden_neurons, bias, relu_slope, inplace_activation
@@ -275,88 +270,6 @@ class LinearAETrainer:
 
         # Log the train and validation loss each epoch
         self.loss_curve_ = {"train": [], "validation": []}
-
-    def _set_seed(self):
-        """Set random seed of torch, numpy, and random."""
-        torch.manual_seed(self.seed)
-        np.random.seed(self.seed)
-        random.seed(self.seed)
-
-    def _make_output_dir(
-        self,
-        output_path: PathLike,
-        exist_ok: bool = False,
-    ) -> Tuple[Path, Path, Path]:
-        """Creates output directory structure.
-
-        Parameters
-        ----------
-        output_path : PathLike
-            The root output path to store training results.
-        exist_ok : bool, default=False
-            Set to True if resuming from a checkpoint, otherwise
-            should be False for a fresh training run.
-
-        Returns
-        -------
-        Path
-            Root directory path for the training results.
-        Path
-            Directory path to store checkpoint files :obj:`output_path/checkpoints`.
-        Path
-            Directory path to store plotting results :obj:`output_path/plots`.
-        """
-        output_path = Path(output_path).resolve()
-        output_path.mkdir(exist_ok=exist_ok)
-        # Create checkpoint directory
-        checkpoint_path = output_path / "checkpoints"
-        checkpoint_path.mkdir(exist_ok=exist_ok)
-        # Create plot directory
-        plot_path = output_path / "plots"
-        plot_path.mkdir(exist_ok=exist_ok)
-        return output_path, checkpoint_path, plot_path
-
-    def _load_checkpoint(self, checkpoint: PathLike) -> int:
-        """Load parameters from a checkpoint file.
-
-        Parameters
-        ----------
-        checkpoint : PathLike
-            PyTorch checkpoint file (.pt) to load model, optimizer
-            and scheduler parameters from.
-
-        Returns
-        -------
-        int
-            Epoch where training left off.
-        """
-        from mdlearn.utils import resume_checkpoint
-
-        return resume_checkpoint(
-            checkpoint, self.model, {"optimizer": self.optimizer}, self.scheduler
-        )
-
-    def _resume_training(self, checkpoint: Optional[PathLike] = None) -> int:
-        """Optionally resume training from a checkpoint
-
-        Parameters
-        ----------
-        checkpoint : Optional[PathLike], default=None
-            PyTorch checkpoint file (.pt) to resume training from.
-
-        Returns
-        -------
-        int
-            Epoch where training left off or 1 if :obj:`checkpoint` is :obj:`None`.
-        """
-        if checkpoint is not None:
-            start_epoch = self._load_checkpoint(checkpoint)
-            if self.verbose:
-                print(f"Resume training at epoch {start_epoch} from {checkpoint}")
-        else:
-            start_epoch = 1
-
-        return start_epoch
 
     def fit(
         self,
@@ -412,15 +325,14 @@ class LinearAETrainer:
         )
 
         # Set available number of cores
-        torch.set_num_threads(
-            1 if self.num_data_workers == 0 else self.num_data_workers
-        )
+        self._set_num_threads()
 
         # Load training and validation data
         dataset = FeatureVectorDataset(X, scalars, in_gpu_memory=self.in_gpu_memory)
         train_loader, valid_loader = train_valid_split(
             dataset,
             self.split_pct,
+            self.split_method,
             batch_size=self.batch_size,
             shuffle=self.shuffle,
             num_workers=self.num_data_workers,
@@ -613,31 +525,3 @@ class LinearAETrainer:
         paints = {name: np.concatenate(scalar) for name, scalar in paints.items()}
 
         return avg_loss, latent_vectors, paints
-
-    def step_scheduler(self, epoch: int, avg_train_loss: float, avg_valid_loss: float):
-        r"""Implements the logic to step the learning rate scheduler.
-        Different schedulers may have different update logic. Please
-        subclass :obj:`LinearAETrainer` and re-implement this function
-        for support of additional logic.
-
-        Parameters
-        ----------
-        epoch : int
-            The current training epoch
-        avg_train_loss : float
-            The current epochs average training loss.
-        avg_valid_loss : float
-            The current epochs average valiation loss.
-
-        Raises
-        ------
-        NotImplementedError
-            If using a learning rate scheduler other than :obj:`ReduceLROnPlateau`,
-            a step function will need to be added.
-        """
-        if self.scheduler is None:
-            return
-        elif self.scheduler_name == "ReduceLROnPlateau":
-            self.scheduler.step(avg_valid_loss)
-        else:
-            raise NotImplementedError(f"scheduler {self.scheduler_name} step function.")

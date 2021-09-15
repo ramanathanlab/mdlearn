@@ -280,9 +280,6 @@ class LSTMAETrainer(Trainer):
 
         from mdlearn.utils import get_torch_optimizer, get_torch_scheduler
 
-        # Set random seeds
-        self._set_seed()
-
         self.model = LSTMAE(
             input_dim,
             latent_dim,
