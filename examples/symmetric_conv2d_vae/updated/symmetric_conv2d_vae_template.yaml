@@ -1,0 +1,55 @@
+input_path: /homes/mzvyagin/gordon_bell_processing/run_7egq_0_openmm_segmentA.h5
+output_path: "run-0"
+checkpoint_path: null
+input_shape:
+- 1
+- 926
+- 926
+filters:
+- 64
+- 64
+- 64
+- 64
+kernels:
+- 5
+- 3
+- 3
+- 3
+strides:
+- 2
+- 2
+- 2
+- 2
+affine_widths:
+- 128
+affine_dropouts:
+- 0.0
+latent_dim: 10
+activation: ReLU
+output_activation: Sigmoid
+lambda_rec: 1.0
+seed: 42
+in_gpu_memory: false
+num_data_workers: 0
+prefetch_factor: 2
+split_pct: 0.8
+split_method: random
+batch_size: 64
+shuffle: true
+device: cuda
+optimizer_name: RMSprop
+optimizer_hparams:
+    lr: 0.001
+    weight_decay: 1.0e-05
+scheduler_name: null
+scheduler_hparams: {}
+epochs: 2
+verbose: true
+clip_grad_max_norm: 10.0
+checkpoint_log_every: 2
+plot_log_every: 5
+plot_n_samples: 200
+plot_method: raw
+train_subsample_pct: 1.0
+valid_subsample_pct: 1.0
+use_wandb: false
