@@ -1,5 +1,6 @@
 import h5py
 import numpy as np
+import pandas as pd
 from pathlib import Path
 from typing import Optional, List, Tuple, Dict, Any
 from mdlearn.utils import parse_args, BaseSettings
@@ -15,7 +16,7 @@ class SymmetricConv2dVAEConfig(BaseSettings):
     # Optionally resume training from a checkpoint file
     checkpoint_path: Optional[Path] = None
 
-    input_shape: Tuple[int, int, int]
+    input_shape: Tuple[int, int, int] = (1, 926, 926)
     filters: List[int] = [64, 64, 64, 64]
     kernels: List[int] = [5, 3, 3, 3]
     strides: List[int] = [2, 2, 2, 2]
@@ -31,9 +32,9 @@ class SymmetricConv2dVAEConfig(BaseSettings):
     prefetch_factor: int = 2
     split_pct: float = 0.8
     split_method: str = "random"
-    batch_size: int = 128
+    batch_size: int = 64
     shuffle: bool = True
-    device: str = "cpu"
+    device: str = "cuda"
     optimizer_name: str = "RMSprop"
     optimizer_hparams: Dict[str, Any] = {"lr": 0.001, "weight_decay": 0.00001}
     scheduler_name: Optional[str] = None
@@ -49,6 +50,7 @@ class SymmetricConv2dVAEConfig(BaseSettings):
     valid_subsample_pct: float = 1.0
     use_wandb: bool = False
 
+    inference_batch_size: int = 128
 
 def main(cfg: SymmetricConv2dVAEConfig):
 
@@ -89,10 +91,12 @@ def main(cfg: SymmetricConv2dVAEConfig):
         use_wandb=cfg.use_wandb,
     )
 
+    print(trainer.model)
+    
     # Load input data from HDF5 file
     with h5py.File(cfg.input_path) as f:
-        contact_maps = f["contact_maps"][...]
-        scalars = {"rmsd": f["rmsds"][...]}
+        contact_maps = f["contact_map"][...]
+        scalars = {"rmsd": f["rmsd"][...]}
 
     print(f"Number of contact maps: {len(contact_maps)}")
 
@@ -104,23 +108,23 @@ def main(cfg: SymmetricConv2dVAEConfig):
         checkpoint=cfg.checkpoint_path,
     )
 
+    pd.DataFrame(trainer.loss_curve_).to_csv(cfg.output_path / "loss.csv")
+
     # Generate latent embeddings in inference mode
-    z, loss = trainer.predict(
+    z, loss, recon_loss, kld_loss, = trainer.predict(
         X=contact_maps, inference_batch_size=cfg.inference_batch_size
     )
 
     np.save(cfg.output_path / "z.npy", z)
 
-    print(f"Final loss on the full dataset is: {loss}")
+    print(f"Final loss on the full dataset is: {loss}, recon: {recon_loss}, kld: {kld_loss}")
 
 
 if __name__ == "__main__":
-    # If missing -c argument, write a template yaml file
-    try:
-        args = parse_args()
-    except Exception:
-        SymmetricConv2dVAEConfig().dump_yaml("symmetric_conv2d_vae_template.yaml")
-        exit()
-
+    # Generate sample yaml
+    #SymmetricConv2dVAEConfig().dump_yaml("symmetric_conv2d_vae_template.yaml")
+    #exit() 
+    args = parse_args()
     cfg = SymmetricConv2dVAEConfig.from_yaml(args.config)
     main(cfg)
+
