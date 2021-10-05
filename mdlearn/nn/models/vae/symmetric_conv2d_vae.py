@@ -139,7 +139,6 @@ class SymmetricConv2dVAETrainer(Trainer):
     def __init__(
         self,
         input_shape: Tuple[int, ...],
-        init_weights: Optional[str] = None,
         filters: List[int] = [64, 64, 64],
         kernels: List[int] = [3, 3, 3],
         strides: List[int] = [1, 2, 1],
@@ -290,16 +289,15 @@ class SymmetricConv2dVAETrainer(Trainer):
         from mdlearn.utils import get_torch_optimizer, get_torch_scheduler
 
         self.model = SymmetricConv2dVAE(
-            input_shape,
-            init_weights,
-            filters,
-            kernels,
-            strides,
-            affine_widths,
-            affine_dropouts,
-            latent_dim,
-            activation,
-            output_activation,
+            input_shape=input_shape,
+            filters=filters,
+            kernels=kernels,
+            strides=strides,
+            affine_widths=affine_widths,
+            affine_dropouts=affine_dropouts,
+            latent_dim=latent_dim,
+            activation=activation,
+            output_activation=output_activation,
         ).to(self.device)
 
         if self.use_wandb:
