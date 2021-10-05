@@ -431,11 +431,6 @@ class SymmetricConv2dVAETrainer(Trainer):
 
             if self.verbose:
                 print(
-                    "====> Epoch: {} Valid:\tAvg loss: {:.4f}\n".format(
-                        epoch, avg_valid_loss
-                    )
-                )
-                print(
                     "====> Epoch: {} Valid:\tAvg loss: {:.4f}\tAvg recon: {:.4f}\tAvg kld loss: {:.4f}".format(
                         epoch, avg_valid_loss, avg_valid_recon_loss, avg_valid_kld_loss
                     )
@@ -581,7 +576,6 @@ class SymmetricConv2dVAETrainer(Trainer):
                 self.model.parameters(), self.clip_grad_max_norm
             )
             self.optimizer.step()
-
             # Collect loss
             avg_loss += loss.item()
             avg_recon_loss += recon_loss.item()
