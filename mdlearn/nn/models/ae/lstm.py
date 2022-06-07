@@ -1,3 +1,4 @@
+""".. warning:: LSTM models are still under development, use with caution!"""
 import torch
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
@@ -12,8 +13,7 @@ from mdlearn.nn.modules.lstm_net import LSTMNet
 
 
 class LSTMAE(AE):
-    """LSTM model to predict the dynamics for a
-    time series of feature vectors."""
+    """LSTM model to predict the dynamics for a time series of feature vectors."""
 
     def __init__(
         self,
