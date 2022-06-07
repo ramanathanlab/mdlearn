@@ -1,15 +1,17 @@
 """.. warning:: LSTM models are still under development, use with caution!"""
+from collections import defaultdict
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
 import torch
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-from typing import Optional, Tuple, Dict, List, Any
-import numpy as np
-from collections import defaultdict
-from mdlearn.utils import PathLike
-from mdlearn.nn.utils import Trainer
+
 from mdlearn.nn.models.ae import AE
 from mdlearn.nn.modules.dense_net import DenseNet
 from mdlearn.nn.modules.lstm_net import LSTMNet
+from mdlearn.nn.utils import Trainer
+from mdlearn.utils import PathLike
 
 
 class LSTMAE(AE):
@@ -356,9 +358,9 @@ class LSTMAETrainer(Trainer):
                 " is to pass output_path as the second argument."
             )
 
-        from mdlearn.utils import log_checkpoint, log_latent_visualization
-        from mdlearn.data.utils import train_valid_split
         from mdlearn.data.datasets.feature_vector import TimeFeatureVectorDataset
+        from mdlearn.data.utils import train_valid_split
+        from mdlearn.utils import log_checkpoint, log_latent_visualization
 
         if self.use_wandb:
             import wandb

@@ -1,9 +1,11 @@
-import torch
-from torch import nn
-import numpy as np
 import random
 from pathlib import Path
-from typing import Tuple, Optional, Union
+from typing import Optional, Tuple, Union
+
+import numpy as np
+import torch
+from torch import nn
+
 from mdlearn.utils import PathLike
 
 

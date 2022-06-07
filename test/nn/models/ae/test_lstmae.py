@@ -2,9 +2,9 @@ import numpy as np
 
 
 def test_lstmae_net():
-    from mdlearn.nn.models.ae.lstm import LSTMAE
-    from mdlearn.data.utils import train_valid_split
     from mdlearn.data.datasets.feature_vector import TimeFeatureVectorDataset
+    from mdlearn.data.utils import train_valid_split
+    from mdlearn.nn.models.ae.lstm import LSTMAE
 
     N, D, latent_dim, window_size, batch_size = 100, 16, 2, 10, 8
     hidden_neurons = [8, 4]

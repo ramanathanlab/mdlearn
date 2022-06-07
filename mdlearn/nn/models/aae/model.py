@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
-from mdlearn.nn.utils import reset
+
 from mdlearn.nn.models.vae import VAE
+from mdlearn.nn.utils import reset
 
 
 class ChamferLoss(nn.Module):

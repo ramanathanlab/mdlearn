@@ -1,13 +1,14 @@
 import itertools
-import numpy as np
 from pathlib import Path
+from typing import TYPE_CHECKING, Dict, List
+
 import MDAnalysis as mda
-from mdlearn.utils import PathLike
+import numpy as np
+
 from mdlearn.data.preprocess.align import iterative_means_align
 from mdlearn.data.preprocess.decorrelation.spatial import SD2, SD4
 from mdlearn.nn.models.ae.linear import LinearAETrainer
-
-from typing import TYPE_CHECKING, List, Dict
+from mdlearn.utils import PathLike
 
 if TYPE_CHECKING:
     import numpy.typing as npt
@@ -139,7 +140,7 @@ if __name__ == "__main__":
     # Find powers of 2, smaller than combined_z.shape[1] and larger than latent_dim
     hidden_neurons = []
     for i in itertools.count():
-        power = 2 ** i
+        power = 2**i
         if power <= latent_dim:
             pass
         elif power < combined_z.shape[1]:

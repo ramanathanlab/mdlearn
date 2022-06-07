@@ -1,7 +1,9 @@
+from typing import List
+
 import torch
 import torch.nn as nn
+
 from mdlearn.nn.utils import get_activation
-from typing import List
 
 
 class LinearDiscriminator(nn.Module):

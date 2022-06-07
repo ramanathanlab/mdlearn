@@ -1,23 +1,25 @@
+import itertools
+import random
 import time
+from collections import defaultdict
+
+import numpy as np
 import torch
 import wandb
-import random
-import itertools
-import numpy as np
-from tqdm import tqdm
-from collections import defaultdict
+from config import Point3dAAEConfig
 from torchsummary import summary
+from tqdm import tqdm
+
+from mdlearn.data.datasets.point_cloud import PointCloudDataset
+from mdlearn.data.utils import train_valid_split
+from mdlearn.nn.models.aae.point_3d_aae import AAE3d
 from mdlearn.utils import (
-    parse_args,
+    get_torch_optimizer,
     log_checkpoint,
     log_latent_visualization,
+    parse_args,
     resume_checkpoint,
-    get_torch_optimizer,
 )
-from mdlearn.nn.models.aae.point_3d_aae import AAE3d
-from mdlearn.data.utils import train_valid_split
-from mdlearn.data.datasets.point_cloud import PointCloudDataset
-from config import Point3dAAEConfig
 
 
 def main(cfg: Point3dAAEConfig):

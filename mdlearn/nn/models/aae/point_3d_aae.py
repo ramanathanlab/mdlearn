@@ -1,6 +1,8 @@
 """Adversarial Autoencoder for 3D point cloud data (3dAAE)"""
-import torch
 from typing import List, Tuple
+
+import torch
+
 from mdlearn.nn.models.aae import AAE, ChamferLoss
 from mdlearn.nn.modules.conv1d_encoder import Conv1dEncoder
 from mdlearn.nn.modules.linear_decoder import LinearDecoder

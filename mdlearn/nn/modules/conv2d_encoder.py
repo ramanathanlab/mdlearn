@@ -1,13 +1,15 @@
-from typing import Optional, Tuple, List
+from math import isclose
+from typing import List, Optional, Tuple
+
+import numpy as np
 import torch
 from torch import nn
-import numpy as np
-from math import isclose
+
 from mdlearn.nn.utils import (
-    conv_output_shape,
-    same_padding,
-    get_activation,
     _init_weights,
+    conv_output_shape,
+    get_activation,
+    same_padding,
 )
 
 

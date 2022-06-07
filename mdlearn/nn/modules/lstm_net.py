@@ -1,7 +1,8 @@
 """LSTMNet module."""
+from typing import List
+
 import torch
 import torch.nn as nn
-from typing import List
 
 
 class LSTMNet(nn.Module):

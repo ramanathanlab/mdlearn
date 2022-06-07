@@ -1,16 +1,16 @@
 """Linear-layer autoencoder model with trainer class."""
-import torch
-import random
-import numpy as np
-from pathlib import Path
 from collections import defaultdict
-from typing import List, Tuple, Dict, Any, Optional
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
+import torch
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-from mdlearn.utils import PathLike
-from mdlearn.nn.utils import Trainer
+
 from mdlearn.nn.models.ae import AE
 from mdlearn.nn.modules.dense_net import DenseNet
+from mdlearn.nn.utils import Trainer
+from mdlearn.utils import PathLike
 
 
 class LinearAE(AE):
@@ -312,9 +312,9 @@ class LinearAETrainer(Trainer):
                 " is to pass output_path as the second argument."
             )
 
-        from mdlearn.utils import log_checkpoint, log_latent_visualization
-        from mdlearn.data.utils import train_valid_split
         from mdlearn.data.datasets.feature_vector import FeatureVectorDataset
+        from mdlearn.data.utils import train_valid_split
+        from mdlearn.utils import log_checkpoint, log_latent_visualization
 
         if self.use_wandb:
             import wandb

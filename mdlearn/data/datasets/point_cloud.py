@@ -1,9 +1,11 @@
 """PointCloud Dataset."""
-import torch
+from typing import Dict, List, Tuple
+
 import h5py
 import numpy as np
-from typing import List, Tuple, Dict
+import torch
 from torch.utils.data import Dataset
+
 from mdlearn.utils import PathLike
 
 
