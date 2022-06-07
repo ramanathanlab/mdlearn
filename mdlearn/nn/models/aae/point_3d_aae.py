@@ -1,11 +1,12 @@
 """Adversarial Autoencoder for 3D point cloud data (3dAAE)"""
-import torch
 from typing import List, Tuple
-from mdlearn.nn.models.aae import AAE
+
+import torch
+
+from mdlearn.nn.models.aae import AAE, ChamferLoss
 from mdlearn.nn.modules.conv1d_encoder import Conv1dEncoder
 from mdlearn.nn.modules.linear_decoder import LinearDecoder
 from mdlearn.nn.modules.linear_discriminator import LinearDiscriminator
-from mdlearn.nn.models.aae.loss.chamfer_loss import ChamferLoss
 
 
 class AAE3d(AAE):
@@ -160,7 +161,7 @@ class AAE3d(AAE):
             retain_graph=True,
             only_inputs=True,
         )[0]
-        slopes = torch.sqrt(torch.sum(gradients ** 2, dim=1))
+        slopes = torch.sqrt(torch.sum(gradients**2, dim=1))
         gradient_penalty = ((slopes - 1) ** 2).mean()
         return gradient_penalty
 

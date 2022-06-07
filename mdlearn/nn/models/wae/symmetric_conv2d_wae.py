@@ -1,8 +1,10 @@
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
+
 import torch
+
 from mdlearn.nn.models.wae import WAE
-from mdlearn.nn.modules.conv2d_encoder import Conv2dEncoder
 from mdlearn.nn.modules.conv2d_decoder import Conv2dDecoder
+from mdlearn.nn.modules.conv2d_encoder import Conv2dEncoder
 
 
 class SymmetricConv2dWAE(WAE):

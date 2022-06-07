@@ -1,5 +1,6 @@
+from typing import Optional, Tuple
+
 import numpy as np
-from typing import Tuple, Optional
 
 
 def kabsch(
@@ -58,7 +59,7 @@ def kabsch(
     tmp = np.reshape(np.tile(T, (n_atoms)), (dim, n_atoms))
     rotation = np.dot(R, from_xyz)
     err = to_xyz - rotation - tmp
-    e_rmsd = np.sqrt(np.sum(err ** 2) / n_atoms)
+    e_rmsd = np.sqrt(np.sum(err**2) / n_atoms)
     new_xyz = rotation + tmp
     if return_err:
         return e_rmsd, new_xyz, err.T

@@ -1,6 +1,7 @@
 """Utility functions for handling PyTorch data objects."""
 from typing import Tuple
-from torch.utils.data import random_split, Dataset, DataLoader, Subset
+
+from torch.utils.data import DataLoader, Dataset, Subset, random_split
 
 
 def train_valid_split(

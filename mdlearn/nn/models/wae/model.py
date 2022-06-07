@@ -1,5 +1,7 @@
 import math
+
 import torch
+
 from mdlearn.nn.models.vae import VAE
 
 

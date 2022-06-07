@@ -1,10 +1,12 @@
-import h5py
-import torch
 import warnings
+from typing import Dict, List
+
+import h5py
 import numpy as np
-from typing import List, Dict
-from mdlearn.utils import PathLike
+import torch
 from torch.utils.data import Dataset
+
+from mdlearn.utils import PathLike
 
 
 class FeatureVectorDataset(Dataset):

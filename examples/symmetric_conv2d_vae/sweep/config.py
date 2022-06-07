@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Optional, List, Tuple
+from typing import List, Optional, Tuple
+
 from mdlearn.utils import BaseSettings, OptimizerConfig, SchedulerConfig
 
 

@@ -1,18 +1,20 @@
-import torch
 import random
+
 import numpy as np
+import torch
+from config import SymmetricConv2dVAEConfig
 from torchsummary import summary
+
+from mdlearn.data.datasets.contact_map import ContactMapDataset
+from mdlearn.data.utils import train_valid_split
+from mdlearn.nn.models.vae.symmetric_conv2d_vae import SymmetricConv2dVAE
 from mdlearn.utils import (
-    parse_args,
-    log_checkpoint,
-    resume_checkpoint,
     get_torch_optimizer,
     get_torch_scheduler,
+    log_checkpoint,
+    parse_args,
+    resume_checkpoint,
 )
-from mdlearn.nn.models.vae.symmetric_conv2d_vae import SymmetricConv2dVAE
-from mdlearn.data.utils import train_valid_split
-from mdlearn.data.datasets.contact_map import ContactMapDataset
-from config import SymmetricConv2dVAEConfig
 
 
 def main(cfg: SymmetricConv2dVAEConfig):

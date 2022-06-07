@@ -2,9 +2,9 @@ import numpy as np
 
 
 def test_lstm_net():
-    from mdlearn.nn.modules.lstm_net import LSTMNet
-    from mdlearn.data.utils import train_valid_split
     from mdlearn.data.datasets.feature_vector import TimeFeatureVectorDataset
+    from mdlearn.data.utils import train_valid_split
+    from mdlearn.nn.modules.lstm_net import LSTMNet
 
     N, D, window_size, batch_size = 100, 16, 10, 8
     neurons = [4, 2, 1]

@@ -1,13 +1,14 @@
 """ContactMapTimeSeriesDataset Dataset."""
-from mdlearn.data.datasets.contact_map import ContactMapDataset
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
+
 import torch
+
+from mdlearn.data.datasets.contact_map import ContactMapDataset
 from mdlearn.utils import PathLike
 
 
 class ContactMapTimeSeriesDataset(ContactMapDataset):
-    """PyTorch Dataset class to load contact matrix data in the
-    format of a time series."""
+    """PyTorch Dataset class to load contact matrix data in the format of a time series."""
 
     def __init__(
         self,
