@@ -13,6 +13,19 @@ _T = TypeVar("_T")
 
 
 def parse_args() -> argparse.Namespace:
+    """Parses command line arguments using argparse library
+    Returns
+    -------
+        argparse.Namespace:
+            Dict like object containing a path to a YAML file
+            accessed via the config property.
+    Example
+    -------
+    >>> from mdlearn.utils import parse_args
+    >>> args = parse_args()
+    >>> # MyConfig should inherit from BaseSettings
+    >>> cfg = MyConfig.from_yaml(args.config)
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-c", "--config", help="YAML config file", type=str, required=True

@@ -3,7 +3,7 @@ from torch import nn
 import numpy as np
 import random
 from pathlib import Path
-from typing import Tuple, Optional, Dict, Any
+from typing import Tuple, Optional, Union
 from mdlearn.utils import PathLike
 
 
@@ -84,7 +84,9 @@ def conv_output_shape(
     raise ValueError(f"Invalid dim: {dim}")
 
 
-def _same_padding(input_dim, kernel_size, stride):
+def _same_padding(
+    input_dim: Union[int, Tuple[int, int]], kernel_size: int, stride: int
+) -> int:
     """
     Implements Keras-like same padding.
     If the stride is one then use same_padding.
@@ -109,10 +111,11 @@ def _same_padding(input_dim, kernel_size, stride):
     raise Exception("No padding found")
 
 
-def same_padding(input_dim, kernel_size, stride):
-    """
-    Returns Keras-like same padding.
-    Works for rectangular input_dim.
+def same_padding(
+    input_dim: Union[int, Tuple[int, int]], kernel_size: int, stride: int
+) -> Union[int, Tuple[int, int]]:
+    """Returns Keras-like same padding. Works for rectangular input_dim.
+
     Parameters
     ----------
     input_dim : tuple, int
@@ -122,6 +125,13 @@ def same_padding(input_dim, kernel_size, stride):
         filter size
     stride : int
         stride length
+
+    Returns
+    -------
+    int:
+        height of padding
+    int:
+        width of padding
     """
 
     # Handle Conv1d case

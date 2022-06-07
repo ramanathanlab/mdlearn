@@ -1,3 +1,4 @@
+""".. warning:: VDE models are still under development, use with caution!"""
 from typing import List, Tuple, Optional
 import torch
 from mdlearn.nn.models.vde import VDE

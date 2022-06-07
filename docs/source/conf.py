@@ -22,7 +22,7 @@ import mdlearn  # noqa
 # -- Project information -----------------------------------------------------
 
 project = "mdlearn"
-author = "Alexander Brace, Heng Ma, Debsindhu Bhowmik, Chakra Chennubhotla, Arvind Ramanathan"
+author = "Alexander Brace, Heng Ma, Austin Clyde, Debsindhu Bhowmik, Chakra Chennubhotla, Arvind Ramanathan"
 now = datetime.datetime.now()
 copyright = "{}, ".format(now.year) + author
 
@@ -40,7 +40,36 @@ extensions = [
     "sphinx_rtd_theme",
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
+    "sphinx.ext.autosummary",
+    "sphinxcontrib.autodoc_pydantic",
 ]
+
+# Autosummary settings
+autosummary_generate = True  # Turn on sphinx.ext.autosummary
+
+# Autodoc settings
+# Need to figure these out. See https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_default_options
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+}
+
+# Napoleon settings
+napoleon_google_docstring = True
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = True
+napoleon_include_private_with_doc = False
+napoleon_include_special_with_doc = True
+napoleon_use_admonition_for_examples = False
+napoleon_use_admonition_for_notes = False
+napoleon_use_admonition_for_references = False
+napoleon_use_ivar = False
+napoleon_use_param = False
+napoleon_use_rtype = False
+napoleon_preprocess_types = False
+napoleon_type_aliases = None
+napoleon_attr_annotations = True
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 

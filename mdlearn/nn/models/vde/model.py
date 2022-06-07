@@ -1,3 +1,4 @@
+""".. warning:: VDE models are still under development, use with caution!"""
 import torch
 import torch.nn as nn
 from mdlearn.nn.models.vae import VAE

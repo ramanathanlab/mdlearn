@@ -1,3 +1,4 @@
+""".. warning:: LSTM models are still under development, use with caution!"""
 import torch
 from torch import nn
 from torch.nn import functional as F

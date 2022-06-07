@@ -1,7 +1,25 @@
+# Dev tools
+mypy==0.910
 black
 flake8
-pre-commit
-sphinx
-sphinx_rtd_theme
-twine
+pylint
 pytest
+isort
+pre-commit
+pydocstyle
+twine
+
+# Documentation requirements
+sphinx==4.5.0
+sphinx-rtd-theme==1.0.0
+autodoc-pydantic==1.6.2
+
+# mypy type stubs:
+types-PyYAML
+types-aiofiles
+types-orjson
+types-python-dateutil
+types-redis 
+types-requests
+types-ujson
+types-jwt
