@@ -82,6 +82,9 @@ html_context = {
     "conf_py_path": "/docs/source/",  # Path in the checkout to the docs root
 }
 
+# List of imports to mock when building the documentation.
+autodoc_mock_imports = ["numpy"]
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
