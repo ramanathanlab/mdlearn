@@ -30,7 +30,7 @@ pip install -U scikit-learn
 
 Then install mdlearn via: `pip install mdlearn`. 
 
-Some systems require [PyTorch](https://pytorch.org/) to be built from source instead of installed via PyPI or Conda, for this reason we made torch an optional dependency. However, it can be installed with mdlearn by running `pip install 'mdlearn[torch]'` for convenience. Please check that **torch version >= 1.7**. 
+Some systems require [PyTorch](https://pytorch.org/) to be built from source instead of installed via PyPI or Conda, for this reason we made torch an optional dependency. However, it can be installed with mdlearn by running `pip install 'mdlearn[torch]'` for convenience. Installing this way will also install the `wandb` package. Please check that **torch version >= 1.7**. 
 
 ## Usage
 
