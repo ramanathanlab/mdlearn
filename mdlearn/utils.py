@@ -2,7 +2,6 @@
 import json
 import yaml
 import torch
-import wandb
 import argparse
 import numpy as np
 from pathlib import Path
@@ -47,7 +46,7 @@ class WandbConfig(BaseSettings):
         cfg: BaseSettings,
         model: torch.nn.Module,
         wandb_path: PathLike,
-    ) -> Optional[wandb.config]:
+    ) -> Optional["wandb.config"]:
         """Initialize wandb with model and config.
 
         Parameters
@@ -66,6 +65,8 @@ class WandbConfig(BaseSettings):
         """
 
         if self.wandb_project_name is not None:
+            import wandb
+
             wandb.init(
                 project=self.wandb_project_name,
                 entity=self.wandb_entity_name,
