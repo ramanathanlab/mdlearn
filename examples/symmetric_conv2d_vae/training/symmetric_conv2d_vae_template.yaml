@@ -50,8 +50,8 @@ checkpoint_log_every: 10
 plot_log_every: 1
 plot_n_samples: 10000
 plot_method: raw
-train_subsample_pct: 0.5
-valid_subsample_pct: 0.5
+train_subsample_pct: 1.0
+valid_subsample_pct: 1.0
 inference_batch_size: 128
 use_wandb: true
 wandb_config:
