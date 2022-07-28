@@ -76,9 +76,9 @@ To build the documentation:
 cd mdlearn/docs
 make html
 ```
-The docs are located in `mldearn/docs/build/html/index.html`.
+The docs are located in `mdlearn/docs/build/html/index.html`.
 
-To view the docs run: `open mldearn/docs/build/html/index.html`.
+To view the docs run: `open mdlearn/docs/build/html/index.html`.
 
 ## Releasing to PyPI
 
