@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Optional, Type, TypeVar, Union
 
-import numpy as np
 import torch
 import yaml
 from pydantic import BaseSettings as _BaseSettings
@@ -60,7 +59,7 @@ class WandbConfig(BaseSettings):
     def init(
         self,
         cfg: BaseSettings,
-        model: torch.nn.Module,
+        model: "torch.nn.Module",
         wandb_path: PathLike,
     ) -> Optional["wandb.config"]:  # noqa: F821
         """Initialize wandb with model and config.
@@ -124,7 +123,7 @@ class SchedulerConfig(BaseSettings):
 
 def get_torch_optimizer(
     name: str, hparams: Dict[str, Any], parameters
-) -> torch.optim.Optimizer:
+) -> "torch.optim.Optimizer":
     """Construct a PyTorch optimizer specified by :obj:`name` and :obj:`hparams`."""
     from torch import optim
 
@@ -164,8 +163,8 @@ def get_torch_optimizer(
 
 
 def get_torch_scheduler(  # noqa: C901
-    name: Optional[str], hparams: Dict[str, Any], optimizer: torch.optim.Optimizer
-) -> Optional[torch.optim.lr_scheduler._LRScheduler]:
+    name: Optional[str], hparams: Dict[str, Any], optimizer: "torch.optim.Optimizer"
+) -> Optional["torch.optim.lr_scheduler._LRScheduler"]:
     """Construct a PyTorch lr_scheduler specified by :obj:`name` and :obj:`hparams`.
 
     Parameters
@@ -226,9 +225,9 @@ def get_torch_scheduler(  # noqa: C901
 def log_checkpoint(
     checkpoint_file: PathLike,
     epoch: int,
-    model: torch.nn.Module,
-    optimizers: Dict[str, torch.optim.Optimizer],
-    scheduler: Optional[torch.optim.lr_scheduler._LRScheduler] = None,
+    model: "torch.nn.Module",
+    optimizers: Dict[str, "torch.optim.Optimizer"],
+    scheduler: Optional["torch.optim.lr_scheduler._LRScheduler"] = None,
 ):
     """Write a torch .pt file containing the epoch, model, optimizer,
     and scheduler.
@@ -259,9 +258,9 @@ def log_checkpoint(
 
 def resume_checkpoint(
     checkpoint_file: PathLike,
-    model: torch.nn.Module,
-    optimizers: Dict[str, torch.optim.Optimizer],
-    scheduler: Optional[torch.optim.lr_scheduler._LRScheduler] = None,
+    model: "torch.nn.Module",
+    optimizers: Dict[str, "torch.optim.Optimizer"],
+    scheduler: Optional["torch.optim.lr_scheduler._LRScheduler"] = None,
 ) -> int:
     """Modifies :obj:`model`, :obj:`optimizer`, and :obj:`scheduler` with
     values stored in torch .pt file :obj:`checkpoint_file` to resume from
@@ -294,142 +293,3 @@ def resume_checkpoint(
         if scheduler_state_dict is not None:
             scheduler.load_state_dict(scheduler_state_dict)
     return start_epoch
-
-
-def plot_scatter(
-    data: np.ndarray,
-    color_dict: Dict[str, np.ndarray] = {},
-    color: Optional[str] = None,
-):
-
-    import pandas as pd
-    import plotly.express as px
-
-    df_dict = color_dict.copy()
-
-    dim = data.shape[1]
-    assert dim in [2, 3]
-    for i, name in zip(range(dim), ["x", "y", "z"]):
-        df_dict[name] = data[:, i]
-
-    df = pd.DataFrame(df_dict)
-    scatter_kwargs = dict(
-        x="x",
-        y="y",
-        color=color,
-        width=1000,
-        height=1000,
-        size_max=7,
-        hover_data=list(df_dict.keys()),
-    )
-    if dim == 2:
-        fig = px.scatter(df, **scatter_kwargs)
-    else:  # dim == 3
-        fig = px.scatter_3d(df, z="z", **scatter_kwargs)
-    return fig
-
-
-def log_latent_visualization(
-    data: np.ndarray,
-    colors: Dict[str, np.ndarray],
-    output_path: PathLike,
-    epoch: int = 0,
-    n_samples: Optional[int] = None,
-    method: str = "TSNE",
-) -> Dict[str, str]:
-    """Make scatter plots of the latent space using the specified
-    method of dimensionality reduction.
-
-    Parameters
-    ----------
-    data : np.ndarray
-        The latent embeddings to visualize of shape (N, D) where
-        N  is the number of examples and D is the number of dimensions.
-    colors : Dict[str, np.ndarray]
-        Each item in the dictionary will generate a different plot labeled
-        with the key name. Each inner array should be of size N.
-    output_path : PathLike
-        The output directory path to save plots to.
-    epoch : int, default=0
-        The current epoch of training to label plots with.
-    n_samples : Optional[int], default=None
-        Number of samples to plot, will take a random sample of the
-        :obj:`data` if :obj:`n_samples < N`. Otherwise, if :obj:`n_samples`
-        is None, use all the data.
-    method : str, default="TSNE"
-        Method of dimensionality reduction used to plot. Currently supports:
-        "PCA", "TSNE", "LLE", or "raw" for plotting the raw embeddings (or
-        up to the first 3 dimensions if D > 3). If "TSNE" is specified, then
-        the GPU accelerated RAPIDS.ai implementation will be tried first and
-        if it is unavailable then the sklearn version will be used instead.
-
-    Returns
-    -------
-    Dict[str, str]
-        A dictionary mapping each key in color to a raw HTML string containing
-        the scatter plot data. These can be saved directly for visualization
-        and logged to wandb during training.
-
-    Raises
-    ------
-    ValueError
-        If dimensionality reduction :obj:`method` is not supported.
-    """
-    from plotly.io import to_html
-
-    # Make temp variables to not mutate input data
-    if n_samples is not None:
-        inds = np.random.choice(len(data), n_samples)
-        _data = data[inds]
-        _colors = {name: color[inds] for name, color in colors.items()}
-    else:
-        _data = data
-        _colors = colors
-
-    if method == "PCA":
-        from sklearn.decomposition import PCA
-
-        model = PCA(n_components=3)
-        data_proj = model.fit_transform(_data)
-
-    elif method == "TSNE":
-        try:
-            # Attempt to use rapidsai
-            from cuml.manifold import TSNE
-
-            # rapidsai only supports 2 dimensions
-            model = TSNE(n_components=2, method="barnes_hut")
-        except ImportError:
-            from sklearn.manifold import TSNE
-
-            model = TSNE(n_components=3, n_jobs=1)
-
-        data_proj = model.fit_transform(_data)
-
-    elif method == "LLE":
-        from sklearn import manifold
-
-        data_proj, _ = manifold.locally_linear_embedding(
-            _data, n_neighbors=12, n_components=3
-        )
-    elif method == "raw":
-        if _data.shape[1] <= 3:
-            # If _data only has 2 or 3 dimensions, use it directly.
-            data_proj = _data
-        else:
-            # Use the first 3 dimensions of the raw data.
-            data_proj = _data[:, :3]
-    else:
-        raise ValueError(f"Invalid dimensionality reduction method {method}")
-
-    html_strings = {}
-    for color in _colors:
-        fig = plot_scatter(data_proj, _colors, color)
-        html_string = to_html(fig)
-        html_strings[color] = html_string
-
-        fname = Path(output_path) / f"latent_space-{method}-{color}-epoch-{epoch}.html"
-        with open(fname, "w") as f:
-            f.write(html_string)
-
-    return html_strings

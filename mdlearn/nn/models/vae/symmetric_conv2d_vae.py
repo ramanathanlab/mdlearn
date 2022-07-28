@@ -375,7 +375,8 @@ class SymmetricConv2dVAETrainer(Trainer):
 
         from mdlearn.data.datasets.contact_map import ContactMapDataset
         from mdlearn.data.utils import train_valid_split
-        from mdlearn.utils import log_checkpoint, log_latent_visualization
+        from mdlearn.utils import log_checkpoint
+        from mdlearn.visualize import log_latent_visualization
 
         if self.use_wandb:
             import wandb
