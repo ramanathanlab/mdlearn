@@ -51,7 +51,6 @@ class SymmetricConv2dVAEConfig(BaseSettings):
     train_subsample_pct: float = 1.0
     valid_subsample_pct: float = 1.0
     use_wandb: bool = False
-
     inference_batch_size: int = 128
 
 
