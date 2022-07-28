@@ -44,12 +44,12 @@ optimizer_name: RMSprop
 optimizer_hparams:
     lr: 0.001
     weight_decay: 0.00001
-scheduler: null
+scheduler_name: null
 verbose: false
 checkpoint_log_every: 10
 plot_log_every: 50
 plot_n_samples: 10000
-plot_method: TSNE
+plot_method: raw
 train_subsample_pct: 0.5
 valid_subsample_pct: 0.5
 inference_batch_size: 128

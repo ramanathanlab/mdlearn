@@ -1,5 +1,5 @@
 input_path: /homes/abrace/data/bba/1FME-0.h5
-output_path: /homes/abrace/src/mdlearn/runs/test-run-0 
+output_path: ./test-run-0
 checkpoint_path: null
 input_shape:
 - 1
@@ -31,8 +31,8 @@ activation: ReLU
 output_activation: Sigmoid
 lambda_rec: 1.0
 seed: 42
-num_data_workers: 0
-prefetch_factor: 2
+num_data_workers: 4
+prefetch_factor: 8
 split_pct: 0.8
 split_method: random
 shuffle: true
@@ -44,12 +44,18 @@ optimizer_name: RMSprop
 optimizer_hparams:
     lr: 0.001
     weight_decay: 0.00001
-scheduler: null
-verbose: false
+scheduler_name: null
+verbose: true
 checkpoint_log_every: 10
-plot_log_every: 50
+plot_log_every: 1
 plot_n_samples: 10000
-plot_method: TSNE
+plot_method: raw
 train_subsample_pct: 0.5
 valid_subsample_pct: 0.5
 inference_batch_size: 128
+use_wandb: true
+wandb_config:
+    project: mdlearn-debug
+    entity: braceal
+    name: cvae-debug-run-2
+
