@@ -1,6 +1,13 @@
 .DEFAULT_GOAL := all
-isort = isort mdlearn examples test
-black = black --target-version py37 mdlearn examples test
+package_name = mdlearn
+extra_folders = examples/ test/
+isort = isort $(package_name) $(extra_folders)
+black = black --target-version py37 $(package_name) $(extra_folders)
+flake8 = flake8 $(package_name)/ $(extra_folders)
+pylint = pylint $(package_name)/ $(extra_folders)
+pydocstyle = pydocstyle $(package_name)/
+run_mypy = mypy --config-file setup.cfg
+
 
 .PHONY: format
 format:
@@ -10,16 +17,15 @@ format:
 .PHONY: lint
 lint:
 	$(black) --check --diff
-	flake8 mdlearn/ examples/ test/
-	#pylint mdlearn/ #examples/ test/
-	#pydocstyle mdlearn/
-
+	$(flake8)
+	#$(pylint)
+	#$(pydocstyle)
 
 .PHONY: mypy
 mypy:
-	mypy --config-file setup.cfg --package mdlearn
-	mypy --config-file setup.cfg mdlearn/
-	mypy --config-file setup.cfg examples/
+	$(run_mypy) --package $(package_name)
+	$(run_mypy) $(package_name)/
+	$(run_mypy) $(extra_folders)
 
 .PHONY: all
-all: format lint mypy
+all: format lint
