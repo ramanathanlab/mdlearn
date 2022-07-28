@@ -1,1 +1,1 @@
-from .model import AAE  # noqa
+from .model import AAE, ChamferLoss  # noqa

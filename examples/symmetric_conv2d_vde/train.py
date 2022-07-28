@@ -1,22 +1,24 @@
+import random
+from collections import defaultdict
+
+import numpy as np
 import torch
 import wandb
-import random
-import numpy as np
-from tqdm import tqdm
+from config import SymmetricConv2dVDEConfig
 from torchsummary import summary
-from collections import defaultdict
+from tqdm import tqdm
+
+from mdlearn.data.datasets.time_contact_map import ContactMapTimeSeriesDataset
+from mdlearn.data.utils import train_valid_split
+from mdlearn.nn.models.vde.symmetric_conv2d_vde import SymmetricConv2dVDE
 from mdlearn.utils import (
-    parse_args,
-    log_checkpoint,
-    log_latent_visualization,
-    resume_checkpoint,
     get_torch_optimizer,
     get_torch_scheduler,
+    log_checkpoint,
+    log_latent_visualization,
+    parse_args,
+    resume_checkpoint,
 )
-from mdlearn.nn.models.vde.symmetric_conv2d_vde import SymmetricConv2dVDE
-from mdlearn.data.utils import train_valid_split
-from mdlearn.data.datasets.time_contact_map import ContactMapTimeSeriesDataset
-from config import SymmetricConv2dVDEConfig
 
 
 def main(cfg: SymmetricConv2dVDEConfig):

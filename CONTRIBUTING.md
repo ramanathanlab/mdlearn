@@ -40,16 +40,17 @@ pip3 install -e '.[torch]'
 This mode will symlink the Python files from the current local source tree into the Python install.
 Hence, if you modify a Python file, you do not need to reinstall mdlearn again and again.
 
-4. Then, install pre-commit hooks: this will auto-format and auto-lint on commit to enforce consistent code style:
-```
-pre-commit install
-pre-commit autoupdate
-``` 
-
-5. Ensure that you have a working mdlearn installation by running:
+4. Ensure that you have a working mdlearn installation by running:
 
 ```
 python -c "import mdlearn; print(mdlearn.__version__)"
+```
+
+5. To run dev tools (isort, flake8, black, mypy):
+
+```
+make
+make mypy
 ```
 
 ## Unit Testing

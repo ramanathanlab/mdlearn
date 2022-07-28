@@ -8,6 +8,12 @@ mdlearn: Machine learning for molecular dynamics
 :Release: |release|
 :Date: |today|
 
+==========================
+ Overview of mdlearn
+==========================
+
+**mdlearn** is a Python package for analyzing molecular dynamics simulations machine learning.
+
 Getting involved
 ================
 
@@ -16,7 +22,7 @@ Tracker`_.
 
 .. _Issue Tracker: https://github.com/ramanathanlab/mdlearn/issues
 
-Installing mdtools
+Installing mdlearn
 ======================
 
 Please see the `README`_ file for installation instructions and usage.
@@ -24,12 +30,9 @@ Please see the `README`_ file for installation instructions and usage.
 .. _README: https://github.com/ramanathanlab/mdlearn/tree/main
 
 .. toctree::
-   :maxdepth: 4
-   :numbered:		
-   :hidden:
-   
-   ./documentation_pages/overview
-   ./documentation_pages/mdlearn_api
+   :maxdepth: 3
+
+   pages/api
 
 .. toctree::
    :maxdepth: 2

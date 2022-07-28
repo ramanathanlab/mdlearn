@@ -1,23 +1,25 @@
-import time
-import wandb
-import torch
 import random
-import numpy as np
-from pathlib import Path
+import time
 from collections import defaultdict
+from pathlib import Path
 from typing import Dict, Tuple
+
+import numpy as np
+import torch
+import wandb
+from config import SymmetricConv2dVAEConfig
 from torchsummary import summary
+
+from mdlearn.data.datasets.contact_map import ContactMapDataset
+from mdlearn.data.utils import train_valid_split
+from mdlearn.metrics import metric_cluster_quality
+from mdlearn.nn.models.vae.symmetric_conv2d_vae import SymmetricConv2dVAE
 from mdlearn.utils import (
-    log_checkpoint,
-    log_latent_visualization,
     get_torch_optimizer,
     get_torch_scheduler,
+    log_checkpoint,
+    log_latent_visualization,
 )
-from mdlearn.metrics import metric_cluster_quality
-from mdlearn.data.utils import train_valid_split
-from mdlearn.data.datasets.contact_map import ContactMapDataset
-from mdlearn.nn.models.vae.symmetric_conv2d_vae import SymmetricConv2dVAE
-from config import SymmetricConv2dVAEConfig
 
 
 def main(cfg: SymmetricConv2dVAEConfig):
@@ -136,7 +138,7 @@ def main(cfg: SymmetricConv2dVAEConfig):
 
         start = time.time()
         cluster_quality = metric_cluster_quality(latent_vectors, scalars["rmsd"])
-        print(f"cluster quality metric time: ", time.time() - start)
+        print("cluster quality metric time: ", time.time() - start)
 
         metrics = {
             "train_loss": avg_train_losses[0],

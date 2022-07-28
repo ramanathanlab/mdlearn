@@ -1,6 +1,7 @@
 from pathlib import Path
-from typing import Optional, List
-from mdlearn.utils import BaseSettings, WandbConfig, OptimizerConfig, SchedulerConfig
+from typing import List, Optional
+
+from mdlearn.utils import BaseSettings, OptimizerConfig, SchedulerConfig, WandbConfig
 
 
 class Point3dAAEConfig(BaseSettings):

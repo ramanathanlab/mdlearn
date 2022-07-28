@@ -1,8 +1,10 @@
 """Conv1dEncoder module for point cloud data."""
 
+from typing import List, Tuple
+
 import torch
 import torch.nn as nn
-from typing import List, Tuple
+
 from mdlearn.nn.utils import get_activation
 
 

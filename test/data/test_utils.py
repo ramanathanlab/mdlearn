@@ -1,10 +1,10 @@
-import torch
 import numpy as np
+import torch
 
 
 def test_train_valid_split():
-    from mdlearn.data.utils import train_valid_split
     from mdlearn.data.datasets.feature_vector import TimeFeatureVectorDataset
+    from mdlearn.data.utils import train_valid_split
 
     data = np.array([1, 2, 3, 4, 5, 6])
     # data = [1, 2, 3, 4, 5, 6]

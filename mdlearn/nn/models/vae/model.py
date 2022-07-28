@@ -1,5 +1,7 @@
 from typing import Optional
+
 import torch
+
 from mdlearn.nn.models.ae import AE
 
 MAX_LOGSTD = 10
@@ -94,5 +96,5 @@ class VAE(AE):
         mu = self.__mu__ if mu is None else mu
         logstd = self.__logstd__ if logstd is None else logstd.clamp(max=MAX_LOGSTD)
         return -0.5 * torch.mean(
-            torch.sum(1 + 2 * logstd - mu ** 2 - logstd.exp() ** 2, dim=1)
+            torch.sum(1 + 2 * logstd - mu**2 - logstd.exp() ** 2, dim=1)
         )

@@ -1,12 +1,14 @@
-from typing import List, Tuple, Dict, Any, Optional
 from collections import defaultdict
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-from mdlearn.nn.utils import PathLike, Trainer
+
 from mdlearn.nn.models.vae import VAE
-from mdlearn.nn.modules.conv2d_encoder import Conv2dEncoder
 from mdlearn.nn.modules.conv2d_decoder import Conv2dDecoder
+from mdlearn.nn.modules.conv2d_encoder import Conv2dEncoder
+from mdlearn.nn.utils import PathLike, Trainer
 
 
 class SymmetricConv2dVAE(VAE):
@@ -369,9 +371,9 @@ class SymmetricConv2dVAETrainer(Trainer):
                 " is to pass output_path as the second argument."
             )
 
-        from mdlearn.utils import log_checkpoint, log_latent_visualization
-        from mdlearn.data.utils import train_valid_split
         from mdlearn.data.datasets.contact_map import ContactMapDataset
+        from mdlearn.data.utils import train_valid_split
+        from mdlearn.utils import log_checkpoint, log_latent_visualization
 
         if self.use_wandb:
             import wandb

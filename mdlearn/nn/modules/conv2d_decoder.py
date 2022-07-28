@@ -1,13 +1,11 @@
-from typing import Optional, Tuple, List
+from math import isclose
+from typing import List, Optional, Tuple
+
 import numpy as np
 import torch
 from torch import nn
-from math import isclose
-from mdlearn.nn.utils import (
-    same_padding,
-    get_activation,
-    _init_weights,
-)
+
+from mdlearn.nn.utils import _init_weights, get_activation, same_padding
 
 
 class Conv2dDecoder(nn.Module):

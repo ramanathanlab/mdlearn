@@ -1,19 +1,34 @@
 """Configurations and utilities for model building and training."""
-import json
-import yaml
-import torch
-import wandb
 import argparse
-import numpy as np
+import json
 from pathlib import Path
+from typing import Any, Dict, Optional, Type, TypeVar, Union
+
+import numpy as np
+import torch
+import yaml
 from pydantic import BaseSettings as _BaseSettings
-from typing import TypeVar, Type, Union, Optional, Dict, Any
 
 PathLike = Union[str, Path]
 _T = TypeVar("_T")
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command line arguments using argparse library
+
+    Returns
+    -------
+        argparse.Namespace:
+            Dict like object containing a path to a YAML file
+            accessed via the config property.
+
+    Example
+    -------
+    >>> from mdlearn.utils import parse_args
+    >>> args = parse_args()
+    >>> # MyConfig should inherit from BaseSettings
+    >>> cfg = MyConfig.from_yaml(args.config)
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-c", "--config", help="YAML config file", type=str, required=True
@@ -47,7 +62,7 @@ class WandbConfig(BaseSettings):
         cfg: BaseSettings,
         model: torch.nn.Module,
         wandb_path: PathLike,
-    ) -> Optional[wandb.config]:
+    ) -> Optional["wandb.config"]:  # noqa: F821
         """Initialize wandb with model and config.
 
         Parameters
@@ -66,6 +81,8 @@ class WandbConfig(BaseSettings):
         """
 
         if self.wandb_project_name is not None:
+            import wandb
+
             wandb.init(
                 project=self.wandb_project_name,
                 entity=self.wandb_entity_name,
@@ -80,8 +97,8 @@ class WandbConfig(BaseSettings):
 
 
 class OptimizerConfig(BaseSettings):
-    """pydantic schema for PyTorch optimizer which allows for arbitrary
-    optimizer hyperparameters."""
+    """pydantic schema for PyTorch optimizer which allows
+    for arbitrary optimizer hyperparameters."""
 
     class Config:
         extra = "allow"
@@ -146,7 +163,7 @@ def get_torch_optimizer(
         )
 
 
-def get_torch_scheduler(
+def get_torch_scheduler(  # noqa: C901
     name: Optional[str], hparams: Dict[str, Any], optimizer: torch.optim.Optimizer
 ) -> Optional[torch.optim.lr_scheduler._LRScheduler]:
     """Construct a PyTorch lr_scheduler specified by :obj:`name` and :obj:`hparams`.

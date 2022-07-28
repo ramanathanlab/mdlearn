@@ -26,9 +26,9 @@ def check_lstm(
     bidirectional : bool, default=False
         Whether or not to use a bidirectional LSTM model.
     """
-    from mdlearn.nn.models.lstm import LSTM
-    from mdlearn.data.utils import train_valid_split
     from mdlearn.data.datasets.feature_vector import TimeFeatureVectorDataset
+    from mdlearn.data.utils import train_valid_split
+    from mdlearn.nn.models.lstm import LSTM
 
     X = np.random.normal(size=(N, D))
     dataset = TimeFeatureVectorDataset(X, window_size=window_size)

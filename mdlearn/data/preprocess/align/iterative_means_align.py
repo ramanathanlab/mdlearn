@@ -1,7 +1,9 @@
 import itertools
-import numpy as np
-from typing import List, Tuple
 from concurrent.futures import ProcessPoolExecutor
+from typing import List, Tuple
+
+import numpy as np
+
 from mdlearn.data.preprocess.align.kabsch_align import kabsch
 
 
@@ -30,7 +32,9 @@ def iterative_means_align(
     verbose: bool = False,
     num_workers: int = 1,
 ) -> Tuple[int, List[np.ndarray], List[np.ndarray], np.ndarray]:
-    r"""Run iterative means alignment which aligns :obj:`coords`
+    r"""Run iterative means alignment.
+
+    Run iterative means alignment which aligns :obj:`coords`
     to the mean coordinate structure using the kabsch alignment
     algorithm implemented here: :obj:`mdlearn.data.preprocess.align.kabsch_align`.
     Algorithm converges if either the difference of means coordinates
@@ -68,7 +72,6 @@ def iterative_means_align(
         The newly aligned trajectory of coordinates with the same shape as
         the input :obj:`coords` array.
     """
-
     coords_ = coords if inplace else coords.copy()
 
     if verbose:

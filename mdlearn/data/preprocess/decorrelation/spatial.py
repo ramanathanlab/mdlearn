@@ -1,7 +1,8 @@
 """Spatial decorrelation functions."""
 import warnings
-import numpy as np
 from typing import Optional
+
+import numpy as np
 
 
 def SD2(data: np.ndarray, m: Optional[int] = None, verbose: bool = False):
@@ -105,13 +106,14 @@ def SD2(data: np.ndarray, m: Optional[int] = None, verbose: bool = False):
     return Y, S, B.T, U
 
 
-def SD4(
+def SD4(  # noqa: C901
     Y: np.ndarray,
     m: Optional[int] = None,
     U: Optional[np.ndarray] = None,
     verbose: bool = False,
 ) -> np.ndarray:
     """SD4 - Spatial Decorrelation of 4th order of real signals.
+
     SD4 does joint diagonalization of cumulant matrices of order 4 to
     decorrelate the signals in spatial domain. It allows us to extract
     signals which are as independent as possible and which were not
@@ -120,7 +122,6 @@ def SD4(
 
     Parameters
     ----------
-
     Y : np.ndarray
         An :obj:`n x T` spatially whitened matrix (:obj:`n` subspaces,
         :obj:`T` samples). May be a numpy array or matrix where :obj:`n`

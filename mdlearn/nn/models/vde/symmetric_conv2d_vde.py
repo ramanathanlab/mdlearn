@@ -1,8 +1,11 @@
-from typing import List, Tuple, Optional
+""".. warning:: VDE models are still under development, use with caution!"""
+from typing import List, Optional, Tuple
+
 import torch
+
 from mdlearn.nn.models.vde import VDE
-from mdlearn.nn.modules.conv2d_encoder import Conv2dEncoder
 from mdlearn.nn.modules.conv2d_decoder import Conv2dDecoder
+from mdlearn.nn.modules.conv2d_encoder import Conv2dEncoder
 
 
 class SymmetricConv2dVDE(VDE):

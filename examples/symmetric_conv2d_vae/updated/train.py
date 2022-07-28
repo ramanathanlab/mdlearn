@@ -1,10 +1,12 @@
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
 import h5py
 import numpy as np
 import pandas as pd
-from pathlib import Path
-from typing import Optional, List, Tuple, Dict, Any
-from mdlearn.utils import parse_args, BaseSettings
+
 from mdlearn.nn.models.vae.symmetric_conv2d_vae import SymmetricConv2dVAETrainer
+from mdlearn.utils import BaseSettings, parse_args
 
 
 class SymmetricConv2dVAEConfig(BaseSettings):
@@ -52,6 +54,7 @@ class SymmetricConv2dVAEConfig(BaseSettings):
 
     inference_batch_size: int = 128
 
+
 def main(cfg: SymmetricConv2dVAEConfig):
 
     # Initialize the model
@@ -92,7 +95,7 @@ def main(cfg: SymmetricConv2dVAEConfig):
     )
 
     print(trainer.model)
-    
+
     # Load input data from HDF5 file
     with h5py.File(cfg.input_path) as f:
         contact_maps = f["contact_map"][...]
@@ -111,20 +114,24 @@ def main(cfg: SymmetricConv2dVAEConfig):
     pd.DataFrame(trainer.loss_curve_).to_csv(cfg.output_path / "loss.csv")
 
     # Generate latent embeddings in inference mode
-    z, loss, recon_loss, kld_loss, = trainer.predict(
-        X=contact_maps, inference_batch_size=cfg.inference_batch_size
-    )
+    (
+        z,
+        loss,
+        recon_loss,
+        kld_loss,
+    ) = trainer.predict(X=contact_maps, inference_batch_size=cfg.inference_batch_size)
 
     np.save(cfg.output_path / "z.npy", z)
 
-    print(f"Final loss on the full dataset is: {loss}, recon: {recon_loss}, kld: {kld_loss}")
+    print(
+        f"Final loss on the full dataset is: {loss}, recon: {recon_loss}, kld: {kld_loss}"
+    )
 
 
 if __name__ == "__main__":
     # Generate sample yaml
-    #SymmetricConv2dVAEConfig().dump_yaml("symmetric_conv2d_vae_template.yaml")
-    #exit() 
+    # SymmetricConv2dVAEConfig().dump_yaml("symmetric_conv2d_vae_template.yaml")
+    # exit()
     args = parse_args()
     cfg = SymmetricConv2dVAEConfig.from_yaml(args.config)
     main(cfg)
-
