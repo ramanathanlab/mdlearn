@@ -16,10 +16,10 @@ from mdlearn.nn.models.aae.point_3d_aae import AAE3d
 from mdlearn.utils import (
     get_torch_optimizer,
     log_checkpoint,
-    log_latent_visualization,
     parse_args,
     resume_checkpoint,
 )
+from mdlearn.visualize import log_latent_visualization
 
 
 def main(cfg: Point3dAAEConfig):

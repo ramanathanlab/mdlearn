@@ -1,5 +1,5 @@
 """ContactMap Dataset."""
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import h5py
 import numpy as np
@@ -9,8 +9,8 @@ from torch.utils.data import Dataset
 from mdlearn.utils import PathLike
 
 
-class ContactMapDataset(Dataset):
-    """PyTorch Dataset class to load contact matrix data."""
+class ContactMapHDF5Dataset(Dataset):
+    """PyTorch Dataset class to load contact matrix data from HDF5 format."""
 
     def __init__(
         self,
@@ -128,6 +128,75 @@ class ContactMapDataset(Dataset):
         sample["index"] = torch.tensor(idx, requires_grad=False)
         # Add scalars
         for name, dset in self.scalar_dsets.items():
+            sample[name] = torch.tensor(
+                dset[idx], requires_grad=self._scalar_requires_grad
+            )
+
+        return sample
+
+
+class ContactMapDataset(Dataset):
+    """PyTorch Dataset class which stores sparse contact matrix data in memory."""
+
+    def __init__(
+        self,
+        data: np.ndarray,
+        shape: Tuple[int, int, int],
+        scalars: Dict[str, np.ndarray] = {},
+        scalar_requires_grad: bool = False,
+    ):
+        """
+        Parameters
+        ----------
+        data : np.ndarray
+            Input contact matrices in sparse COO format of shape (N,)
+            where N is the number of data examples, and the empty dimension
+            is ragged. The row and column index vectors should be contatenated
+            and the values are assumed to be 1 and don't need to be explcitly
+            passed.
+        shape : Tuple[int, int, int]
+            Shape of the contact map (1, D, D) where D is the number of rows and columns.
+        scalars : Dict[str, np.ndarray], default={}
+            Dictionary of scalar arrays. For instance, the root mean squared
+            deviation (RMSD) for each feature vector can be passed via
+            :obj:`{"rmsd": np.array(...)}`. The dimension of each scalar array
+            should match the number of input feature vectors N.
+        scalar_requires_grad : bool, default=False
+            Sets requires_grad torch.Tensor parameter for scalars specified by
+            :obj:`scalars`. Set to True, to use scalars for multi-task
+            learning. If scalars are only required for plotting, then set it as False.
+        """
+        if not all(len(scalars[key]) == len(data) for key in scalars):
+            raise ValueError(
+                "Dimension of scalar arrays should match "
+                "the number of input feature vectors."
+            )
+
+        self.data = data
+        self.shape = shape
+        self.scalars = scalars
+        self._scalar_requires_grad = scalar_requires_grad
+
+    def _get_data(self, idx) -> torch.Tensor:
+        # Data is stored as np.concatenate((row_inds, col_inds))
+        indices = torch.from_numpy(self.data[idx].reshape(2, -1)).to(torch.long)
+        # Create array of 1s, all values in the contact map are 1.
+        values = torch.ones(indices.shape[1], dtype=torch.float32)
+        # Set shape to the last 2 elements of self.shape.
+        data = torch.sparse.FloatTensor(indices, values, self.shape[-2:]).to_dense()
+        data = data.view(self.shape)
+        return data
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+
+        sample = {"X": self._get_data(idx)}
+        # Add index into dataset to sample
+        sample["index"] = torch.tensor(idx, requires_grad=False)
+        # Add scalars
+        for name, dset in self.scalars.items():
             sample[name] = torch.tensor(
                 dset[idx], requires_grad=self._scalar_requires_grad
             )

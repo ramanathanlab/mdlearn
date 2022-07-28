@@ -14,12 +14,8 @@ from mdlearn.data.datasets.contact_map import ContactMapDataset
 from mdlearn.data.utils import train_valid_split
 from mdlearn.metrics import metric_cluster_quality
 from mdlearn.nn.models.wae.symmetric_conv2d_wae import SymmetricConv2dWAE
-from mdlearn.utils import (
-    get_torch_optimizer,
-    get_torch_scheduler,
-    log_checkpoint,
-    log_latent_visualization,
-)
+from mdlearn.utils import get_torch_optimizer, get_torch_scheduler, log_checkpoint
+from mdlearn.visualize import log_latent_visualization
 
 
 def main(cfg: SymmetricConv2dWAEConfig):

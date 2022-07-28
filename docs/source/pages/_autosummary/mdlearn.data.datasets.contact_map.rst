@@ -18,6 +18,7 @@ mdlearn.data.datasets.contact\_map
    .. autosummary::
    
       ContactMapDataset
+      ContactMapHDF5Dataset
    
    
 

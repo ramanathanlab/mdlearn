@@ -360,7 +360,8 @@ class LSTMAETrainer(Trainer):
 
         from mdlearn.data.datasets.feature_vector import TimeFeatureVectorDataset
         from mdlearn.data.utils import train_valid_split
-        from mdlearn.utils import log_checkpoint, log_latent_visualization
+        from mdlearn.utils import log_checkpoint
+        from mdlearn.visualize import log_latent_visualization
 
         if self.use_wandb:
             import wandb

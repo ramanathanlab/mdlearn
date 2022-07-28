@@ -1,11 +1,10 @@
 # Dev tools
 mypy==0.910
-black
+black[jupyter]
 flake8
 pylint
 pytest
 isort
-pre-commit
 pydocstyle
 twine
 

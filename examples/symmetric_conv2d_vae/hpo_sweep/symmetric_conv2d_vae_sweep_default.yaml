@@ -1,0 +1,55 @@
+input_path: /homes/abrace/data/bba/1FME-0.h5
+output_path: /homes/abrace/src/mdlearn/runs/test-run-0 
+checkpoint_path: null
+input_shape:
+- 1
+- 28
+- 28
+filters:
+- 100
+- 100
+- 100
+- 100
+kernels:
+- 5
+- 5
+- 5
+- 5
+strides:
+- 1
+- 2
+- 1
+- 2
+affine_widths:
+- 128
+- 64
+affine_dropouts:
+- 0.0
+- 0.0
+latent_dim: 10
+activation: ReLU
+output_activation: Sigmoid
+lambda_rec: 1.0
+seed: 42
+num_data_workers: 0
+prefetch_factor: 2
+split_pct: 0.8
+split_method: random
+shuffle: true
+epochs: 50
+batch_size: 64
+device: cuda
+clip_grad_max_norm: 10.0
+optimizer_name: RMSprop
+optimizer_hparams:
+    lr: 0.001
+    weight_decay: 0.00001
+scheduler_name: null
+verbose: false
+checkpoint_log_every: 10
+plot_log_every: 50
+plot_n_samples: 10000
+plot_method: raw
+train_subsample_pct: 0.5
+valid_subsample_pct: 0.5
+inference_batch_size: 128
