@@ -4,9 +4,16 @@ from typing import Any, Dict, List, Optional, Tuple
 import h5py
 import numpy as np
 import pandas as pd
+import wandb
 
 from mdlearn.nn.models.vae.symmetric_conv2d_vae import SymmetricConv2dVAETrainer
 from mdlearn.utils import BaseSettings, parse_args
+
+
+class WandbConfig(BaseSettings):
+    project: Optional[str] = None
+    entity: Optional[str] = None
+    name: Optional[str] = None
 
 
 class SymmetricConv2dVAEConfig(BaseSettings):
@@ -49,8 +56,9 @@ class SymmetricConv2dVAEConfig(BaseSettings):
     plot_method: Optional[str] = None
     train_subsample_pct: float = 1.0
     valid_subsample_pct: float = 1.0
-    use_wandb: bool = False
     inference_batch_size: int = 128
+    use_wandb: bool = False
+    wandb_config: WandbConfig = WandbConfig()
 
 
 def main(cfg: SymmetricConv2dVAEConfig):
@@ -131,4 +139,9 @@ if __name__ == "__main__":
     # exit()
     args = parse_args()
     cfg = SymmetricConv2dVAEConfig.from_yaml(args.config)
+
+    # Initialize wandb
+    if cfg.use_wandb:
+        wandb.init(config=cfg.dict(), **cfg.wandb_config.dict())
+
     main(cfg)

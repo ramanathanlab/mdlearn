@@ -135,8 +135,6 @@ class SymmetricConv2dVAETrainer(Trainer):
     """Trainer class to fit a convolutional variational autoencoder
     to a set of contact maps."""
 
-    # TODO: Add example usage in documentation.
-
     def __init__(
         self,
         input_shape: Tuple[int, ...],
@@ -261,7 +259,6 @@ class SymmetricConv2dVAETrainer(Trainer):
         --------
         For an accompanying example, see:
         https://github.com/ramanathanlab/mdlearn/tree/main/examples/symmetric_conv2d_vae/training.
-
         """
         super().__init__(
             seed,
