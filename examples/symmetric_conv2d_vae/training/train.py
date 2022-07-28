@@ -14,6 +14,7 @@ class WandbConfig(BaseSettings):
     project: Optional[str] = None
     entity: Optional[str] = None
     name: Optional[str] = None
+    save_code: bool = True
 
 
 class SymmetricConv2dVAEConfig(BaseSettings):
