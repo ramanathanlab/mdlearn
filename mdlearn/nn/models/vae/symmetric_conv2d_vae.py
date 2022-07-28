@@ -136,7 +136,6 @@ class SymmetricConv2dVAETrainer(Trainer):
     to a set of contact maps."""
 
     # TODO: Add example usage in documentation.
-    # TODO: warning, in_gpu_memory not supported for ContactMapDataset
 
     def __init__(
         self,
@@ -151,7 +150,6 @@ class SymmetricConv2dVAETrainer(Trainer):
         output_activation: str = "Sigmoid",
         lambda_rec: float = 1.0,
         seed: int = 42,
-        in_gpu_memory: bool = False,
         num_data_workers: int = 0,
         prefetch_factor: int = 2,
         split_pct: float = 0.8,
@@ -193,8 +191,6 @@ class SymmetricConv2dVAETrainer(Trainer):
             Sets the inplace option for the activation function.
         seed : int, default=42
             Random seed for torch, numpy, and random module.
-        in_gpu_memory : bool, default=False
-            If True, will pre-load the entire :obj:`data` array to GPU memory.
         num_data_workers : int, default=0
             How many subprocesses to use for data loading. 0 means that
             the data will be loaded in the main process.
@@ -261,7 +257,7 @@ class SymmetricConv2dVAETrainer(Trainer):
         """
         super().__init__(
             seed,
-            in_gpu_memory,
+            False,
             num_data_workers,
             prefetch_factor,
             split_pct,

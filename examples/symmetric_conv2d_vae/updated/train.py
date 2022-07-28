@@ -29,7 +29,6 @@ class SymmetricConv2dVAEConfig(BaseSettings):
     output_activation: str = "Sigmoid"
     lambda_rec: float = 1.0
     seed: int = 42
-    in_gpu_memory: bool = False
     num_data_workers: int = 0
     prefetch_factor: int = 2
     split_pct: float = 0.8
@@ -69,7 +68,6 @@ def main(cfg: SymmetricConv2dVAEConfig):
         output_activation=cfg.output_activation,
         lambda_rec=cfg.lambda_rec,
         seed=cfg.seed,
-        in_gpu_memory=cfg.in_gpu_memory,
         num_data_workers=cfg.num_data_workers,
         prefetch_factor=cfg.prefetch_factor,
         split_pct=cfg.split_pct,
