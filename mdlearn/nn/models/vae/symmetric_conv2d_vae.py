@@ -234,7 +234,8 @@ class SymmetricConv2dVAETrainer(Trainer):
             should not be run, set :obj:`plot_method=None`. If using :obj:`"TSNE"`,
             it will attempt to use the RAPIDS.ai GPU implementation and
             will fallback to the sklearn CPU implementation if RAPIDS.ai
-            is unavailable.
+            is unavailable. A fast alternative is to plot the raw embeddings
+            (or up to the first 3 dimensions if D > 3) using :obj:`"raw"`.
         train_subsample_pct : float, default=1.0
             Percentage of training data to use during hyperparameter sweeps.
         valid_subsample_pct : float, default=1.0
