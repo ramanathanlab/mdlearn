@@ -83,7 +83,7 @@ html_context = {
 }
 
 # List of imports to mock when building the documentation.
-autodoc_mock_imports = ["numpy"]
+autodoc_mock_imports = ["numpy", "h5py", "torch"]
 
 # -- Options for HTML output -------------------------------------------------
 

@@ -18,6 +18,7 @@ mdlearn.nn.models.vae.symmetric\_conv2d\_vae
    .. autosummary::
    
       SymmetricConv2dVAE
+      SymmetricConv2dVAETrainer
    
    
 
