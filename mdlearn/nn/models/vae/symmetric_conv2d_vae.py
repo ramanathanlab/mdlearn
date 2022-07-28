@@ -242,7 +242,9 @@ class SymmetricConv2dVAETrainer(Trainer):
         valid_subsample_pct : float, default=1.0
             Percentage of validation data to use during hyperparameter sweeps.
         use_wandb : bool, default=False
-            If True, will log results to wandb.
+            If True, will log results to wandb. Metric keys include: obj:`"train_loss",
+            "train_recon_loss", "train_kld_loss", "valid_loss", "valid_recon_loss"
+            "valid_kld_loss"`.
 
         Raises
         ------
@@ -254,6 +256,12 @@ class SymmetricConv2dVAETrainer(Trainer):
             :obj:`valid_subsample_pct` should be between 0 and 1.
         ValueError
             Specified :obj:`device` as :obj:`cuda`, but it is unavailable.
+
+        Examples
+        --------
+        For an accompanying example, see:
+        https://github.com/ramanathanlab/mdlearn/tree/main/examples/symmetric_conv2d_vae/training.
+
         """
         super().__init__(
             seed,
