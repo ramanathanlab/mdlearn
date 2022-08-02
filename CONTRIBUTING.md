@@ -43,7 +43,7 @@ Hence, if you modify a Python file, you do not need to reinstall mdlearn again a
 4. Ensure that you have a working mdlearn installation by running:
 
 ```
-python -c "import mdlearn; print(mdlearn.__version__)"
+python3 -c "import mdlearn; print(mdlearn.__version__)"
 ```
 
 5. To run dev tools (isort, flake8, black, mypy):
