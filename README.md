@@ -5,6 +5,12 @@
 
 mdlearn is a Python library for analyzing molecular dynamics with machine learning. It contains [PyTorch](https://pytorch.org/) implementations of several deep learning methods such as autoencoders, as well as preprocessing functions which include the [kabsch alignment](https://en.wikipedia.org/wiki/Kabsch_algorithm) algorithm and higher-order statistical methods like [quasi-anharmonic analysis](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0015827).
 
+Currently supported models:
+- [Quasi-anharmonic analysis](https://mdlearn.readthedocs.io/en/latest/pages/_autosummary/mdlearn.data.preprocess.decorrelation.spatial.html#module-mdlearn.data.preprocess.decorrelation.spatial)
+- [Convolutional Variational Autoencoder](https://mdlearn.readthedocs.io/en/latest/pages/_autosummary/mdlearn.nn.models.vae.symmetric_conv2d_vae.html#module-mdlearn.nn.models.vae.symmetric_conv2d_vae)
+- [Autoencoder](https://mdlearn.readthedocs.io/en/latest/pages/_autosummary/mdlearn.nn.models.ae.linear.html#module-mdlearn.nn.models.ae.linear)
+
+
 For more details and specific examples of how to use mdlearn, please see our [documentation](https://mdlearn.readthedocs.io/en/latest/).
 
 ## Table of Contents
