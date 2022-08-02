@@ -19,7 +19,7 @@ class SymmetricConv2dVAE(VAE):
 
     def __init__(
         self,
-        input_shape: Tuple[int, ...],
+        input_shape: Tuple[int, int, int],
         init_weights: Optional[str] = None,
         filters: List[int] = [64, 64, 64],
         kernels: List[int] = [3, 3, 3],
@@ -33,8 +33,8 @@ class SymmetricConv2dVAE(VAE):
         """
         Parameters
         ----------
-        input_shape : Tuple[int, ...]
-            (height, width) input dimensions of input image.
+        input_shape : Tuple[int, int, int]
+            (1, height, width) input dimensions of input image.
         init_weights : Optional[str]
             .pt weights file to initial weights with.
         filters : List[int]
@@ -137,13 +137,13 @@ class SymmetricConv2dVAETrainer(Trainer):
 
     def __init__(
         self,
-        input_shape: Tuple[int, ...],
+        input_shape: Tuple[int, int, int],
         filters: List[int] = [64, 64, 64],
         kernels: List[int] = [3, 3, 3],
         strides: List[int] = [1, 2, 1],
         affine_widths: List[int] = [128],
         affine_dropouts: List[float] = [0.0],
-        latent_dim: int = 3,
+        latent_dim: int = 10,
         activation: str = "ReLU",
         output_activation: str = "Sigmoid",
         lambda_rec: float = 1.0,
@@ -165,7 +165,7 @@ class SymmetricConv2dVAETrainer(Trainer):
         checkpoint_log_every: int = 10,
         plot_log_every: int = 10,
         plot_n_samples: int = 10000,
-        plot_method: Optional[str] = "TSNE",
+        plot_method: Optional[str] = None,
         train_subsample_pct: float = 1.0,
         valid_subsample_pct: float = 1.0,
         use_wandb: bool = False,
@@ -173,9 +173,9 @@ class SymmetricConv2dVAETrainer(Trainer):
         """
         Parameters
         ----------
-        input_dim : int, default=40
-            Dimension of input tensor (should be flattened).
-        latent_dim : int, default=3
+        input_shape : Tuple[int, int, int]
+            (1, height, width) input dimensions of input image.
+        latent_dim : int, default=10
             Dimension of the latent space.
         hidden_neurons : List[int], default=[32, 16, 8]
             Linear layers :obj:`in_features`. Defines the shape of the autoencoder
@@ -229,7 +229,7 @@ class SymmetricConv2dVAETrainer(Trainer):
             Epoch interval to log a visualization plot of the latent space.
         plot_n_samples : int, default=10000
             Number of validation samples to use for plotting.
-        plot_method : Optional[str], default="TSNE"
+        plot_method : Optional[str], default=None
             The method for visualizing the latent space or if visualization
             should not be run, set :obj:`plot_method=None`. If using :obj:`"TSNE"`,
             it will attempt to use the RAPIDS.ai GPU implementation and
