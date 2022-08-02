@@ -13,7 +13,7 @@ def plot_scatter(
     data: np.ndarray,
     color_dict: Dict[str, np.ndarray] = {},
     color: Optional[str] = None,
-):
+) -> "plotly.graph_objects._figure.Figure":
 
     df_dict = color_dict.copy()
 
@@ -45,7 +45,7 @@ def log_latent_visualization(
     output_path: PathLike,
     epoch: int = 0,
     n_samples: Optional[int] = None,
-    method: str = "TSNE",
+    method: str = "raw",
 ) -> Dict[str, str]:
     """Make scatter plots of the latent space using the specified
     method of dimensionality reduction.
@@ -66,7 +66,7 @@ def log_latent_visualization(
         Number of samples to plot, will take a random sample of the
         :obj:`data` if :obj:`n_samples < N`. Otherwise, if :obj:`n_samples`
         is None, use all the data.
-    method : str, default="TSNE"
+    method : str, default="raw"
         Method of dimensionality reduction used to plot. Currently supports:
         "PCA", "TSNE", "LLE", or "raw" for plotting the raw embeddings (or
         up to the first 3 dimensions if D > 3). If "TSNE" is specified, then
