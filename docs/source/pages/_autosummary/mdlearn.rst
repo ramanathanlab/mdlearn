@@ -31,4 +31,5 @@
    mdlearn.metrics
    mdlearn.nn
    mdlearn.utils
+   mdlearn.visualize
 

@@ -175,18 +175,27 @@ class SymmetricConv2dVAETrainer(Trainer):
         ----------
         input_shape : Tuple[int, int, int]
             (1, height, width) input dimensions of input image.
-        latent_dim : int, default=10
-            Dimension of the latent space.
-        hidden_neurons : List[int], default=[32, 16, 8]
-            Linear layers :obj:`in_features`. Defines the shape of the autoencoder
+        filters : List[int], default=[64, 64, 64]
+            Convolutional filter dimensions.
+        kernels : List[int], default=[3, 3, 3]
+            Convolutional kernel dimensions (assumes square kernel).
+        strides : List[int], default=[1, 2, 1]
+            Convolutional stride lengths (assumes square strides).
+        affine_widths : List[int], default=[128]
+            Number of neurons in each linear layer. Defines the shape of the autoencoder
             (does not include latent dimension). The encoder and decoder are symmetric.
-        bias : bool, default=True
-            Use a bias term in the Linear layers.
-        relu_slope : float, default=0.0
-            If greater than 0.0, will use LeakyReLU activiation with
-            :obj:`negative_slope` set to :obj:`relu_slope`.
-        inplace_activation : bool, default=False
-            Sets the inplace option for the activation function.
+        affine_dropouts : List[float], default=[0.0]
+            Dropout probability for each linear layer. Dropout value
+            of 0.0 will skip adding the dropout layer.
+        latent_dim : int, default=10
+            Latent dimension for :math:`mu` and :math:`logstd` layers.
+        activation : str, default="ReLU"
+            Activation function to use between convultional and linear layers.
+        output_activation : str, default="Sigmoid"
+            Output activation function for last decoder layer.
+        lambda_rec : float, default=1.0
+            Factor to scale reconstruction loss by during training such that
+            :obj:`loss = lambda_rec * recon_loss + kld_loss`.
         seed : int, default=42
             Random seed for torch, numpy, and random module.
         num_data_workers : int, default=0
@@ -501,8 +510,12 @@ class SymmetricConv2dVAETrainer(Trainer):
         Parameters
         ----------
         X : np.ndarray
-            The input data to predict on.
-        inference_batch_size : int, default=512
+            Input contact matrices in sparse COO format of shape (N,)
+            where N is the number of data examples, and the empty dimension
+            is ragged. The row and column index vectors should be contatenated
+            and the values are assumed to be 1 and don't need to be explcitly
+            passed.
+        inference_batch_size : int, default=128
             The batch size for inference.
         checkpoint : Optional[PathLike], default=None
             Path to a specific model checkpoint file.
