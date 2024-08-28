@@ -1,4 +1,5 @@
 """LinearDecoder module for point cloud data."""
+
 from typing import List
 
 import torch

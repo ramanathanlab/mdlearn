@@ -1,4 +1,5 @@
 """Spatial decorrelation functions."""
+
 import warnings
 from typing import Optional
 

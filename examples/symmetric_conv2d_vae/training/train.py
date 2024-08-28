@@ -7,17 +7,17 @@ import pandas as pd
 import wandb
 
 from mdlearn.nn.models.vae.symmetric_conv2d_vae import SymmetricConv2dVAETrainer
-from mdlearn.utils import BaseSettings, parse_args
+from mdlearn.utils import BaseModel, parse_args
 
 
-class WandbConfig(BaseSettings):
+class WandbConfig(BaseModel):
     project: Optional[str] = None
     entity: Optional[str] = None
     name: Optional[str] = None
     save_code: bool = True
 
 
-class SymmetricConv2dVAEConfig(BaseSettings):
+class SymmetricConv2dVAEConfig(BaseModel):
     # File paths
     # Path to HDF5 training file
     input_path: Path = Path("TODO")

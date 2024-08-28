@@ -1,4 +1,5 @@
 """Configurations and utilities for model building and training."""
+
 import argparse
 import json
 from pathlib import Path
@@ -6,7 +7,7 @@ from typing import Any, Dict, Optional, Type, TypeVar, Union
 
 import torch
 import yaml
-from pydantic import BaseSettings as _BaseSettings
+from pydantic import BaseModel as _BaseModel
 
 PathLike = Union[str, Path]
 _T = TypeVar("_T")
@@ -25,7 +26,7 @@ def parse_args() -> argparse.Namespace:
     -------
     >>> from mdlearn.utils import parse_args
     >>> args = parse_args()
-    >>> # MyConfig should inherit from BaseSettings
+    >>> # MyConfig should inherit from BaseModel
     >>> cfg = MyConfig.from_yaml(args.config)
     """
     parser = argparse.ArgumentParser()
@@ -36,10 +37,10 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
-class BaseSettings(_BaseSettings):
+class BaseModel(_BaseModel):
     def dump_yaml(self, cfg_path: PathLike):
         with open(cfg_path, mode="w") as fp:
-            yaml.dump(json.loads(self.json()), fp, indent=4, sort_keys=False)
+            yaml.dump(json.loads(self.model_dump_json()), fp, indent=4, sort_keys=False)
 
     @classmethod
     def from_yaml(cls: Type[_T], filename: PathLike) -> _T:
@@ -48,17 +49,17 @@ class BaseSettings(_BaseSettings):
         return cls(**raw_data)
 
 
-class WandbConfig(BaseSettings):
+class WandbConfig(BaseModel):
     # Project name for wandb logging
     wandb_project_name: Optional[str] = None
     # Team name for wandb logging
     wandb_entity_name: Optional[str] = None
     # Model tag for wandb labeling
-    model_tag: Optional[str] = None
+    wandb_model_tag: Optional[str] = None
 
     def init(
         self,
-        cfg: BaseSettings,
+        cfg: BaseModel,
         model: "torch.nn.Module",
         wandb_path: PathLike,
     ) -> Optional["wandb.config"]:  # noqa: F821
@@ -66,7 +67,7 @@ class WandbConfig(BaseSettings):
 
         Parameters
         ----------
-        cfg : BaseSettings
+        cfg : BaseModel
             Model configuration with hyperparameters and training settings.
         model : torch.nn.Module
             Model to train, passed to :obj:`wandb.watch(model)` for logging.
@@ -85,8 +86,8 @@ class WandbConfig(BaseSettings):
             wandb.init(
                 project=self.wandb_project_name,
                 entity=self.wandb_entity_name,
-                name=self.model_tag,
-                id=self.model_tag,
+                name=self.wandb_model_tag,
+                id=self.wandb_model_tag,
                 dir=str(wandb_path),
                 config=cfg.dict(),
                 resume=False,
@@ -95,7 +96,7 @@ class WandbConfig(BaseSettings):
             return wandb.config
 
 
-class OptimizerConfig(BaseSettings):
+class OptimizerConfig(BaseModel):
     """pydantic schema for PyTorch optimizer which allows
     for arbitrary optimizer hyperparameters."""
 
@@ -108,7 +109,7 @@ class OptimizerConfig(BaseSettings):
     hparams: Dict[str, Any] = {}
 
 
-class SchedulerConfig(BaseSettings):
+class SchedulerConfig(BaseModel):
     """pydantic schema for PyTorch scheduler which allows for arbitrary
     scheduler hyperparameters."""
 

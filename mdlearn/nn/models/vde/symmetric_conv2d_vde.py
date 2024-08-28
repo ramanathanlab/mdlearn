@@ -1,4 +1,5 @@
 """.. warning:: VDE models are still under development, use with caution!"""
+
 from typing import List, Optional, Tuple
 
 import torch

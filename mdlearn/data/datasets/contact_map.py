@@ -1,4 +1,5 @@
 """ContactMap Dataset."""
+
 from typing import Dict, List, Optional, Tuple
 
 import h5py

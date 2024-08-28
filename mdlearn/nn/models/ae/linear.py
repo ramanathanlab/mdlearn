@@ -1,4 +1,5 @@
 """Linear-layer autoencoder model with trainer class."""
+
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple
 

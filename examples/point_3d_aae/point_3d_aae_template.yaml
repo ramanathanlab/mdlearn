@@ -28,7 +28,7 @@ scheduler: null
 wandb: null
 #wandb_project_name: null
 #    wandb_entity_name: null
-#    model_tag: null
+#    wandb_model_tag: null
 latent_dim: 10
 encoder_bias: true
 encoder_relu_slope: 0.0

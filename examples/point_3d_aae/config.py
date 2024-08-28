@@ -1,10 +1,10 @@
 from pathlib import Path
 from typing import List, Optional
 
-from mdlearn.utils import BaseSettings, OptimizerConfig, SchedulerConfig, WandbConfig
+from mdlearn.utils import BaseModel, OptimizerConfig, SchedulerConfig, WandbConfig
 
 
-class Point3dAAEConfig(BaseSettings):
+class Point3dAAEConfig(BaseModel):
     # File paths
     # Path to HDF5 training file
     input_path: Path = Path("TODO")
