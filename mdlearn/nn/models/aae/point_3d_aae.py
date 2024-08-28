@@ -1,4 +1,5 @@
 """Adversarial Autoencoder for 3D point cloud data (3dAAE)"""
+
 from typing import List, Tuple
 
 import torch

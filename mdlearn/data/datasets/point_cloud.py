@@ -1,4 +1,5 @@
 """PointCloud Dataset."""
+
 from typing import Dict, List, Tuple
 
 import h5py
