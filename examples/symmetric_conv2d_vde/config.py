@@ -1,10 +1,10 @@
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from mdlearn.utils import BaseSettings, OptimizerConfig, SchedulerConfig, WandbConfig
+from mdlearn.utils import BaseModel, OptimizerConfig, SchedulerConfig, WandbConfig
 
 
-class SymmetricConv2dVDEConfig(BaseSettings):
+class SymmetricConv2dVDEConfig(BaseModel):
     # File paths
     # Path to HDF5 training file
     input_path: Path = Path("TODO")

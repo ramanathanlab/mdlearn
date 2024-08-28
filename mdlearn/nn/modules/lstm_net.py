@@ -1,4 +1,5 @@
 """LSTMNet module."""
+
 from typing import List
 
 import torch
