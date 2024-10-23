@@ -548,7 +548,7 @@ class AAE3dTrainer(Trainer):
         train_loader, valid_loader = train_valid_split(
             dataset=dataset,
             split_pct=self.split_pct,
-            split_method=self.split_method,
+            method=self.split_method,
             batch_size=self.batch_size,
             shuffle=self.shuffle,
             num_workers=self.num_data_workers,
