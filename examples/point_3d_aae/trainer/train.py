@@ -32,6 +32,7 @@ if __name__ == "__main__":
     parser.add_argument("--latent_dim", type=int, default=3, help="The dimension of the latent space")
     parser.add_argument("--device", type=str, default="cuda", help="The device to train on [cuda, cpu]")
     parser.add_argument("--plot_method", type=str, default="raw", help="The method to use for plotting the latent space [raw, PCA, TSNE]")
+    parser.add_argument('-v', '--verbose', action='store_true', help="Verbose output")
     args = parser.parse_args()
 
     # Load the training data
@@ -51,7 +52,8 @@ if __name__ == "__main__":
         batch_size=args.batch_size,
         epochs=args.epochs,
         device=args.device,
-        plot_method=args.plot_method
+        plot_method=args.plot_method,
+        verbose=args.verbose
     )
 
     trainer.fit(X=coords, scalars=scalars, output_path=args.output_path, checkpoint=args.checkpoint_path)
