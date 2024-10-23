@@ -4,11 +4,6 @@ mdlearn.data.preprocess.decorrelation.spatial
 .. automodule:: mdlearn.data.preprocess.decorrelation.spatial
 
    
-   
-   
-
-   
-   
    .. rubric:: Functions
 
    .. autosummary::
@@ -16,15 +11,3 @@ mdlearn.data.preprocess.decorrelation.spatial
       SD2
       SD4
    
-   
-
-   
-   
-   
-
-   
-   
-   
-
-
-

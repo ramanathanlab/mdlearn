@@ -4,15 +4,6 @@ mdlearn.nn.models.aae.model
 .. automodule:: mdlearn.nn.models.aae.model
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -20,11 +11,3 @@ mdlearn.nn.models.aae.model
       AAE
       ChamferLoss
    
-   
-
-   
-   
-   
-
-
-

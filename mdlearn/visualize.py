@@ -5,15 +5,17 @@ from typing import Dict, Optional, Union
 
 import numpy as np
 import pandas as pd
+import plotly
 import plotly.express as px
+from numpy.typing import ArrayLike
 from plotly.io import to_html
 
 PathLike = Union[str, Path]
 
 
 def plot_scatter(
-    data: np.ndarray,
-    color_dict: Dict[str, np.ndarray] = {},
+    data: ArrayLike,
+    color_dict: Dict[str, ArrayLike] = {},
     color: Optional[str] = None,
 ) -> "plotly.graph_objects._figure.Figure":
 
@@ -42,8 +44,8 @@ def plot_scatter(
 
 
 def log_latent_visualization(
-    data: np.ndarray,
-    colors: Dict[str, np.ndarray],
+    data: ArrayLike,
+    colors: Dict[str, ArrayLike],
     output_path: PathLike,
     epoch: int = 0,
     n_samples: Optional[int] = None,
@@ -54,10 +56,10 @@ def log_latent_visualization(
 
     Parameters
     ----------
-    data : np.ndarray
+    data : ArrayLike
         The latent embeddings to visualize of shape (N, D) where
         N  is the number of examples and D is the number of dimensions.
-    colors : Dict[str, np.ndarray]
+    colors : Dict[str, ArrayLike]
         Each item in the dictionary will generate a different plot labeled
         with the key name. Each inner array should be of size N.
     output_path : PathLike

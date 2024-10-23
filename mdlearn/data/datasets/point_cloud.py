@@ -1,10 +1,11 @@
 """PointCloud Dataset."""
 
-from typing import Dict, List, Tuple
+from __future__ import annotations
 
 import h5py
 import numpy as np
 import torch
+from numpy.typing import ArrayLike
 from torch.utils.data import Dataset
 
 from mdlearn.utils import PathLike
@@ -22,7 +23,7 @@ class PointCloudDataset(Dataset):
         num_points: int,
         num_features: int = 0,
         dataset_name: str = "point_cloud",
-        scalar_dset_names: List[str] = [],
+        scalar_dset_names: list[str] = [],
         seed: int = 333,
         cms_transform: bool = False,
         scalar_requires_grad: bool = False,
@@ -97,7 +98,7 @@ class PointCloudDataset(Dataset):
         self.not_initialized = True
 
     @property
-    def point_cloud_size(self) -> Tuple[int, int]:
+    def point_cloud_size(self) -> tuple[int, int]:
         return 3 + self.num_features, self.num_points
 
     def _open_h5_file(self):
@@ -199,12 +200,12 @@ class PointCloudDataset(Dataset):
 
 
 class CenterOfMassTransform:
-    def __init__(self, data: np.ndarray) -> None:
+    def __init__(self, data: ArrayLike) -> None:
         """Computes center of mass transformation
 
         Parameters
         ----------
-        data : np.ndarray
+        data : ArrayLike
             Dataset of positions with shape (num_examples, 3, num_points).
         """
 
@@ -214,17 +215,17 @@ class CenterOfMassTransform:
         self.bias: float = (data - cms).min()
         self.scale: float = 1.0 / ((data - cms).max() - self.bias)
 
-    def transform(self, x: np.ndarray) -> np.ndarray:
+    def transform(self, x: ArrayLike) -> ArrayLike:
         """Normalize example by bias and scale factors
 
         Parameters
         ----------
-        x : np.ndarray
+        x : ArrayLike
             Data to transform shape (3, num_points). Modifies :obj:`x`.
 
         Returns
         -------
-        np.ndarray
+        ArrayLike
             The transformed data
 
         Raises
@@ -250,17 +251,17 @@ class PointCloudDatasetInMemory(Dataset):
 
     def __init__(
         self,
-        data: np.ndarray,
-        scalars: Dict[str, np.ndarray] = {},
+        data: ArrayLike,
+        scalars: dict[str, ArrayLike] = {},
         cms_transform: bool = False,
         scalar_requires_grad: bool = False,
     ):
         """
         Parameters
         ----------
-        data : np.ndarray
+        data : ArrayLike
             Dataset of positions with shape (num_examples, 3, num_points)
-        scalars : Dict[str, np.ndarray], default={}
+        scalars : dict[str, ArrayLike], default={}
             Dictionary of scalar arrays. For instance, the root mean squared
             deviation (RMSD) for each feature vector can be passed via
             :obj:`{"rmsd": np.array(...)}`. The dimension of each scalar array
@@ -284,7 +285,7 @@ class PointCloudDatasetInMemory(Dataset):
     def __len__(self) -> int:
         return len(self.data)
 
-    def __getitem__(self, idx: int) -> Dict[str, torch.Tensor]:
+    def __getitem__(self, idx: int) -> dict[str, torch.Tensor]:
 
         data = self.data[idx].copy()  # shape (3, num_points)
 

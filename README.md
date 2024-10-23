@@ -9,6 +9,7 @@ Currently supported models:
 - [Quasi-anharmonic analysis](https://mdlearn.readthedocs.io/en/latest/pages/_autosummary/mdlearn.data.preprocess.decorrelation.spatial.html#module-mdlearn.data.preprocess.decorrelation.spatial)
 - [Convolutional Variational Autoencoder](https://mdlearn.readthedocs.io/en/latest/pages/_autosummary/mdlearn.nn.models.vae.symmetric_conv2d_vae.html#module-mdlearn.nn.models.vae.symmetric_conv2d_vae)
 - [Autoencoder](https://mdlearn.readthedocs.io/en/latest/pages/_autosummary/mdlearn.nn.models.ae.linear.html#module-mdlearn.nn.models.ae.linear)
+- [Adversarial Autoencoder](https://mdlearn.readthedocs.io/en/latest/pages/_autosummary/mdlearn.nn.models.aae.point_3d_aae.html#mdlearn.nn.models.aae.point_3d_aae.AAE3dTrainer)
 
 
 For more details and specific examples of how to use mdlearn, please see our [documentation](https://mdlearn.readthedocs.io/en/latest/).

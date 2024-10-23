@@ -4,11 +4,6 @@ mdlearn.nn.utils
 .. automodule:: mdlearn.nn.utils
 
    
-   
-   
-
-   
-   
    .. rubric:: Functions
 
    .. autosummary::
@@ -19,21 +14,9 @@ mdlearn.nn.utils
       reset
       same_padding
    
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
    
       Trainer
    
-   
-
-   
-   
-   
-
-
-
