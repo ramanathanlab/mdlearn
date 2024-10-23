@@ -492,14 +492,15 @@ class AAE3dTrainer(Trainer):
         output_path: PathLike = "./",
         checkpoint: PathLike | None = None,
     ) -> None:
-        # TODO: make sure the input data shape is documented correctly
         r"""Trains the autoencoder on the input data :obj:`X`.
 
         Parameters
         ----------
         X : ArrayLike
-            Input point cloud data of shape (N, num_points, 3) where N is the
-            number of data examples and 3 is the x, y, z coordinates of each point.
+            Input point cloud data of shape (N, 3, num_points) where N is the
+            number of data examples, 3 is the x, y, z coordinates of each point,
+            and num_points is the number of points in the point cloud (e.g. number
+            of residues in a protein structure).
         scalars : Dict[str, ArrayLike], default={}
             Dictionary of scalar arrays. For instance, the root mean squared
             deviation (RMSD) for each feature vector can be passed via
