@@ -4,15 +4,6 @@ mdlearn.data.datasets.contact\_map
 .. automodule:: mdlearn.data.datasets.contact_map
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -20,11 +11,3 @@ mdlearn.data.datasets.contact\_map
       ContactMapDataset
       ContactMapHDF5Dataset
    
-   
-
-   
-   
-   
-
-
-

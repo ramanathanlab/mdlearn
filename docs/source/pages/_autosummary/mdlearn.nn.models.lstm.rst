@@ -4,15 +4,6 @@ mdlearn.nn.models.lstm
 .. automodule:: mdlearn.nn.models.lstm
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -20,11 +11,3 @@ mdlearn.nn.models.lstm
       LSTM
       LSTMTrainer
    
-   
-
-   
-   
-   
-
-
-

@@ -4,15 +4,6 @@ mdlearn.data.datasets.point\_cloud
 .. automodule:: mdlearn.data.datasets.point_cloud
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -21,11 +12,3 @@ mdlearn.data.datasets.point\_cloud
       PointCloudDataset
       PointCloudDatasetInMemory
    
-   
-
-   
-   
-   
-
-
-

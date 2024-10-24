@@ -4,15 +4,6 @@ mdlearn.nn.models.ae.linear
 .. automodule:: mdlearn.nn.models.ae.linear
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -20,11 +11,3 @@ mdlearn.nn.models.ae.linear
       LinearAE
       LinearAETrainer
    
-   
-
-   
-   
-   
-
-
-

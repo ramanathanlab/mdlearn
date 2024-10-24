@@ -1,3 +1,5 @@
+from typing import Any
+
 import torch
 from torch import nn
 from torch.nn import functional as F
@@ -27,11 +29,11 @@ class AE(nn.Module):
         reset(self.encoder)
         reset(self.decoder)
 
-    def encode(self, *args, **kwargs):
+    def encode(self, *args: Any, **kwargs: Any) -> torch.Tensor:
         """Encoder forward pass."""
         return self.encoder(*args, **kwargs)
 
-    def decode(self, *args, **kwargs):
+    def decode(self, *args: Any, **kwargs: Any) -> torch.Tensor:
         """Decoder forward pass."""
         return self.decoder(*args, **kwargs)
 
