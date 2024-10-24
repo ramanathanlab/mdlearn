@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     To run evaluation only:
     python aae3d.py \
-        --input_path /nfs/lambda_stor_01/homes/abrace/projects/ddwe/data/CA_to_Alex/xyz_coords_aligned.npy 
+        --input_path /nfs/lambda_stor_01/homes/abrace/projects/ddwe/data/CA_to_Alex/xyz_coords_aligned.npy \
         --scalars_path /nfs/lambda_stor_01/homes/abrace/projects/ddwe/data/rmsd.npy \
         --scalar_name rmsd \
         --checkpoint_path runs/run-0/checkpoints/checkpoint-epoch-90.pt \
@@ -86,7 +86,9 @@ if __name__ == "__main__":
     # Reshape the data to (N_examples, 3, N_residues)
     coords = coords.transpose([0, 2, 1])
     # Print the training data shape
-    print(f"{'Evaluate' if args.eval_only else 'Train'} on data with shape:", coords.shape)
+    print(
+        f"{'Evaluate' if args.eval_only else 'Train'} on data with shape:", coords.shape
+    )
 
     # Load data for plotting evaluations
     scalar = np.load(args.scalars_path)
