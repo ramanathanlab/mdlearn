@@ -1,7 +1,9 @@
 """.. warning:: LSTM models are still under development, use with caution!"""
+from __future__ import annotations
 
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
+from typing import Optional
 
 import numpy as np
 import torch
@@ -22,7 +24,7 @@ class LSTMAE(AE):
         self,
         input_dim: int,
         latent_dim: int = 8,
-        hidden_neurons: List[int] = [128],
+        hidden_neurons: list[int] = [128],
         lstm_bias: bool = True,
         dropout: float = 0.0,
         relu_slope: float = 0.0,
@@ -59,16 +61,19 @@ class LSTMAE(AE):
         dense_bias : bool, default=True
             If False, then the :obj:`DenseNet` decoder does not use bias.
         """
-
         neurons = hidden_neurons.copy() + [latent_dim]
         encoder = LSTMNet(input_dim, neurons, lstm_bias, dropout)
         decoder_neurons = list(reversed(neurons))[1:] + [input_dim]
         decoder = DenseNet(
-            neurons[-1], decoder_neurons, dense_bias, relu_slope, inplace_activation
+            neurons[-1],
+            decoder_neurons,
+            dense_bias,
+            relu_slope,
+            inplace_activation,
         )
         super().__init__(encoder, decoder)
 
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Parameters
         ----------
@@ -88,7 +93,10 @@ class LSTMAE(AE):
         return z, y_pred
 
     def mse_loss(
-        self, y_true: torch.Tensor, y_pred: torch.Tensor, reduction: str = "mean"
+        self,
+        y_true: torch.Tensor,
+        y_pred: torch.Tensor,
+        reduction: str = 'mean',
     ) -> torch.Tensor:
         """Compute the MSE loss between :obj:`y_true` and :obj:`y_pred`.
 
@@ -118,7 +126,7 @@ class LSTMAETrainer(Trainer):
         self,
         input_dim: int,
         latent_dim: int = 8,
-        hidden_neurons: List[int] = [128],
+        hidden_neurons: list[int] = [128],
         lstm_bias: bool = True,
         dropout: float = 0.0,
         relu_slope: float = 0.0,
@@ -131,21 +139,24 @@ class LSTMAETrainer(Trainer):
         num_data_workers: int = 0,
         prefetch_factor: int = 2,
         split_pct: float = 0.8,
-        split_method: str = "partition",
+        split_method: str = 'partition',
         batch_size: int = 128,
         shuffle: bool = True,
-        device: str = "cpu",
-        optimizer_name: str = "RMSprop",
-        optimizer_hparams: Dict[str, Any] = {"lr": 0.001, "weight_decay": 0.00001},
+        device: str = 'cpu',
+        optimizer_name: str = 'RMSprop',
+        optimizer_hparams: dict[str, Any] = {
+            'lr': 0.001,
+            'weight_decay': 0.00001,
+        },
         scheduler_name: Optional[str] = None,
-        scheduler_hparams: Dict[str, Any] = {},
+        scheduler_hparams: dict[str, Any] = {},
         epochs: int = 100,
         verbose: bool = False,
         clip_grad_max_norm: float = 10.0,
         checkpoint_log_every: int = 10,
         plot_log_every: int = 10,
         plot_n_samples: int = 10000,
-        plot_method: Optional[str] = "TSNE",
+        plot_method: Optional[str] = 'TSNE',
         train_subsample_pct: float = 1.0,
         valid_subsample_pct: float = 1.0,
         use_wandb: bool = False,
@@ -251,7 +262,6 @@ class LSTMAETrainer(Trainer):
         ValueError
             Specified :obj:`device` as :obj:`cuda`, but it is unavailable.
         """
-
         super().__init__(
             seed,
             in_gpu_memory,
@@ -281,7 +291,8 @@ class LSTMAETrainer(Trainer):
         self.scheduler_name = scheduler_name
         self.scheduler_hparams = scheduler_hparams
 
-        from mdlearn.utils import get_torch_optimizer, get_torch_scheduler
+        from mdlearn.utils import get_torch_optimizer
+        from mdlearn.utils import get_torch_scheduler
 
         self.model = LSTMAE(
             input_dim,
@@ -301,22 +312,26 @@ class LSTMAETrainer(Trainer):
 
         # Setup optimizer
         self.optimizer = get_torch_optimizer(
-            self.optimizer_name, self.optimizer_hparams, self.model.parameters()
+            self.optimizer_name,
+            self.optimizer_hparams,
+            self.model.parameters(),
         )
 
         # Setup learning rate scheduler
         self.scheduler = get_torch_scheduler(
-            self.scheduler_name, self.scheduler_hparams, self.optimizer
+            self.scheduler_name,
+            self.scheduler_hparams,
+            self.optimizer,
         )
 
         # Log the train and validation loss each epoch
-        self.loss_curve_ = {"train": [], "validation": []}
+        self.loss_curve_ = {'train': [], 'validation': []}
 
     def fit(
         self,
         X: np.ndarray,
-        scalars: Dict[str, np.ndarray] = {},
-        output_path: PathLike = "./",
+        scalars: dict[str, np.ndarray] = {},
+        output_path: PathLike = './',
         checkpoint: Optional[PathLike] = None,
     ):
         """Trains the LSTMAE on the input data :obj:`X`.
@@ -350,16 +365,19 @@ class LSTMAETrainer(Trainer):
             If using a learning rate scheduler other than :obj:`ReduceLROnPlateau`,
             a step function will need to be implemented.
         """
-
         if len(X.shape) != 2:
-            raise ValueError(f"X should be of dimension (N, D), got {X.shape}.")
+            raise ValueError(
+                f'X should be of dimension (N, D), got {X.shape}.',
+            )
         if not isinstance(scalars, dict):
             raise TypeError(
-                "scalars should be of type dict. A common error"
-                " is to pass output_path as the second argument."
+                'scalars should be of type dict. A common error'
+                ' is to pass output_path as the second argument.',
             )
 
-        from mdlearn.data.datasets.feature_vector import TimeFeatureVectorDataset
+        from mdlearn.data.datasets.feature_vector import (
+            TimeFeatureVectorDataset,
+        )
         from mdlearn.data.utils import train_valid_split
         from mdlearn.utils import log_checkpoint
         from mdlearn.visualize import log_latent_visualization
@@ -369,7 +387,8 @@ class LSTMAETrainer(Trainer):
 
         exist_ok = (checkpoint is not None) or self.use_wandb
         output_path, checkpoint_path, plot_path = self._make_output_dir(
-            output_path, exist_ok
+            output_path,
+            exist_ok,
         )
 
         # Set available number of cores
@@ -408,9 +427,10 @@ class LSTMAETrainer(Trainer):
 
             if self.verbose:
                 print(
-                    "====> Epoch: {} Train:\tAvg loss: {:.4f}".format(
-                        epoch, avg_train_loss
-                    )
+                    '====> Epoch: {} Train:\tAvg loss: {:.4f}'.format(
+                        epoch,
+                        avg_train_loss,
+                    ),
                 )
 
             # Validation
@@ -420,9 +440,10 @@ class LSTMAETrainer(Trainer):
 
             if self.verbose:
                 print(
-                    "====> Epoch: {} Valid:\tAvg loss: {:.4f}\n".format(
-                        epoch, avg_valid_loss
-                    )
+                    '====> Epoch: {} Valid:\tAvg loss: {:.4f}\n'.format(
+                        epoch,
+                        avg_valid_loss,
+                    ),
                 )
 
             # Step the learning rate scheduler
@@ -431,18 +452,23 @@ class LSTMAETrainer(Trainer):
             # Log a model checkpoint file
             if epoch % self.checkpoint_log_every == 0:
                 log_checkpoint(
-                    checkpoint_path / f"checkpoint-epoch-{epoch}.pt",
+                    checkpoint_path / f'checkpoint-epoch-{epoch}.pt',
                     epoch,
                     self.model,
-                    {"optimizer": self.optimizer},
+                    {'optimizer': self.optimizer},
                     self.scheduler,
                 )
 
             if self.use_wandb:
-                metrics = {"train_loss": avg_train_loss, "valid_loss": avg_valid_loss}
+                metrics = {
+                    'train_loss': avg_train_loss,
+                    'valid_loss': avg_valid_loss,
+                }
 
             # Log a visualization of the latent space
-            if (self.plot_method is not None) and (epoch % self.plot_log_every == 0):
+            if (self.plot_method is not None) and (
+                epoch % self.plot_log_every == 0
+            ):
                 htmls = log_latent_visualization(
                     z,
                     paints,
@@ -454,21 +480,21 @@ class LSTMAETrainer(Trainer):
                 if self.use_wandb:
                     # Optionally, log visualizations to wandb
                     for name, html in htmls.items():
-                        metrics[name] = wandb.Html(html, inject=False)  # noqa
+                        metrics[name] = wandb.Html(html, inject=False)
 
             if self.use_wandb:
-                wandb.log(metrics)  # noqa
+                wandb.log(metrics)
 
             # Save the losses
-            self.loss_curve_["train"].append(avg_train_loss)
-            self.loss_curve_["validation"].append(avg_valid_loss)
+            self.loss_curve_['train'].append(avg_train_loss)
+            self.loss_curve_['validation'].append(avg_valid_loss)
 
     def predict(
         self,
         X: np.ndarray,
         inference_batch_size: int = 512,
         checkpoint: Optional[PathLike] = None,
-    ) -> Tuple[np.ndarray, np.ndarray, float]:
+    ) -> tuple[np.ndarray, np.ndarray, float]:
         """Predict using the LSTMAE.
 
         Parameters
@@ -489,7 +515,9 @@ class LSTMAETrainer(Trainer):
         float
             The average MSE loss.
         """
-        from mdlearn.data.datasets.feature_vector import TimeFeatureVectorDataset
+        from mdlearn.data.datasets.feature_vector import (
+            TimeFeatureVectorDataset,
+        )
 
         dataset = TimeFeatureVectorDataset(
             X,
@@ -531,12 +559,11 @@ class LSTMAETrainer(Trainer):
     def _train(self, train_loader) -> float:
         avg_loss = 0.0
         for i, batch in enumerate(train_loader):
-
             if i / len(train_loader) > self.train_subsample_pct:
                 break  # Early stop for sweeps
 
-            x = batch["X"].to(self.device, non_blocking=True)
-            y = batch["y"].to(self.device, non_blocking=True)
+            x = batch['X'].to(self.device, non_blocking=True)
+            y = batch['y'].to(self.device, non_blocking=True)
 
             # Forward pass
             _, y_pred = self.model(x)
@@ -546,7 +573,8 @@ class LSTMAETrainer(Trainer):
             self.optimizer.zero_grad()
             loss.backward()
             _ = torch.nn.utils.clip_grad_norm_(
-                self.model.parameters(), self.clip_grad_max_norm
+                self.model.parameters(),
+                self.clip_grad_max_norm,
             )
             self.optimizer.step()
 
@@ -558,18 +586,18 @@ class LSTMAETrainer(Trainer):
         return avg_loss
 
     def _validate(
-        self, valid_loader
-    ) -> Tuple[float, np.ndarray, np.ndarray, Dict[str, np.ndarray]]:
+        self,
+        valid_loader,
+    ) -> tuple[float, np.ndarray, np.ndarray, dict[str, np.ndarray]]:
         paints = defaultdict(list)
         preds, embeddings = [], []
         avg_loss = 0.0
         for i, batch in enumerate(valid_loader):
-
             if i / len(valid_loader) > self.valid_subsample_pct:
                 break  # Early stop for sweeps
 
-            x = batch["X"].to(self.device, non_blocking=True)
-            y = batch["y"].to(self.device, non_blocking=True)
+            x = batch['X'].to(self.device, non_blocking=True)
+            y = batch['y'].to(self.device, non_blocking=True)
 
             # Forward pass
             z, y_pred = self.model(x)
@@ -588,6 +616,8 @@ class LSTMAETrainer(Trainer):
         # Group predictions, embeddings, and paints
         preds = np.concatenate(preds)
         embeddings = np.concatenate(embeddings)
-        paints = {name: np.concatenate(scalar) for name, scalar in paints.items()}
+        paints = {
+            name: np.concatenate(scalar) for name, scalar in paints.items()
+        }
 
         return avg_loss, preds, embeddings, paints

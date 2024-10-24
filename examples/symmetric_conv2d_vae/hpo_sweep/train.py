@@ -1,48 +1,53 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
+from typing import Optional
 
 import h5py
 import numpy as np
 import pandas as pd
 import wandb
 
-from mdlearn.nn.models.vae.symmetric_conv2d_vae import SymmetricConv2dVAETrainer
+from mdlearn.nn.models.vae.symmetric_conv2d_vae import (
+    SymmetricConv2dVAETrainer,
+)
 from mdlearn.utils import BaseModel
 
 
 class SymmetricConv2dVAEConfig(BaseModel):
     # File paths
     # Path to HDF5 training file
-    input_path: Path = Path("TODO")
+    input_path: Path = Path('TODO')
     # Path to directory where trainer should write to (cannot already exist)
-    output_path: Path = Path("TODO")
+    output_path: Path = Path('TODO')
     # Optionally resume training from a checkpoint file
     checkpoint_path: Optional[Path] = None
 
-    input_shape: Tuple[int, int, int] = (1, 28, 28)
-    filters: List[int] = [100, 100, 100, 100]
-    kernels: List[int] = [5, 5, 5, 5]
-    strides: List[int] = [1, 2, 1, 2]
-    affine_widths: List[int] = [128, 64]
-    affine_dropouts: List[float] = [0.0, 0.0]
+    input_shape: tuple[int, int, int] = (1, 28, 28)
+    filters: list[int] = [100, 100, 100, 100]
+    kernels: list[int] = [5, 5, 5, 5]
+    strides: list[int] = [1, 2, 1, 2]
+    affine_widths: list[int] = [128, 64]
+    affine_dropouts: list[float] = [0.0, 0.0]
     latent_dim: int = 10
-    activation: str = "ReLU"
-    output_activation: str = "Sigmoid"
+    activation: str = 'ReLU'
+    output_activation: str = 'Sigmoid'
     lambda_rec: float = 1.0
     seed: int = 42
     num_data_workers: int = 0
     prefetch_factor: int = 2
     split_pct: float = 0.8
-    split_method: str = "random"
+    split_method: str = 'random'
     shuffle: bool = True
     epochs: int = 50
     batch_size: int = 64
-    device: str = "cuda"
+    device: str = 'cuda'
     clip_grad_max_norm: float = 10.0
-    optimizer_name: str = "RMSprop"
-    optimizer_hparams: Dict[str, Any] = {"lr": 0.001, "weight_decay": 0.00001}
+    optimizer_name: str = 'RMSprop'
+    optimizer_hparams: dict[str, Any] = {'lr': 0.001, 'weight_decay': 0.00001}
     scheduler_name: Optional[str] = None
-    scheduler_hparams: Dict[str, Any] = {}
+    scheduler_hparams: dict[str, Any] = {}
     verbose: bool = False
     checkpoint_log_every: int = 10
     plot_log_every: int = 50
@@ -55,7 +60,6 @@ class SymmetricConv2dVAEConfig(BaseModel):
 
 
 def main(cfg: SymmetricConv2dVAEConfig):
-
     # Initialize the model
     trainer = SymmetricConv2dVAETrainer(
         input_shape=cfg.input_shape,
@@ -96,10 +100,10 @@ def main(cfg: SymmetricConv2dVAEConfig):
 
     # Load input data from HDF5 file
     with h5py.File(cfg.input_path) as f:
-        contact_maps = f["contact_map"][...]
-        scalars = {"rmsd": f["rmsd"][...]}
+        contact_maps = f['contact_map'][...]
+        scalars = {'rmsd': f['rmsd'][...]}
 
-    print(f"Number of contact maps: {len(contact_maps)}")
+    print(f'Number of contact maps: {len(contact_maps)}')
 
     # Train model
     trainer.fit(
@@ -109,7 +113,7 @@ def main(cfg: SymmetricConv2dVAEConfig):
         checkpoint=cfg.checkpoint_path,
     )
 
-    pd.DataFrame(trainer.loss_curve_).to_csv(cfg.output_path / "loss.csv")
+    pd.DataFrame(trainer.loss_curve_).to_csv(cfg.output_path / 'loss.csv')
 
     # Generate latent embeddings in inference mode
     (
@@ -117,16 +121,19 @@ def main(cfg: SymmetricConv2dVAEConfig):
         loss,
         recon_loss,
         kld_loss,
-    ) = trainer.predict(X=contact_maps, inference_batch_size=cfg.inference_batch_size)
+    ) = trainer.predict(
+        X=contact_maps,
+        inference_batch_size=cfg.inference_batch_size,
+    )
 
-    np.save(cfg.output_path / "z.npy", z)
+    np.save(cfg.output_path / 'z.npy', z)
 
     print(
-        f"Final loss on the full dataset is: {loss}, recon: {recon_loss}, kld: {kld_loss}"
+        f'Final loss on the full dataset is: {loss}, recon: {recon_loss}, kld: {kld_loss}',
     )
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # Generate sample yaml
     # SymmetricConv2dVAEConfig().dump_yaml("symmetric_conv2d_vae_template.yaml")
     # exit()
@@ -138,7 +145,7 @@ if __name__ == "__main__":
     # Update cfg with sweep parameters
     cfg.batch_size = wandb.config.batch_size
     cfg.optimizer_name = wandb.config.optimizer
-    cfg.optimizer_hparams["lr"] = wandb.config.lr
+    cfg.optimizer_hparams['lr'] = wandb.config.lr
     cfg.latent_dim = wandb.config.latent_dim
     cfg.lambda_rec = wandb.config.lambda_rec
 

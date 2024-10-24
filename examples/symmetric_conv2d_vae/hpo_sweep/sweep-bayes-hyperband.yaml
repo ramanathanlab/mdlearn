@@ -6,7 +6,7 @@ metric:
   name: cluster_quality
 parameters:
   output_path:
-      value: /homes/abrace/src/mdlearn/runs/test-run-0  
+      value: /homes/abrace/src/mdlearn/runs/test-run-0
   default_yaml:
     value: symmetric_conv2d_vae_sweep_default.yaml
   batch_size:
@@ -20,7 +20,7 @@ parameters:
       - Adam
       - RMSprop
   lr:
-    values: [1e-2, 1e-3, 1e-4, 3e-4, 3e-5, 1e-5]     
+    values: [1e-2, 1e-3, 1e-4, 3e-4, 3e-5, 1e-5]
   latent_dim:
     values: [6, 8, 10, 12]
   lambda_rec:
@@ -28,4 +28,3 @@ parameters:
 early_terminate:
   type: hyperband
   min_iter: 3
-

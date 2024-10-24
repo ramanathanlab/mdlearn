@@ -1,9 +1,8 @@
 """Conv1dEncoder module for point cloud data."""
-
-from typing import List, Tuple
+from __future__ import annotations
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from mdlearn.nn.utils import get_activation
 
@@ -16,8 +15,8 @@ class Conv1dEncoder(nn.Module):
         latent_dim: int = 20,
         bias: bool = True,
         relu_slope: float = 0.0,
-        filters: List[int] = [64, 128, 256, 256, 512],
-        kernels: List[int] = [5, 5, 3, 1, 1],
+        filters: list[int] = [64, 128, 256, 256, 512],
+        kernels: list[int] = [5, 5, 3, 1, 1],
     ):
         """Conv1dEncoder module for point cloud data.
 
@@ -51,12 +50,12 @@ class Conv1dEncoder(nn.Module):
         self.kernels = kernels
 
         # Select activation
-        self.activation_kwargs = {"inplace": True}
+        self.activation_kwargs = {'inplace': True}
         if self.relu_slope > 0.0:
-            self.activation = "LeakyReLU"
-            self.activation_kwargs["negative_slope"] = self.relu_slope
+            self.activation = 'LeakyReLU'
+            self.activation_kwargs['negative_slope'] = self.relu_slope
         else:
-            self.activation = "ReLU"
+            self.activation = 'ReLU'
 
         self.conv = nn.Sequential(*self._conv_layers())
 
@@ -68,13 +67,13 @@ class Conv1dEncoder(nn.Module):
         self.mu = nn.Linear(filters[-2], self.latent_dim)
         self.logstd = nn.Linear(filters[-2], self.latent_dim)
 
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         output = self.conv(x)
         output2 = output.max(dim=2)[0]
         logit = self.fc(output2)
         return self.mu(logit), self.logstd(logit)
 
-    def _conv_layers(self) -> List[nn.Module]:
+    def _conv_layers(self) -> list[nn.Module]:
         layers = []
         # Three xyz atoms + other optional scalars
         in_channels = 3 + self.num_features
@@ -85,9 +84,11 @@ class Conv1dEncoder(nn.Module):
                     out_channels=filter_,
                     kernel_size=kernel,
                     bias=self.bias,
-                )
+                ),
             )
-            layers.append(get_activation(self.activation, **self.activation_kwargs))
+            layers.append(
+                get_activation(self.activation, **self.activation_kwargs),
+            )
 
             # in_channels of next layer is out_channels of current layer
             in_channels = filter_

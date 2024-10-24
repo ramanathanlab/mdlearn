@@ -22,10 +22,11 @@ formats: all
 # Optionally set the version of Python and requirements required to build your docs
 python:
   install:
-    - requirements: requirements_dev.txt
     - method: setuptools
       path: .
     - method: pip
       path: .
       extra_requirements:
+        - dev
+        - docs
         - torch

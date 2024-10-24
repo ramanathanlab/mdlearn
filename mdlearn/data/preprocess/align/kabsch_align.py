@@ -1,11 +1,15 @@
-from typing import Optional, Tuple
+from __future__ import annotations
+
+from typing import Optional
 
 import numpy as np
 
 
 def kabsch(
-    to_xyz: np.ndarray, from_xyz: np.ndarray, return_err: bool = True
-) -> Tuple[float, np.ndarray, Optional[np.ndarray]]:
+    to_xyz: np.ndarray,
+    from_xyz: np.ndarray,
+    return_err: bool = True,
+) -> tuple[float, np.ndarray, Optional[np.ndarray]]:
     r"""Aligns a single frame :obj:`from_xyz` to another frame :obj:`to_xyz`
     using the kabsch method.
 
@@ -33,10 +37,9 @@ def kabsch(
     ValueError
         If the arrays differ in the number of coordinates N.
     """
-
     if from_xyz.shape != to_xyz.shape:
         raise ValueError(
-            f"KABSCH: unequal array sizes: {to_xyz.shape} mismatch {from_xyz.shape}"
+            f'KABSCH: unequal array sizes: {to_xyz.shape} mismatch {from_xyz.shape}',
         )
 
     dim, n_atoms = from_xyz.shape
@@ -51,7 +54,10 @@ def kabsch(
     u, _, wh = np.linalg.svd(np.dot(t2, t1.T))
 
     R = np.dot(
-        np.dot(u, [[1, 0, 0], [0, 1, 0], [0, 0, np.linalg.det(np.dot(u, wh))]]),
+        np.dot(
+            u,
+            [[1, 0, 0], [0, 1, 0], [0, 0, np.linalg.det(np.dot(u, wh))]],
+        ),
         wh,
     )
     T = m2 - np.dot(R, m1)

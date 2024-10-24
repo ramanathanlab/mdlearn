@@ -22,7 +22,7 @@ class PointCloudDataset(Dataset):
         path: PathLike,
         num_points: int,
         num_features: int = 0,
-        dataset_name: str = "point_cloud",
+        dataset_name: str = 'point_cloud',
         scalar_dset_names: list[str] = [],
         seed: int = 333,
         cms_transform: bool = False,
@@ -102,7 +102,7 @@ class PointCloudDataset(Dataset):
         return 3 + self.num_features, self.num_points
 
     def _open_h5_file(self):
-        return h5py.File(self.file_path, "r", libver="latest", swmr=False)
+        return h5py.File(self.file_path, 'r', libver='latest', swmr=False)
 
     def _init_dataset(self):
         self._h5_file = self._open_h5_file()
@@ -120,20 +120,25 @@ class PointCloudDataset(Dataset):
         if self.cms_transform:
             # Center of mass over points
             cms = np.mean(
-                self.dset[:, 0:3, :].astype(np.float64), axis=2, keepdims=True
+                self.dset[:, 0:3, :].astype(np.float64),
+                axis=2,
+                keepdims=True,
             ).astype(np.float32)
 
             # Normalize input
             self.bias = np.zeros(self.point_cloud_size, dtype=np.float32)
             self.scale = np.ones(self.point_cloud_size, dtype=np.float32)
             self.bias[0:3, :] = (self.dset[:, 0:3, :] - cms).min()
-            self.scale[0:3, :] = 1.0 / ((self.dset[:, 0:3, :] - cms).max() - self.bias)
+            self.scale[0:3, :] = 1.0 / (
+                (self.dset[:, 0:3, :] - cms).max() - self.bias
+            )
 
         # Pull data into main memory (numpy)
         if self.in_memory:
             self.dset = np.array(self.dset[:, 0 : (3 + self.num_features), :])
             self.scalar_dsets = {
-                name: np.array(dset) for name, dset in self.scalar_dsets.items()
+                name: np.array(dset)
+                for name, dset in self.scalar_dsets.items()
             }
             self._h5_file.close()
 
@@ -161,40 +166,51 @@ class PointCloudDataset(Dataset):
 
             # Read from numpy array or HDF5
             self.buffer[0, ...] = self.dset[
-                idx, 0 : (3 + self.num_features), point_indices
+                idx,
+                0 : (3 + self.num_features),
+                point_indices,
             ]
         elif self.in_memory:
             # Read from numpy array
             self.buffer[0, ...] = self.dset[
-                idx, 0 : (3 + self.num_features), 0 : self.num_points
+                idx,
+                0 : (3 + self.num_features),
+                0 : self.num_points,
             ]
         else:
             # Read direcly from HDF5, since data is contiguous and not random idxs
             self.dset.read_direct(
                 self.buffer,
-                np.s_[idx : idx + 1, 0 : (3 + self.num_features), 0 : self.num_points],
+                np.s_[
+                    idx : idx + 1,
+                    0 : (3 + self.num_features),
+                    0 : self.num_points,
+                ],
                 np.s_[0:1, 0 : (3 + self.num_features), 0 : self.num_points],
             )
 
         # CMS subtract
         if self.cms_transform:
             self.buffer[0, 0:3, :] -= np.mean(
-                self.buffer[0, 0:3, :], axis=-1, keepdims=True
+                self.buffer[0, 0:3, :],
+                axis=-1,
+                keepdims=True,
             )
 
             if np.any(np.isnan(self.buffer)):
-                raise ValueError("NaN encountered in input.")
+                raise ValueError('NaN encountered in input.')
 
             # Normalize
             self.buffer = (self.buffer[0, ...] - self.bias) * self.scale
 
-        sample = {"X": torch.from_numpy(self.buffer.squeeze())}
+        sample = {'X': torch.from_numpy(self.buffer.squeeze())}
         # Add index into dataset to sample
-        sample["index"] = torch.tensor(idx, requires_grad=False)
+        sample['index'] = torch.tensor(idx, requires_grad=False)
         # Add scalars
         for name, dset in self.scalar_dsets.items():
             sample[name] = torch.tensor(
-                dset[idx], requires_grad=self.scalar_requires_grad
+                dset[idx],
+                requires_grad=self.scalar_requires_grad,
             )
         return sample
 
@@ -208,9 +224,10 @@ class CenterOfMassTransform:
         data : ArrayLike
             Dataset of positions with shape (num_examples, 3, num_points).
         """
-
         # Center of mass over points
-        cms = np.mean(data.astype(np.float64), axis=2, keepdims=True).astype(np.float32)
+        cms = np.mean(data.astype(np.float64), axis=2, keepdims=True).astype(
+            np.float32,
+        )
         # Scalar bias and scale normalization factors
         self.bias: float = (data - cms).min()
         self.scale: float = 1.0 / ((data - cms).max() - self.bias)
@@ -236,7 +253,7 @@ class CenterOfMassTransform:
         x -= np.mean(x, axis=1, keepdims=True)
 
         if np.any(np.isnan(x)):
-            raise ValueError("NaN encountered in input.")
+            raise ValueError('NaN encountered in input.')
 
         # Normalize
         x = (x - self.bias) * self.scale
@@ -286,17 +303,17 @@ class PointCloudDatasetInMemory(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx: int) -> dict[str, torch.Tensor]:
-
         data = self.data[idx].copy()  # shape (3, num_points)
 
         # CMS subtract
         if self.cms_transform:
             data = self.transform.transform(data)
 
-        sample = {"X": torch.from_numpy(data)}
+        sample = {'X': torch.from_numpy(data)}
         # Add scalars
         for name, dset in self.scalars.items():
             sample[name] = torch.tensor(
-                dset[idx], requires_grad=self.scalar_requires_grad
+                dset[idx],
+                requires_grad=self.scalar_requires_grad,
             )
         return sample

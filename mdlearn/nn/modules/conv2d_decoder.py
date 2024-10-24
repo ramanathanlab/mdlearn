@@ -1,27 +1,31 @@
+from __future__ import annotations
+
 from math import isclose
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import numpy as np
 import torch
 from torch import nn
 
-from mdlearn.nn.utils import _init_weights, get_activation, same_padding
+from mdlearn.nn.utils import _init_weights
+from mdlearn.nn.utils import get_activation
+from mdlearn.nn.utils import same_padding
 
 
 class Conv2dDecoder(nn.Module):
     def __init__(
         self,
-        output_shape: Tuple[int, ...],
-        encoder_shapes: List[Tuple[int, ...]],
+        output_shape: tuple[int, ...],
+        encoder_shapes: list[tuple[int, ...]],
         init_weights: Optional[str] = None,
-        filters: List[int] = [64, 64, 64],
-        kernels: List[int] = [3, 3, 3],
-        strides: List[int] = [1, 2, 1],
-        affine_widths: List[int] = [128],
-        affine_dropouts: List[float] = [0.0],
+        filters: list[int] = [64, 64, 64],
+        kernels: list[int] = [3, 3, 3],
+        strides: list[int] = [1, 2, 1],
+        affine_widths: list[int] = [128],
+        affine_dropouts: list[float] = [0.0],
         latent_dim: int = 3,
-        activation: str = "ReLU",
-        output_activation: str = "Sigmoid",
+        activation: str = 'ReLU',
+        output_activation: str = 'Sigmoid',
     ):
         super().__init__()
 
@@ -49,15 +53,17 @@ class Conv2dDecoder(nn.Module):
             self.affine_layers.apply(_init_weights)
             self.conv_layers.apply(_init_weights)
         # Loading checkpoint weights
-        elif init_weights.endswith(".pt"):
-            checkpoint = torch.load(init_weights, map_location="cpu")
-            self.load_state_dict(checkpoint["decoder_state_dict"])
+        elif init_weights.endswith('.pt'):
+            checkpoint = torch.load(init_weights, map_location='cpu')
+            self.load_state_dict(checkpoint['decoder_state_dict'])
 
     def forward(self, x):
         x = self.affine_layers(x).view(self.reshape)
         batch_size = x.size()[0]
         for conv_t, act, output_size in zip(
-            self.conv_layers, self.conv_acts, self.conv_output_sizes
+            self.conv_layers,
+            self.conv_acts,
+            self.conv_output_sizes,
         ):
             x = act(conv_t(x, output_size=(batch_size, *output_size)))
         return x
@@ -84,7 +90,7 @@ class Conv2dDecoder(nn.Module):
                 (*self.filters, self.output_shape[0]),
                 self.kernels,
                 self.strides,
-            )
+            ),
         ):
             shape = self.encoder_shapes[-1 * i - 1]
 
@@ -93,7 +99,8 @@ class Conv2dDecoder(nn.Module):
                 padding = same_padding(shape[1:], kernel, stride)
             else:
                 padding = tuple(
-                    int(dim % 2 == 0) for dim in self.encoder_shapes[-1 * i - 2][1:]
+                    int(dim % 2 == 0)
+                    for dim in self.encoder_shapes[-1 * i - 2][1:]
                 )
 
             layers.append(
@@ -103,7 +110,7 @@ class Conv2dDecoder(nn.Module):
                     kernel_size=kernel,
                     stride=stride,
                     padding=padding,
-                )
+                ),
             )
 
             # TODO: revist padding, output_padding, see github issue.
@@ -129,14 +136,14 @@ class Conv2dDecoder(nn.Module):
         layers : list
             Linear layers
         """
-
         layers = []
 
         in_features = self.latent_dim
 
         for width, dropout in zip(self.affine_widths, self.affine_dropouts):
-
-            layers.append(nn.Linear(in_features=in_features, out_features=width))
+            layers.append(
+                nn.Linear(in_features=in_features, out_features=width),
+            )
 
             layers.append(get_activation(self.activation))
 
@@ -152,7 +159,7 @@ class Conv2dDecoder(nn.Module):
             nn.Linear(
                 in_features=self.affine_widths[-1],
                 out_features=np.prod(self.encoder_shapes[-1]),
-            )
+            ),
         )
         layers.append(get_activation(self.activation))
 

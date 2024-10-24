@@ -1,15 +1,20 @@
-from pathlib import Path
-from typing import List, Optional
+from __future__ import annotations
 
-from mdlearn.utils import BaseModel, OptimizerConfig, SchedulerConfig, WandbConfig
+from pathlib import Path
+from typing import Optional
+
+from mdlearn.utils import BaseModel
+from mdlearn.utils import OptimizerConfig
+from mdlearn.utils import SchedulerConfig
+from mdlearn.utils import WandbConfig
 
 
 class Point3dAAEConfig(BaseModel):
     # File paths
     # Path to HDF5 training file
-    input_path: Path = Path("TODO")
+    input_path: Path = Path('TODO')
     # Path to directory where trainer should write to (cannot already exist)
-    output_path: Path = Path("TODO")
+    output_path: Path = Path('TODO')
     # Optionally resume training from a checkpoint file
     resume_checkpoint: Optional[Path] = None
 
@@ -19,9 +24,9 @@ class Point3dAAEConfig(BaseModel):
     # Number of additional per-point features in addition to xyz coords.
     num_features: int = 0
     # Name of the dataset in the HDF5 file.
-    dataset_name: str = "point_cloud"
+    dataset_name: str = 'point_cloud'
     # Name of scalar datasets in the HDF5 file.
-    scalar_dset_names: List[str] = []
+    scalar_dset_names: list[str] = []
     # If True, subtract center of mass from batch and shift and scale
     # batch by the full dataset statistics.
     cms_transform: bool = False
@@ -45,10 +50,14 @@ class Point3dAAEConfig(BaseModel):
     # Pretrained model weights
     init_weights: Optional[str] = None
     # AE (encoder/decoder) optimizer params
-    ae_optimizer: OptimizerConfig = OptimizerConfig(name="Adam", hparams={"lr": 0.0001})
+    ae_optimizer: OptimizerConfig = OptimizerConfig(
+        name='Adam',
+        hparams={'lr': 0.0001},
+    )
     # Discriminator optimizer params
     disc_optimizer: OptimizerConfig = OptimizerConfig(
-        name="Adam", hparams={"lr": 0.0001}
+        name='Adam',
+        hparams={'lr': 0.0001},
     )
     # Learning rate scheduler params
     scheduler: Optional[SchedulerConfig] = None
@@ -59,14 +68,14 @@ class Point3dAAEConfig(BaseModel):
     latent_dim: int = 20
     encoder_bias: bool = True
     encoder_relu_slope: float = 0.0
-    encoder_filters: List[int] = [64, 128, 256, 256, 512]
-    encoder_kernels: List[int] = [5, 5, 3, 1, 1]
+    encoder_filters: list[int] = [64, 128, 256, 256, 512]
+    encoder_kernels: list[int] = [5, 5, 3, 1, 1]
     decoder_bias: bool = True
     decoder_relu_slope: float = 0.0
-    decoder_affine_widths: List[int] = [64, 128, 512, 1024]
+    decoder_affine_widths: list[int] = [64, 128, 512, 1024]
     discriminator_bias: bool = True
     discriminator_relu_slope: float = 0.0
-    discriminator_affine_widths: List[int] = [512, 128, 64]
+    discriminator_affine_widths: list[int] = [512, 128, 64]
     # Mean of the prior distribution
     noise_mu: float = 0.0
     # Standard deviation of the prior distribution
@@ -90,10 +99,10 @@ class Point3dAAEConfig(BaseModel):
 
     # Validation settings
     # Method used to visualize latent space
-    plot_method: str = "TSNE"
+    plot_method: str = 'TSNE'
     # Number of validation samples to run visualization on
     plot_n_samples: Optional[int] = None
 
 
-if __name__ == "__main__":
-    Point3dAAEConfig().dump_yaml("point_3d_aae_template.yaml")
+if __name__ == '__main__':
+    Point3dAAEConfig().dump_yaml('point_3d_aae_template.yaml')

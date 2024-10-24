@@ -1,13 +1,18 @@
 """Utility functions for handling PyTorch data objects."""
+from __future__ import annotations
 
-from typing import Tuple
-
-from torch.utils.data import DataLoader, Dataset, Subset, random_split
+from torch.utils.data import DataLoader
+from torch.utils.data import Dataset
+from torch.utils.data import random_split
+from torch.utils.data import Subset
 
 
 def train_valid_split(
-    dataset: Dataset, split_pct: float = 0.8, method: str = "random", **kwargs
-) -> Tuple[DataLoader, DataLoader]:
+    dataset: Dataset,
+    split_pct: float = 0.8,
+    method: str = 'random',
+    **kwargs,
+) -> tuple[DataLoader, DataLoader]:
     """Creates training and validation DataLoaders from :obj:`dataset`.
 
     Parameters
@@ -30,15 +35,15 @@ def train_valid_split(
         If :obj:`method` is not "random" or "partition".
     """
     train_length = int(len(dataset) * split_pct)
-    if method == "random":
+    if method == 'random':
         lengths = [train_length, len(dataset) - train_length]
         train_dataset, valid_dataset = random_split(dataset, lengths)
-    elif method == "partition":
+    elif method == 'partition':
         indices = list(range(len(dataset)))
         train_dataset = Subset(dataset, indices[:train_length])
         valid_dataset = Subset(dataset, indices[train_length:])
     else:
-        raise ValueError(f"Invalid method: {method}.")
+        raise ValueError(f'Invalid method: {method}.')
     train_loader = DataLoader(train_dataset, **kwargs)
     valid_loader = DataLoader(valid_dataset, **kwargs)
     return train_loader, valid_loader

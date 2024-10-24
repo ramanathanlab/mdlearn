@@ -29,37 +29,28 @@ git pull
 
 3. Install mdlearn in `develop` mode:
 
-```
-python3 -m venv env
-source env/bin/activate
-pip3 install --upgrade pip setuptools wheel
-pip3 install -r requirements_dev.txt
-pip3 install -e '.[torch]'
-```
-
-This mode will symlink the Python files from the current local source tree into the Python install.
-Hence, if you modify a Python file, you do not need to reinstall mdlearn again and again.
-
-4. Ensure that you have a working mdlearn installation by running:
-
-```
-python3 -c "import mdlearn; print(mdlearn.__version__)"
-```
-
-5. To run dev tools (isort, flake8, black, mypy):
-
-```
-make
-make mypy
+For development, it is recommended to use a virtual environment. The following
+commands will create a virtual environment, install the package in editable
+mode, and install the pre-commit hooks.
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -U pip setuptools wheel
+pip install -e '.[dev,docs,torch]'
+pre-commit install
 ```
 
 ## Unit Testing
 
 To run the test suite:
 
-1. [Build and install](#developing-mdlearn) mdlearn from source.
-2. The `requirements_dev.txt` contains the additional testing dependencies.
-3. Run the test suite: `pytest test`
+First, [Build and install](#developing-mdlearn) mdlearn from source.
+
+To test the code, run the following command:
+```bash
+pre-commit run --all-files
+tox -e py312
+```
 
 If contributing, please add a `test_<module_name>.py` in the `test/` directory
 in a subdirectory that matches the mdlearn package directory structure. Inside,
@@ -70,25 +61,24 @@ in a subdirectory that matches the mdlearn package directory structure. Inside,
 To build the documentation:
 
 1. [Build and install](#developing-mdlearn) mdlearn from source.
-2. The `requirements_dev.txt` contains all the dependencies needed to build the documentation.
-3. Generate the documentation file via:
+2. Generate the documentation file via:
 ```
-cd mdlearn/docs
+cd docs
 make html
 ```
-The docs are located in `mdlearn/docs/build/html/index.html`.
+The docs are located in `build/html/index.html`.
 
-To view the docs run: `open mdlearn/docs/build/html/index.html`.
+To view the docs run: `open build/html/index.html`.
 
 ## Releasing to PyPI
 
 To release a new version of mdlearn to PyPI:
 
-1. Merge the `develop` branch into the `main` branch with an updated version number in [`mdlearn.__init__`](https://github.com/ramanathanlab/mdlearn/blob/main/mdlearn/__init__.py).
+1. Merge the `develop` branch into the `main` branch with an updated version number in `pyproject.toml`.
 2. Make a new release on GitHub with the tag and name equal to the version number.
 3. [Build and install](#developing-mdlearn) mdlearn from source.
 4. Run the following commands:
 ```
-python3 setup.py sdist
+python3 -m build
 twine upload dist/*
 ```

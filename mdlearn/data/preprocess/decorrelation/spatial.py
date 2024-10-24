@@ -1,4 +1,5 @@
 """Spatial decorrelation functions."""
+from __future__ import annotations
 
 import warnings
 from typing import Optional
@@ -51,16 +52,18 @@ def SD2(data: np.ndarray, m: Optional[int] = None, verbose: bool = False):
         If :obj:`m` is greater than 3N, the second dimension of :obj:`data`.
     """
     if not isinstance(verbose, bool):
-        raise TypeError("verbose parameter should be either True or False")
+        raise TypeError('verbose parameter should be either True or False')
 
     if not isinstance(data, np.ndarray):
-        raise TypeError(f"data (input data matrix) is of the wrong type ({type(data)})")
+        raise TypeError(
+            f'data (input data matrix) is of the wrong type ({type(data)})',
+        )
 
     # Need to make a copy of the input array and use double precision (float64) .
     data = data.astype(np.float64)
 
     if len(data.shape) != 2:
-        raise ValueError(f"data has {len(data.shape)} dimensions, should be 2")
+        raise ValueError(f'data has {len(data.shape)} dimensions, should be 2')
 
     # T is number of samples, n is number of input signals
     T, n = data.shape
@@ -71,12 +74,12 @@ def SD2(data: np.ndarray, m: Optional[int] = None, verbose: bool = False):
 
     if m > n:
         raise ValueError(
-            f"SD2 -> Do not ask more sources ({m}) than sensors ({n})here!!!"
+            f'SD2 -> Do not ask more sources ({m}) than sensors ({n})here!!!',
         )
 
     if verbose:
-        print(f"2nd order Spatial Decorrelation -> Looking for {m} sources")
-        print("2nd order Spatial Decorrelation -> Removing the mean value")
+        print(f'2nd order Spatial Decorrelation -> Looking for {m} sources')
+        print('2nd order Spatial Decorrelation -> Removing the mean value')
 
     data = data.T
 
@@ -85,7 +88,7 @@ def SD2(data: np.ndarray, m: Optional[int] = None, verbose: bool = False):
 
     # Whitening & projection onto signal subspace
     if verbose:
-        print("2nd order Spatial Decorrelation -> Whitening the data")
+        print('2nd order Spatial Decorrelation -> Whitening the data')
     # An eigen basis for the sample covariance matrix
     [D, U] = np.linalg.eigh((np.dot(data, data.T)) / float(T))
     # Sort by increasing variances
@@ -150,7 +153,7 @@ def SD4(  # noqa: C901
     ValueError
         If :obj:`m` is greater than :obj:`n`, the first dimension of :obj:`Y`.
     """
-    warnings.simplefilter("ignore", np.ComplexWarning)
+    warnings.simplefilter('ignore', np.ComplexWarning)
 
     # TODO: update all computations to np.ndarray
     Y = np.matrix(Y)
@@ -165,11 +168,13 @@ def SD4(  # noqa: C901
 
     if m > n:
         raise ValueError(
-            f"SD4 -> Do not ask more sources ({m}) than sensors ({n})here!!!"
+            f'SD4 -> Do not ask more sources ({m}) than sensors ({n})here!!!',
         )
 
     if verbose:
-        print("4th order Spatial Decorrelation -> Estimating cumulant matrices")
+        print(
+            '4th order Spatial Decorrelation -> Estimating cumulant matrices',
+        )
 
     # Reshaping of the data, hoping to speed up things a little bit
     Y = Y.T
@@ -180,7 +185,9 @@ def SD4(  # noqa: C901
     # Storage for cumulant matrices
     CM = np.matrix(np.zeros([(m), int((m) * nbcm)], dtype=np.float64))
     R = np.matrix(np.eye(int(m), dtype=np.float64))
-    Qij = np.matrix(np.zeros([m, m], dtype=np.float64))  # Temp for a cumulant matrix
+    Qij = np.matrix(
+        np.zeros([m, m], dtype=np.float64),
+    )  # Temp for a cumulant matrix
     Xim = np.zeros(m, dtype=np.float64)  # Temp
     Xijm = np.zeros(m, dtype=np.float64)  # Temp
     # Uns = numpy.ones([1,m], dtype=numpy.uint32)    # for convenience
@@ -192,7 +199,6 @@ def SD4(  # noqa: C901
 
     # Removing 4th order spatial decorrelations
     for im in range(m):
-
         Xim = Y[:, im]
         Xijm = np.multiply(Xim, Xim)
 
@@ -254,27 +260,31 @@ def SD4(  # noqa: C901
     # Joint diagonalization proper
 
     if verbose:
-        print("SD4 -> Contrast optimization by joint diagonalization")
+        print('SD4 -> Contrast optimization by joint diagonalization')
 
     while encore:
         encore = False
         if verbose:
-            print(f"SD4 -> Sweep #{sweep}")
+            print(f'SD4 -> Sweep #{sweep}')
         sweep = sweep + 1
         upds = 0
 
         for p in range(m - 1):
             for q in range(p + 1, m):
-
                 Ip = np.arange(p, m * nbcm, m)
                 Iq = np.arange(q, m * nbcm, m)
 
                 # computation of Givens angle
-                g = np.concatenate([CM[p, Ip] - CM[q, Iq], CM[p, Iq] + CM[q, Ip]])
+                g = np.concatenate(
+                    [CM[p, Ip] - CM[q, Iq], CM[p, Iq] + CM[q, Ip]],
+                )
                 gg = np.dot(g, g.T)
                 ton = gg[0, 0] - gg[1, 1]
                 toff = gg[0, 1] + gg[1, 0]
-                theta = 0.5 * np.arctan2(toff, ton + np.sqrt(ton * ton + toff * toff))
+                theta = 0.5 * np.arctan2(
+                    toff,
+                    ton + np.sqrt(ton * ton + toff * toff),
+                )
                 Gain = (np.sqrt(ton * ton + toff * toff) - ton) / 4.0
 
                 # Givens update
@@ -296,10 +306,10 @@ def SD4(  # noqa: C901
                     Off = Off - Gain
 
         if verbose:
-            print(f"completed in {upds} rotations")
+            print(f'completed in {upds} rotations')
         updates = updates + upds
     if verbose:
-        print(f"SD4 -> Total of {updates} Givens rotations")
+        print(f'SD4 -> Total of {updates} Givens rotations')
 
     # A separating matrix
     W = V.T * U
@@ -309,7 +319,7 @@ def SD4(  # noqa: C901
     # according to the norm of the columns of A = pinv(W)
 
     if verbose:
-        print("SD4 -> Sorting the components")
+        print('SD4 -> Sorting the components')
 
     A = np.linalg.pinv(W)
     keys = np.array(np.argsort(np.multiply(A, A).sum(axis=0)[0]))[0]
@@ -317,9 +327,11 @@ def SD4(  # noqa: C901
     W = W[::-1, :]  # Is this smart ?
 
     if verbose:
-        print("SD4 -> Fixing the signs")
+        print('SD4 -> Fixing the signs')
     b = W[:, 0]
-    signs = np.array(np.sign(np.sign(b) + 0.1).T)[0]  # just a trick to deal with sign=0
+    signs = np.array(np.sign(np.sign(b) + 0.1).T)[
+        0
+    ]  # just a trick to deal with sign=0
     W = np.diag(signs) * W
     # TODO: update W to be np.ndarray
     W = np.asarray(W)
