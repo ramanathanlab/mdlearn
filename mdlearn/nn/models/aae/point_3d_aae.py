@@ -366,9 +366,8 @@ class AAE3dTrainer(Trainer):
         valid_subsample_pct : float, default=1.0
             Percentage of validation data to use during hyperparameter sweeps.
         use_wandb : bool, default=False
-            If True, will log results to wandb. Metric keys include `"train_loss"`,
-            `"train_recon_loss"`, `"train_kld_loss"`, `"valid_loss"`, `"valid_recon_loss"`
-            and `"valid_kld_loss"`.
+            If True, will log results to wandb. Metric keys include `train_disc_loss`,
+            `train_ae_loss`, and `valid_recon_loss`.
 
         Raises
         ------
