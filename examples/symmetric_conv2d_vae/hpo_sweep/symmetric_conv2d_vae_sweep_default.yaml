@@ -1,5 +1,5 @@
 input_path: /homes/abrace/data/bba/1FME-0.h5
-output_path: /homes/abrace/src/mdlearn/runs/test-run-0 
+output_path: /homes/abrace/src/mdlearn/runs/test-run-0
 checkpoint_path: null
 input_shape:
 - 1

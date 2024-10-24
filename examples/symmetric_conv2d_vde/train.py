@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import random
 from collections import defaultdict
 
@@ -11,24 +13,21 @@ from tqdm import tqdm
 from mdlearn.data.datasets.time_contact_map import ContactMapTimeSeriesDataset
 from mdlearn.data.utils import train_valid_split
 from mdlearn.nn.models.vde.symmetric_conv2d_vde import SymmetricConv2dVDE
-from mdlearn.utils import (
-    get_torch_optimizer,
-    get_torch_scheduler,
-    log_checkpoint,
-    log_latent_visualization,
-    parse_args,
-    resume_checkpoint,
-)
+from mdlearn.utils import get_torch_optimizer
+from mdlearn.utils import get_torch_scheduler
+from mdlearn.utils import log_checkpoint
+from mdlearn.utils import log_latent_visualization
+from mdlearn.utils import parse_args
+from mdlearn.utils import resume_checkpoint
 
 
 def main(cfg: SymmetricConv2dVDEConfig):
-
     # Create directory for new run, or use old directory if resuming from a checkpoint
     exist_ok = cfg.resume_checkpoint is not None
     cfg.output_path.mkdir(exist_ok=exist_ok)
-    checkpoint_path = cfg.output_path.joinpath("checkpoints")
+    checkpoint_path = cfg.output_path.joinpath('checkpoints')
     checkpoint_path.mkdir(exist_ok=exist_ok)
-    plot_path = cfg.output_path / "plots"
+    plot_path = cfg.output_path / 'plots'
     plot_path.mkdir(exist_ok=exist_ok)
 
     # Copy training data to output directory to not slow down other
@@ -67,7 +66,9 @@ def main(cfg: SymmetricConv2dVDEConfig):
 
     # Hardware
     device = torch.device(
-        "cuda:0" if torch.cuda.is_available() and not cfg.ignore_gpu else "cpu"
+        'cuda:0'
+        if torch.cuda.is_available() and not cfg.ignore_gpu
+        else 'cpu',
     )
 
     # Create model
@@ -93,27 +94,36 @@ def main(cfg: SymmetricConv2dVDEConfig):
     summary(model, cfg.input_shape)
 
     optimizer = get_torch_optimizer(
-        cfg.optimizer.name, cfg.optimizer.hparams, model.parameters()
+        cfg.optimizer.name,
+        cfg.optimizer.hparams,
+        model.parameters(),
     )
     if cfg.scheduler is not None:
         scheduler = get_torch_scheduler(
-            cfg.scheduler.name, cfg.scheduler.hparams, optimizer
+            cfg.scheduler.name,
+            cfg.scheduler.hparams,
+            optimizer,
         )
     else:
         scheduler = None
 
     # Optionally initialize model with pre-trained weights
     if cfg.init_weights is not None:
-        checkpoint = torch.load(cfg.init_weights, map_location="cpu")
-        model.load_state_dict(checkpoint["model_state_dict"])
-        print(f"Loaded model from {cfg.init_weights}")
+        checkpoint = torch.load(cfg.init_weights, map_location='cpu')
+        model.load_state_dict(checkpoint['model_state_dict'])
+        print(f'Loaded model from {cfg.init_weights}')
 
     # Optionally resume training from a checkpoint
     if cfg.resume_checkpoint is not None:
         start_epoch = resume_checkpoint(
-            cfg.resume_checkpoint, model, {"optimizer": optimizer}, scheduler
+            cfg.resume_checkpoint,
+            model,
+            {'optimizer': optimizer},
+            scheduler,
         )
-        print(f"Resume training at epoch {start_epoch} from {cfg.resume_checkpoint}")
+        print(
+            f'Resume training at epoch {start_epoch} from {cfg.resume_checkpoint}',
+        )
     else:
         start_epoch = 0
 
@@ -124,9 +134,10 @@ def main(cfg: SymmetricConv2dVDEConfig):
         avg_train_losses = train(train_loader, model, optimizer, device)
 
         print(
-            "====> Epoch: {} Train:\tAvg loss: {:.4f}\tAvg recon loss {:.4f}\tAvg kld loss {:.4f}\tAvg ac loss {:.4f}".format(
-                epoch, *avg_train_losses
-            )
+            '====> Epoch: {} Train:\tAvg loss: {:.4f}\tAvg recon loss {:.4f}\tAvg kld loss {:.4f}\tAvg ac loss {:.4f}'.format(
+                epoch,
+                *avg_train_losses,
+            ),
         )
 
         # Validation
@@ -142,28 +153,34 @@ def main(cfg: SymmetricConv2dVDEConfig):
             ) = validate(valid_loader, model, device)
 
         print(
-            "====> Epoch: {} Valid:\tAvg loss: {:.4f}\tAvg recon loss {:.4f}\tAvg kld loss {:.4f}\tAvg ac loss {:.4f}\n".format(
-                epoch, avg_loss, avg_recon_loss, avg_kld_loss, avg_ac_loss
-            )
+            '====> Epoch: {} Valid:\tAvg loss: {:.4f}\tAvg recon loss {:.4f}\tAvg kld loss {:.4f}\tAvg ac loss {:.4f}\n'.format(
+                epoch,
+                avg_loss,
+                avg_recon_loss,
+                avg_kld_loss,
+                avg_ac_loss,
+            ),
         )
 
         # Step the learning rate scheduler
         if scheduler is None:
             pass
-        elif cfg.scheduler.name == "ReduceLROnPlateau":
+        elif cfg.scheduler.name == 'ReduceLROnPlateau':
             scheduler.step(avg_loss)
         else:
-            raise NotImplementedError(f"scheduler {cfg.scheduler.name} step function.")
+            raise NotImplementedError(
+                f'scheduler {cfg.scheduler.name} step function.',
+            )
 
         metrics = {
-            "train_loss": avg_train_losses[0],
-            "train_recon_loss": avg_train_losses[1],
-            "train_kld_loss": avg_train_losses[2],
-            "train_ac_loss": avg_train_losses[3],
-            "valid_loss": avg_loss,
-            "valid_recon_loss": avg_recon_loss,
-            "valid_kld_loss": avg_kld_loss,
-            "valid_ac_loss": avg_ac_loss,
+            'train_loss': avg_train_losses[0],
+            'train_recon_loss': avg_train_losses[1],
+            'train_kld_loss': avg_train_losses[2],
+            'train_ac_loss': avg_train_losses[3],
+            'valid_loss': avg_loss,
+            'valid_recon_loss': avg_recon_loss,
+            'valid_kld_loss': avg_kld_loss,
+            'valid_ac_loss': avg_ac_loss,
         }
 
         # Visualize latent space
@@ -185,10 +202,10 @@ def main(cfg: SymmetricConv2dVDEConfig):
 
         if epoch % cfg.checkpoint_log_every == 0:
             log_checkpoint(
-                checkpoint_path / f"checkpoint-epoch-{epoch}.pt",
+                checkpoint_path / f'checkpoint-epoch-{epoch}.pt',
                 epoch,
                 model,
-                {"optimizer": optimizer},
+                {'optimizer': optimizer},
                 scheduler,
             )
 
@@ -196,9 +213,8 @@ def main(cfg: SymmetricConv2dVDEConfig):
 def train(train_loader, model: SymmetricConv2dVDE, optimizer, device):
     avg_loss, avg_recon_loss, avg_kld_loss, avg_ac_loss = 0.0, 0.0, 0.0, 0.0
     for batch in tqdm(train_loader):
-
-        x_t = batch["X_t"].to(device, non_blocking=True)
-        x_t_tau = batch["X_t_tau"].to(device, non_blocking=True)
+        x_t = batch['X_t'].to(device, non_blocking=True)
+        x_t_tau = batch['X_t_tau'].to(device, non_blocking=True)
 
         # Forward pass
         z_t, recon_x_t_tau = model(x_t)
@@ -211,7 +227,10 @@ def train(train_loader, model: SymmetricConv2dVDE, optimizer, device):
         # Backward pass
         optimizer.zero_grad()
         loss.backward()
-        _ = torch.nn.utils.clip_grad_norm_(model.parameters(), cfg.clip_grad_max_norm)
+        _ = torch.nn.utils.clip_grad_norm_(
+            model.parameters(),
+            cfg.clip_grad_max_norm,
+        )
         optimizer.step()
 
         # Collect loss
@@ -233,9 +252,8 @@ def validate(valid_loader, model, device):
     latent_vectors = []
     avg_loss, avg_recon_loss, avg_kld_loss, avg_ac_loss = 0.0, 0.0, 0.0, 0.0
     for batch in valid_loader:
-
-        x_t = batch["X_t"].to(device, non_blocking=True)
-        x_t_tau = batch["X_t_tau"].to(device, non_blocking=True)
+        x_t = batch['X_t'].to(device, non_blocking=True)
+        x_t_tau = batch['X_t_tau'].to(device, non_blocking=True)
 
         # Forward pass
         z_t, recon_x_t_tau = model(x_t)
@@ -261,12 +279,21 @@ def validate(valid_loader, model, device):
     avg_kld_loss /= len(valid_loader)
     avg_ac_loss /= len(valid_loader)
     latent_vectors = np.concatenate(latent_vectors)
-    scalars = {name: np.concatenate(scalar) for name, scalar in scalars.items()}
+    scalars = {
+        name: np.concatenate(scalar) for name, scalar in scalars.items()
+    }
 
-    return avg_loss, avg_recon_loss, avg_kld_loss, avg_ac_loss, latent_vectors, scalars
+    return (
+        avg_loss,
+        avg_recon_loss,
+        avg_kld_loss,
+        avg_ac_loss,
+        latent_vectors,
+        scalars,
+    )
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     args = parse_args()
     cfg = SymmetricConv2dVDEConfig.from_yaml(args.config)
     main(cfg)

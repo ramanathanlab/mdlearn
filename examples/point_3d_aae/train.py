@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import itertools
 import random
 import time
@@ -13,24 +15,21 @@ from tqdm import tqdm
 from mdlearn.data.datasets.point_cloud import PointCloudDataset
 from mdlearn.data.utils import train_valid_split
 from mdlearn.nn.models.aae.point_3d_aae import AAE3d
-from mdlearn.utils import (
-    get_torch_optimizer,
-    log_checkpoint,
-    parse_args,
-    resume_checkpoint,
-)
+from mdlearn.utils import get_torch_optimizer
+from mdlearn.utils import log_checkpoint
+from mdlearn.utils import parse_args
+from mdlearn.utils import resume_checkpoint
 from mdlearn.visualize import log_latent_visualization
 
 
 def main(cfg: Point3dAAEConfig):
-
     # Create directory for new run, or use old directory if resuming from a checkpoint
     exist_ok = cfg.resume_checkpoint is not None
     cfg.output_path.mkdir(exist_ok=exist_ok)
-    checkpoint_path = cfg.output_path / "checkpoints"
+    checkpoint_path = cfg.output_path / 'checkpoints'
     checkpoint_path.mkdir(exist_ok=exist_ok)
     # Create plot directory
-    plot_path = cfg.output_path / "plots"
+    plot_path = cfg.output_path / 'plots'
     plot_path.mkdir(exist_ok=exist_ok)
 
     # Copy training data to output directory to not slow down other
@@ -70,7 +69,9 @@ def main(cfg: Point3dAAEConfig):
 
     # Hardware
     device = torch.device(
-        "cuda:0" if torch.cuda.is_available() and not cfg.ignore_gpu else "cpu"
+        'cuda:0'
+        if torch.cuda.is_available() and not cfg.ignore_gpu
+        else 'cpu',
     )
 
     # Create model
@@ -106,23 +107,28 @@ def main(cfg: Point3dAAEConfig):
     ae_optimizer = get_torch_optimizer(
         cfg.ae_optimizer.name,
         cfg.ae_optimizer.hparams,
-        itertools.chain(model.encoder.parameters(), model.decoder.parameters()),
+        itertools.chain(
+            model.encoder.parameters(),
+            model.decoder.parameters(),
+        ),
     )
 
     # Optionally initialize model with pre-trained weights
     if cfg.init_weights is not None:
-        checkpoint = torch.load(cfg.init_weights, map_location="cpu")
-        model.load_state_dict(checkpoint["model_state_dict"])
-        print(f"Loaded model from {cfg.init_weights}")
+        checkpoint = torch.load(cfg.init_weights, map_location='cpu')
+        model.load_state_dict(checkpoint['model_state_dict'])
+        print(f'Loaded model from {cfg.init_weights}')
 
     # Optionally resume training from a checkpoint
     if cfg.resume_checkpoint is not None:
         start_epoch = resume_checkpoint(
             cfg.resume_checkpoint,
             model,
-            {"disc_optimizer": disc_optimizer, "ae_optimizer": ae_optimizer},
+            {'disc_optimizer': disc_optimizer, 'ae_optimizer': ae_optimizer},
         )
-        print(f"Resume training at epoch {start_epoch} from {cfg.resume_checkpoint}")
+        print(
+            f'Resume training at epoch {start_epoch} from {cfg.resume_checkpoint}',
+        )
     else:
         start_epoch = 0
 
@@ -132,13 +138,20 @@ def main(cfg: Point3dAAEConfig):
         # Training
         model.train()
         avg_train_disc_loss, avg_train_ae_loss = train(
-            train_loader, model, disc_optimizer, ae_optimizer, device
+            train_loader,
+            model,
+            disc_optimizer,
+            ae_optimizer,
+            device,
         )
 
         print(
-            "====> Epoch: {} Train:\tAvg Disc loss: {:.4f}\tAvg AE loss: {:.4f}\tTime: {:.4f}".format(
-                epoch, avg_train_disc_loss, avg_train_ae_loss, time.time() - train_start
-            )
+            '====> Epoch: {} Train:\tAvg Disc loss: {:.4f}\tAvg AE loss: {:.4f}\tTime: {:.4f}'.format(
+                epoch,
+                avg_train_disc_loss,
+                avg_train_ae_loss,
+                time.time() - train_start,
+            ),
         )
 
         valid_start = time.time()
@@ -146,21 +159,25 @@ def main(cfg: Point3dAAEConfig):
         model.eval()
         with torch.no_grad():
             avg_valid_recon_loss, latent_vectors, scalars = validate(
-                valid_loader, model, device
+                valid_loader,
+                model,
+                device,
             )
 
         print(
-            "====> Epoch: {} Valid:\tAvg recon loss: {:.4f}\tTime: {:.4f}\n".format(
-                epoch, avg_valid_recon_loss, time.time() - valid_start
-            )
+            '====> Epoch: {} Valid:\tAvg recon loss: {:.4f}\tTime: {:.4f}\n'.format(
+                epoch,
+                avg_valid_recon_loss,
+                time.time() - valid_start,
+            ),
         )
 
-        print("Total time: {:.4f}".format(time.time() - train_start))
+        print(f'Total time: {time.time() - train_start:.4f}')
 
         metrics = {
-            "train_disc_loss": avg_train_disc_loss,
-            "train_ae_loss": avg_train_ae_loss,
-            "valid_recon_loss": avg_valid_recon_loss,
+            'train_disc_loss': avg_train_disc_loss,
+            'train_ae_loss': avg_train_ae_loss,
+            'valid_recon_loss': avg_valid_recon_loss,
         }
 
         # Visualize latent space
@@ -182,10 +199,13 @@ def main(cfg: Point3dAAEConfig):
 
         if epoch % cfg.checkpoint_log_every == 0:
             log_checkpoint(
-                checkpoint_path / f"checkpoint-epoch-{epoch}.pt",
+                checkpoint_path / f'checkpoint-epoch-{epoch}.pt',
                 epoch,
                 model,
-                {"disc_optimizer": disc_optimizer, "ae_optimizer": ae_optimizer},
+                {
+                    'disc_optimizer': disc_optimizer,
+                    'ae_optimizer': ae_optimizer,
+                },
             )
 
 
@@ -194,8 +214,7 @@ def train(train_loader, model: AAE3d, disc_optimizer, ae_optimizer, device):
     # Create prior noise buffer array
     noise = torch.FloatTensor(cfg.batch_size, cfg.latent_dim).to(device)
     for batch in tqdm(train_loader):
-
-        x = batch["X"].to(device, non_blocking=True)
+        x = batch['X'].to(device, non_blocking=True)
 
         # Encoder/Discriminator forward
         # Get latent vectors
@@ -245,7 +264,7 @@ def validate(valid_loader, model: AAE3d, device):
     latent_vectors = []
     avg_ae_loss = 0.0
     for batch in valid_loader:
-        x = batch["X"].to(device)
+        x = batch['X'].to(device)
         z = model.encode(x)
         recon_x = model.decode(z)
         avg_ae_loss += model.recon_loss(x, recon_x).item()
@@ -257,12 +276,14 @@ def validate(valid_loader, model: AAE3d, device):
 
     avg_ae_loss /= len(valid_loader)
     latent_vectors = np.concatenate(latent_vectors)
-    scalars = {name: np.concatenate(scalar) for name, scalar in scalars.items()}
+    scalars = {
+        name: np.concatenate(scalar) for name, scalar in scalars.items()
+    }
 
     return avg_ae_loss, latent_vectors, scalars
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     args = parse_args()
     cfg = Point3dAAEConfig.from_yaml(args.config)
     main(cfg)

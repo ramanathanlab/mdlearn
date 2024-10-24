@@ -23,7 +23,7 @@ For more details and specific examples of how to use mdlearn, please see our [do
 
 ## Installation
 
-### Install latest version with PyPI 
+### Install latest version with PyPI
 
 If you have access to an NVIDIA GPU, we highly recommend installing mdlearn into a Conda environment which contains [RAPIDS](https://rapids.ai/) to accelerate t-SNE computations useful for visualizing the model results during training. For the latest [RAPIDS](https://rapids.ai/) version, see [here](https://rapids.ai/start.html#get-rapids). If you don't have GPU support, mdlearn will still work on CPU by using the [scikit-learn](https://scikit-learn.org/stable/) implementation.
 
@@ -35,9 +35,9 @@ export IBM_POWERAI_LICENSE_ACCEPT=yes
 pip install -U scikit-learn
 ```
 
-Then install mdlearn via: `pip install mdlearn`. 
+Then install mdlearn via: `pip install mdlearn`.
 
-Some systems require [PyTorch](https://pytorch.org/) to be built from source instead of installed via PyPI or Conda, for this reason we made torch an optional dependency. However, it can be installed with mdlearn by running `pip install 'mdlearn[torch]'` for convenience. Installing this way will also install the `wandb` package. Please check that **torch version >= 1.7**. 
+Some systems require [PyTorch](https://pytorch.org/) to be built from source instead of installed via PyPI or Conda, for this reason we made torch an optional dependency. However, it can be installed with mdlearn by running `pip install 'mdlearn[torch]'` for convenience. Installing this way will also install the `wandb` package. Please check that **torch version >= 1.7**.
 
 ## Usage
 
@@ -72,4 +72,3 @@ If you are looking to contribute, please see [`CONTRIBUTING.md`](https://github.
 ## License
 
 mdlearn has a MIT license, as seen in the [LICENSE](https://github.com/ramanathanlab/mdlearn/blob/main/LICENSE) file.
-

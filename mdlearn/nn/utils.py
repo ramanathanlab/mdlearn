@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import random
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import Optional
+from typing import Union
 
 import numpy as np
 import torch
@@ -11,11 +14,11 @@ from mdlearn.utils import PathLike
 
 def reset(nn):
     def _reset(item):
-        if hasattr(item, "reset_parameters"):
+        if hasattr(item, 'reset_parameters'):
             item.reset_parameters()
 
     if nn is not None:
-        if hasattr(nn, "children") and len(list(nn.children())) > 0:
+        if hasattr(nn, 'children') and len(list(nn.children())) > 0:
             for item in nn.children():
                 _reset(item)
         else:
@@ -35,19 +38,29 @@ def conv_output_dim(input_dim, kernel_size, stride, padding, transpose=False):
     padding : int
         length of 0 pad
     """
-
     if transpose:
         # TODO: see symmetric decoder _conv_layers,
         #       may have bugs for transpose layers
         output_padding = 1 if stride > 1 else 0
         output_padding = 0
-        return (input_dim - 1) * stride + kernel_size - 2 * padding + output_padding
+        return (
+            (input_dim - 1) * stride
+            + kernel_size
+            - 2 * padding
+            + output_padding
+        )
 
     return (2 * padding + input_dim - kernel_size) // stride + 1
 
 
 def conv_output_shape(
-    input_dim, kernel_size, stride, padding, num_filters, transpose=False, dim=2
+    input_dim,
+    kernel_size,
+    stride,
+    padding,
+    num_filters,
+    transpose=False,
+    dim=2,
 ):
     """
     Parameters
@@ -66,6 +79,7 @@ def conv_output_shape(
         signifies whether Conv or ConvTranspose
     dim : int
         1 or 2, signifies Conv1d or Conv2d
+
     Returns
     -------
     (channels, height, width) tuple
@@ -83,11 +97,13 @@ def conv_output_shape(
     if dim == 2:
         return num_filters, dims[0], dims[1]
 
-    raise ValueError(f"Invalid dim: {dim}")
+    raise ValueError(f'Invalid dim: {dim}')
 
 
 def _same_padding(
-    input_dim: Union[int, Tuple[int, int]], kernel_size: int, stride: int
+    input_dim: Union[int, tuple[int, int]],
+    kernel_size: int,
+    stride: int,
 ) -> int:
     """
     Implements Keras-like same padding.
@@ -110,12 +126,14 @@ def _same_padding(
             # adjustment = int(input_dim % 2 == 0)
             return input_dim - alpha  # + adjustment
 
-    raise Exception("No padding found")
+    raise Exception('No padding found')
 
 
 def same_padding(
-    input_dim: Union[int, Tuple[int, int]], kernel_size: int, stride: int
-) -> Union[int, Tuple[int, int]]:
+    input_dim: Union[int, tuple[int, int]],
+    kernel_size: int,
+    stride: int,
+) -> Union[int, tuple[int, int]]:
     """Returns Keras-like same padding. Works for rectangular input_dim.
 
     Parameters
@@ -135,7 +153,6 @@ def same_padding(
     int:
         width of padding
     """
-
     # Handle Conv1d case
     if isinstance(input_dim, int):
         return _same_padding(input_dim, kernel_size, stride)
@@ -155,17 +172,17 @@ def get_activation(activation, *args, **kwargs):
     activation : str
         type of activation e.g. 'ReLU', etc
     """
-    if activation == "ReLU":
+    if activation == 'ReLU':
         return nn.ReLU(*args, **kwargs)
-    if activation == "LeakyReLU":
+    if activation == 'LeakyReLU':
         return nn.LeakyReLU(*args, **kwargs)
-    if activation == "Sigmoid":
+    if activation == 'Sigmoid':
         return nn.Sigmoid(*args, **kwargs)
-    if activation == "Tanh":
+    if activation == 'Tanh':
         return nn.Tanh(*args, **kwargs)
-    if activation == "None":
+    if activation == 'None':
         return nn.Identity(*args, **kwargs)
-    raise ValueError(f"Invalid activation type: {activation}")
+    raise ValueError(f'Invalid activation type: {activation}')
 
 
 # TODO: generalize this more.
@@ -187,17 +204,17 @@ class Trainer:
         num_data_workers: int = 0,
         prefetch_factor: int = 2,
         split_pct: float = 0.8,
-        split_method: str = "random",
+        split_method: str = 'random',
         batch_size: int = 128,
         shuffle: bool = True,
-        device: str = "cpu",
+        device: str = 'cpu',
         epochs: int = 100,
         verbose: bool = False,
         clip_grad_max_norm: float = 10.0,
         checkpoint_log_every: int = 10,
         plot_log_every: int = 10,
         plot_n_samples: int = 10000,
-        plot_method: Optional[str] = "TSNE",
+        plot_method: Optional[str] = 'TSNE',
         train_subsample_pct: float = 1.0,
         valid_subsample_pct: float = 1.0,
         use_wandb: bool = False,
@@ -269,20 +286,22 @@ class Trainer:
         This base class does not receive optimizer or scheduler settings
         because in general there could be multiple optimizers.
         """
-        if 0 > split_pct or 1 < split_pct:
-            raise ValueError("split_pct should be between 0 and 1.")
-        if 0 > train_subsample_pct or 1 < train_subsample_pct:
-            raise ValueError("train_subsample_pct should be between 0 and 1")
-        if 0 > valid_subsample_pct or 1 < valid_subsample_pct:
-            raise ValueError("valid_subsample_pct should be between 0 and 1")
-        if "cuda" in device and not torch.cuda.is_available():
-            raise ValueError("Specified cuda, but it is unavailable.")
+        if split_pct < 0 or split_pct > 1:
+            raise ValueError('split_pct should be between 0 and 1.')
+        if train_subsample_pct < 0 or train_subsample_pct > 1:
+            raise ValueError('train_subsample_pct should be between 0 and 1')
+        if valid_subsample_pct < 0 or valid_subsample_pct > 1:
+            raise ValueError('valid_subsample_pct should be between 0 and 1')
+        if 'cuda' in device and not torch.cuda.is_available():
+            raise ValueError('Specified cuda, but it is unavailable.')
 
         self.seed = seed
         self.scalar_dset_names = []
         self.in_gpu_memory = in_gpu_memory
         self.num_data_workers = 0 if in_gpu_memory else num_data_workers
-        self.persistent_workers = (self.num_data_workers > 0) and not self.in_gpu_memory
+        self.persistent_workers = (
+            self.num_data_workers > 0
+        ) and not self.in_gpu_memory
         self.prefetch_factor = prefetch_factor
         self.split_pct = split_pct
         self.split_method = split_method
@@ -315,14 +334,14 @@ class Trainer:
     def _set_num_threads(self) -> None:
         """Set available number of cores."""
         torch.set_num_threads(
-            1 if self.num_data_workers == 0 else self.num_data_workers
+            1 if self.num_data_workers == 0 else self.num_data_workers,
         )
 
     def _make_output_dir(
         self,
         output_path: PathLike,
         exist_ok: bool = False,
-    ) -> Tuple[Path, Path, Path]:
+    ) -> tuple[Path, Path, Path]:
         """Creates output directory structure.
 
         Parameters
@@ -345,10 +364,10 @@ class Trainer:
         output_path = Path(output_path).resolve()
         output_path.mkdir(exist_ok=exist_ok)
         # Create checkpoint directory
-        checkpoint_path = output_path / "checkpoints"
+        checkpoint_path = output_path / 'checkpoints'
         checkpoint_path.mkdir(exist_ok=exist_ok)
         # Create plot directory
-        plot_path = output_path / "plots"
+        plot_path = output_path / 'plots'
         plot_path.mkdir(exist_ok=exist_ok)
         return output_path, checkpoint_path, plot_path
 
@@ -375,7 +394,10 @@ class Trainer:
         from mdlearn.utils import resume_checkpoint
 
         return resume_checkpoint(
-            checkpoint, self.model, {"optimizer": self.optimizer}, self.scheduler
+            checkpoint,
+            self.model,
+            {'optimizer': self.optimizer},
+            self.scheduler,
         )
 
     def _resume_training(self, checkpoint: Optional[PathLike] = None) -> int:
@@ -398,13 +420,20 @@ class Trainer:
         if checkpoint is not None:
             start_epoch = self._load_checkpoint(checkpoint)
             if self.verbose:
-                print(f"Resume training at epoch {start_epoch} from {checkpoint}")
+                print(
+                    f'Resume training at epoch {start_epoch} from {checkpoint}',
+                )
         else:
             start_epoch = 1
 
         return start_epoch
 
-    def step_scheduler(self, epoch: int, avg_train_loss: float, avg_valid_loss: float):
+    def step_scheduler(
+        self,
+        epoch: int,
+        avg_train_loss: float,
+        avg_valid_loss: float,
+    ):
         """Implements the logic to step the learning rate scheduler.
         Different schedulers may have different update logic. Please
         subclass :obj:`LinearAETrainer` and re-implement this function
@@ -427,10 +456,12 @@ class Trainer:
         """
         if self.scheduler is None:
             return
-        elif self.scheduler_name == "ReduceLROnPlateau":
+        elif self.scheduler_name == 'ReduceLROnPlateau':
             self.scheduler.step(avg_valid_loss)
         else:
-            raise NotImplementedError(f"scheduler {self.scheduler_name} step function.")
+            raise NotImplementedError(
+                f'scheduler {self.scheduler_name} step function.',
+            )
 
     def fit(self):
         """Trains the model on the input dataset.
@@ -440,7 +471,7 @@ class Trainer:
         NotImplementedError
             Child class must implement this method.
         """
-        raise NotImplementedError("Child class must implement this method")
+        raise NotImplementedError('Child class must implement this method')
 
     def predict(self):
         """Predicts using the trained model.
@@ -450,4 +481,4 @@ class Trainer:
         NotImplementedError
             Child class must implement this method.
         """
-        raise NotImplementedError("Child class must implement this method")
+        raise NotImplementedError('Child class must implement this method')

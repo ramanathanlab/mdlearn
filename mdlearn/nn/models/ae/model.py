@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 import torch
@@ -37,7 +39,11 @@ class AE(nn.Module):
         """Decoder forward pass."""
         return self.decoder(*args, **kwargs)
 
-    def recon_loss(self, x: torch.Tensor, recon_x: torch.Tensor) -> torch.Tensor:
+    def recon_loss(
+        self,
+        x: torch.Tensor,
+        recon_x: torch.Tensor,
+    ) -> torch.Tensor:
         r"""Compute the reconstruction loss between :obj:`x` and :obj:`recon_x`.
 
         Parameters
@@ -52,4 +58,4 @@ class AE(nn.Module):
         torch.Tensor
             The reconstruction loss between :obj:`x` and :obj:`recon_x`.
         """
-        return F.binary_cross_entropy(recon_x, x, reduction="sum")
+        return F.binary_cross_entropy(recon_x, x, reduction='sum')

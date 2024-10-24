@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import random
 import time
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Tuple
 
 import numpy as np
 import torch
@@ -14,17 +15,18 @@ from mdlearn.data.datasets.contact_map import ContactMapDataset
 from mdlearn.data.utils import train_valid_split
 from mdlearn.metrics import metric_cluster_quality
 from mdlearn.nn.models.wae.symmetric_conv2d_wae import SymmetricConv2dWAE
-from mdlearn.utils import get_torch_optimizer, get_torch_scheduler, log_checkpoint
+from mdlearn.utils import get_torch_optimizer
+from mdlearn.utils import get_torch_scheduler
+from mdlearn.utils import log_checkpoint
 from mdlearn.visualize import log_latent_visualization
 
 
 def main(cfg: SymmetricConv2dWAEConfig):
-
     # Create checkpoint directory
-    checkpoint_path = Path(wandb.run.dir) / "checkpoints"
+    checkpoint_path = Path(wandb.run.dir) / 'checkpoints'
     checkpoint_path.mkdir()
     # Create plot directory
-    plot_path = Path(wandb.run.dir) / "plots"
+    plot_path = Path(wandb.run.dir) / 'plots'
     plot_path.mkdir()
 
     # Set random seed
@@ -58,7 +60,9 @@ def main(cfg: SymmetricConv2dWAEConfig):
 
     # Hardware
     device = torch.device(
-        "cuda:0" if torch.cuda.is_available() and not cfg.ignore_gpu else "cpu"
+        'cuda:0'
+        if torch.cuda.is_available() and not cfg.ignore_gpu
+        else 'cpu',
     )
 
     # Create model
@@ -82,26 +86,30 @@ def main(cfg: SymmetricConv2dWAEConfig):
     wandb.watch(model)  # Must run after summary()
 
     optimizer = get_torch_optimizer(
-        cfg.optimizer.name, cfg.optimizer.hparams, model.parameters()
+        cfg.optimizer.name,
+        cfg.optimizer.hparams,
+        model.parameters(),
     )
     if cfg.scheduler is not None:
         scheduler = get_torch_scheduler(
-            cfg.scheduler.name, cfg.scheduler.hparams, optimizer
+            cfg.scheduler.name,
+            cfg.scheduler.hparams,
+            optimizer,
         )
     else:
         scheduler = None
 
     # Optionally initialize model with pre-trained weights
     if cfg.init_weights is not None:
-        checkpoint = torch.load(cfg.init_weights, map_location="cpu")
-        model.load_state_dict(checkpoint["model_state_dict"])
-        print(f"Loaded model from {cfg.init_weights}")
+        checkpoint = torch.load(cfg.init_weights, map_location='cpu')
+        model.load_state_dict(checkpoint['model_state_dict'])
+        print(f'Loaded model from {cfg.init_weights}')
 
     # Start training
     epoch_times = []
     print(
-        f"Start training with {round(len(train_loader) * cfg.train_subsample_pct)} batches "
-        f"and {round(len(valid_loader) * cfg.valid_subsample_pct)} validation batches."
+        f'Start training with {round(len(train_loader) * cfg.train_subsample_pct)} batches '
+        f'and {round(len(valid_loader) * cfg.valid_subsample_pct)} validation batches.',
     )
     for epoch in range(cfg.epochs):
         start = time.time()
@@ -111,9 +119,10 @@ def main(cfg: SymmetricConv2dWAEConfig):
         avg_train_losses = train(train_loader, model, optimizer, device)
 
         print(
-            "====> Epoch: {} Train:\tAvg loss: {:.4f}\tAvg recon loss {:.4f}\tAvg kld loss {:.4f}\tAvg mmd loss {:.4f}".format(
-                epoch, *avg_train_losses
-            )
+            '====> Epoch: {} Train:\tAvg loss: {:.4f}\tAvg recon loss {:.4f}\tAvg kld loss {:.4f}\tAvg mmd loss {:.4f}'.format(
+                epoch,
+                *avg_train_losses,
+            ),
         )
 
         # Validation
@@ -129,26 +138,33 @@ def main(cfg: SymmetricConv2dWAEConfig):
             ) = validate(valid_loader, model, device)
 
         print(
-            "====> Epoch: {} Valid:\tAvg loss: {:.4f}\tAvg recon loss {:.4f}\tAvg kld loss {:.4f}\tAvg mmd loss {:.4f}".format(
-                epoch, avg_loss, avg_recon_loss, avg_kld_loss, avg_mmd_loss
-            )
+            '====> Epoch: {} Valid:\tAvg loss: {:.4f}\tAvg recon loss {:.4f}\tAvg kld loss {:.4f}\tAvg mmd loss {:.4f}'.format(
+                epoch,
+                avg_loss,
+                avg_recon_loss,
+                avg_kld_loss,
+                avg_mmd_loss,
+            ),
         )
         elapsed = time.time() - start
-        print(f"Epoch: {epoch} Time: {elapsed}\n")
+        print(f'Epoch: {epoch} Time: {elapsed}\n')
         epoch_times.append(elapsed)
 
         start = time.time()
-        cluster_quality = metric_cluster_quality(latent_vectors, scalars["rmsd"])
-        print("cluster quality metric time: ", time.time() - start)
+        cluster_quality = metric_cluster_quality(
+            latent_vectors,
+            scalars['rmsd'],
+        )
+        print('cluster quality metric time: ', time.time() - start)
 
         metrics = {
-            "train_loss": avg_train_losses[0],
-            "train_recon_loss": avg_train_losses[1],
-            "train_kld_loss": avg_train_losses[2],
-            "valid_loss": avg_loss,
-            "valid_recon_loss": avg_recon_loss,
-            "valid_kld_loss": avg_kld_loss,
-            "cluster_quality": cluster_quality,
+            'train_loss': avg_train_losses[0],
+            'train_recon_loss': avg_train_losses[1],
+            'train_kld_loss': avg_train_losses[2],
+            'valid_loss': avg_loss,
+            'valid_recon_loss': avg_recon_loss,
+            'valid_kld_loss': avg_kld_loss,
+            'cluster_quality': cluster_quality,
         }
 
         # Visualize latent space
@@ -169,21 +185,23 @@ def main(cfg: SymmetricConv2dWAEConfig):
         # Step the learning rate scheduler
         if scheduler is None:
             pass
-        elif cfg.scheduler.name == "ReduceLROnPlateau":
+        elif cfg.scheduler.name == 'ReduceLROnPlateau':
             scheduler.step(avg_loss)
         else:
-            raise NotImplementedError(f"scheduler {cfg.scheduler.name} step function.")
+            raise NotImplementedError(
+                f'scheduler {cfg.scheduler.name} step function.',
+            )
 
         if epoch % cfg.checkpoint_log_every == 0:
             log_checkpoint(
-                checkpoint_path / f"checkpoint-epoch-{epoch}.pt",
+                checkpoint_path / f'checkpoint-epoch-{epoch}.pt',
                 epoch,
                 model,
-                {"optimizer": optimizer},
+                {'optimizer': optimizer},
                 scheduler,
             )
 
-    print("Elapsed avg time", np.mean(epoch_times))
+    print('Elapsed avg time', np.mean(epoch_times))
 
     # Output directory structure
     # output_path
@@ -194,19 +212,28 @@ def main(cfg: SymmetricConv2dWAEConfig):
 
 
 def train(train_loader, model, optimizer, device):
-    avg_loss, avg_recon_loss, avg_kld_loss, avg_mmd_loss, i = 0.0, 0.0, 0.0, 0.0, 0
+    avg_loss, avg_recon_loss, avg_kld_loss, avg_mmd_loss, i = (
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0,
+    )
     for i, batch in enumerate(train_loader):
-
         if i / len(train_loader) > cfg.train_subsample_pct:
             break  # Early stop for sweeps
 
-        x = batch["X"].to(device, non_blocking=True)
+        x = batch['X'].to(device, non_blocking=True)
 
         # Forward pass
         z, recon_x = model(x)
         kld_loss = model.kld_loss()  # For logging
         mmd_loss = model.mmdrf_loss(
-            z, cfg.sigma, cfg.kernel, cfg.rf_dim, cfg.rf_resample
+            z,
+            cfg.sigma,
+            cfg.kernel,
+            cfg.rf_dim,
+            cfg.rf_resample,
         )
         recon_loss = model.recon_loss(x, recon_x)
         loss = cfg.lambda_rec * recon_loss + mmd_loss
@@ -214,7 +241,10 @@ def train(train_loader, model, optimizer, device):
         # Backward pass
         optimizer.zero_grad()
         loss.backward()
-        _ = torch.nn.utils.clip_grad_norm_(model.parameters(), cfg.clip_grad_max_norm)
+        _ = torch.nn.utils.clip_grad_norm_(
+            model.parameters(),
+            cfg.clip_grad_max_norm,
+        )
         optimizer.step()
 
         # Collect loss
@@ -232,23 +262,34 @@ def train(train_loader, model, optimizer, device):
 
 
 def validate(
-    valid_loader, model, device
-) -> Tuple[float, float, float, float, np.ndarray, Dict[str, np.ndarray]]:
+    valid_loader,
+    model,
+    device,
+) -> tuple[float, float, float, float, np.ndarray, dict[str, np.ndarray]]:
     scalars = defaultdict(list)
     latent_vectors = []
-    avg_loss, avg_recon_loss, avg_kld_loss, avg_mmd_loss, i = 0.0, 0.0, 0.0, 0.0, 0
+    avg_loss, avg_recon_loss, avg_kld_loss, avg_mmd_loss, i = (
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0,
+    )
     for i, batch in enumerate(valid_loader):
-
         if i / len(valid_loader) > cfg.valid_subsample_pct:
             break  # Early stop for sweeps
 
-        x = batch["X"].to(device, non_blocking=True)
+        x = batch['X'].to(device, non_blocking=True)
 
         # Forward pass
         z, recon_x = model(x)
         kld_loss = model.kld_loss()
         mmd_loss = model.mmdrf_loss(
-            z, cfg.sigma, cfg.kernel, cfg.rf_dim, cfg.rf_resample
+            z,
+            cfg.sigma,
+            cfg.kernel,
+            cfg.rf_dim,
+            cfg.rf_resample,
         )
         recon_loss = model.recon_loss(x, recon_x)
         loss = cfg.lambda_rec * recon_loss + kld_loss
@@ -270,19 +311,28 @@ def validate(
     avg_mmd_loss /= i + 1
 
     latent_vectors = np.concatenate(latent_vectors)
-    scalars = {name: np.concatenate(scalar) for name, scalar in scalars.items()}
+    scalars = {
+        name: np.concatenate(scalar) for name, scalar in scalars.items()
+    }
 
-    return avg_loss, avg_recon_loss, avg_kld_loss, avg_mmd_loss, latent_vectors, scalars
+    return (
+        avg_loss,
+        avg_recon_loss,
+        avg_kld_loss,
+        avg_mmd_loss,
+        latent_vectors,
+        scalars,
+    )
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     wandb.init()
     cfg = SymmetricConv2dWAEConfig.from_yaml(wandb.config.default_yaml)
 
     # Update cfg with sweep parameters
     cfg.batch_size = wandb.config.batch_size
     cfg.optimizer.name = wandb.config.optimizer
-    cfg.optimizer.hparams["lr"] = wandb.config.lr
+    cfg.optimizer.hparams['lr'] = wandb.config.lr
     cfg.latent_dim = wandb.config.latent_dim
     cfg.lambda_rec = wandb.config.lambda_rec
     cfg.sigma = np.floor(np.sqrt(wandb.config.latent_dim))

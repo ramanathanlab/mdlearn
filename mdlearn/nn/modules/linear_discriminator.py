@@ -1,7 +1,7 @@
-from typing import List
+from __future__ import annotations
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from mdlearn.nn.utils import get_activation
 
@@ -12,7 +12,7 @@ class LinearDiscriminator(nn.Module):
         latent_dim: int = 20,
         bias: bool = True,
         relu_slope: float = 0.0,
-        affine_widths: List[int] = [512, 128, 64],
+        affine_widths: list[int] = [512, 128, 64],
     ):
         """LinearDiscriminator module.
 
@@ -36,12 +36,12 @@ class LinearDiscriminator(nn.Module):
         self.affine_widths = affine_widths
 
         # Select activation
-        self.activation_kwargs = {"inplace": True}
+        self.activation_kwargs = {'inplace': True}
         if self.negative_slope > 0.0:
-            self.activation = "LeakyReLU"
-            self.activation_kwargs["negative_slope"] = self.negative_slope
+            self.activation = 'LeakyReLU'
+            self.activation_kwargs['negative_slope'] = self.negative_slope
         else:
-            self.activation = "ReLU"
+            self.activation = 'ReLU'
 
         self.model = nn.Sequential(*self._affine_layers())
 
@@ -49,7 +49,7 @@ class LinearDiscriminator(nn.Module):
         logit = self.model(x)
         return logit
 
-    def _affine_layers(self) -> List[nn.Module]:
+    def _affine_layers(self) -> list[nn.Module]:
         """Compose affine layers.
 
         Returns
@@ -62,19 +62,24 @@ class LinearDiscriminator(nn.Module):
         in_features = self.latent_dim
 
         for width in self.affine_widths:
-
             layers.append(
-                nn.Linear(in_features=in_features, out_features=width, bias=self.bias)
+                nn.Linear(
+                    in_features=in_features,
+                    out_features=width,
+                    bias=self.bias,
+                ),
             )
 
-            layers.append(get_activation(self.activation, **self.activation_kwargs))
+            layers.append(
+                get_activation(self.activation, **self.activation_kwargs),
+            )
 
             # Subsequent layers in_features is the current layers width
             in_features = width
 
         # Add final logit prediction layer
         layers.append(
-            nn.Linear(in_features=in_features, out_features=1, bias=self.bias)
+            nn.Linear(in_features=in_features, out_features=1, bias=self.bias),
         )
 
         return layers

@@ -1,6 +1,6 @@
 input_path: /homes/abrace/data/bba/1FME-0.h5
 #/homes/abrace/data/bba/BBA-subset-100.h5 # /homes/abrace/data/bba/1FME-0.h5
-output_path: /homes/abrace/src/mdlearn/examples/symmetric_conv2d_vde/runs/symmetric_conv2d_vde_run-1 
+output_path: /homes/abrace/src/mdlearn/examples/symmetric_conv2d_vde/runs/symmetric_conv2d_vde_run-1
 resume_checkpoint: null
 input_shape:
 - 1

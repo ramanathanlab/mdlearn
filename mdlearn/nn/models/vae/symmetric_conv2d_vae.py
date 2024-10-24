@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
+from typing import Optional
 
 import numpy as np
 import torch
@@ -8,27 +11,29 @@ from torch.utils.data import DataLoader
 from mdlearn.nn.models.vae import VAE
 from mdlearn.nn.modules.conv2d_decoder import Conv2dDecoder
 from mdlearn.nn.modules.conv2d_encoder import Conv2dEncoder
-from mdlearn.nn.utils import PathLike, Trainer
+from mdlearn.nn.utils import PathLike
+from mdlearn.nn.utils import Trainer
 
 
 class SymmetricConv2dVAE(VAE):
     """Convolutional variational autoencoder from the
     `"Deep clustering of protein folding simulations"
     <https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-018-2507-5>`_ paper.
-    Inherits from :obj:`mdlearn.nn.models.vae.VAE`."""
+    Inherits from :obj:`mdlearn.nn.models.vae.VAE`.
+    """
 
     def __init__(
         self,
-        input_shape: Tuple[int, int, int],
+        input_shape: tuple[int, int, int],
         init_weights: Optional[str] = None,
-        filters: List[int] = [64, 64, 64],
-        kernels: List[int] = [3, 3, 3],
-        strides: List[int] = [1, 2, 1],
-        affine_widths: List[int] = [128],
-        affine_dropouts: List[float] = [0.0],
+        filters: list[int] = [64, 64, 64],
+        kernels: list[int] = [3, 3, 3],
+        strides: list[int] = [1, 2, 1],
+        affine_widths: list[int] = [128],
+        affine_dropouts: list[float] = [0.0],
         latent_dim: int = 3,
-        activation: str = "ReLU",
-        output_activation: str = "Sigmoid",
+        activation: str = 'ReLU',
+        output_activation: str = 'Sigmoid',
     ):
         """
         Parameters
@@ -56,7 +61,11 @@ class SymmetricConv2dVAE(VAE):
             Output activation function for last decoder layer.
         """
         self._check_hyperparameters(
-            kernels, strides, filters, affine_widths, affine_dropouts
+            kernels,
+            strides,
+            filters,
+            affine_widths,
+            affine_dropouts,
         )
 
         encoder = Conv2dEncoder(
@@ -87,7 +96,7 @@ class SymmetricConv2dVAE(VAE):
 
         super().__init__(encoder, decoder)
 
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """Forward pass of variational autoencoder.
 
         Parameters
@@ -108,57 +117,63 @@ class SymmetricConv2dVAE(VAE):
 
     def _check_hyperparameters(
         self,
-        kernels: List[int],
-        strides: List[int],
-        filters: List[int],
-        affine_widths: List[int],
-        affine_dropouts: List[float],
+        kernels: list[int],
+        strides: list[int],
+        filters: list[int],
+        affine_widths: list[int],
+        affine_dropouts: list[float],
     ):
         """Check that hyperparameters are consistent and logical."""
         if not (len(kernels) == len(strides) == len(filters)):
-            raise ValueError("Number of filters, kernels and strides must be equal.")
+            raise ValueError(
+                'Number of filters, kernels and strides must be equal.',
+            )
 
         if len(affine_dropouts) != len(affine_widths):
             raise ValueError(
-                "Number of dropouts must equal the number of affine widths."
+                'Number of dropouts must equal the number of affine widths.',
             )
 
         # Common convention: allows for filter center and for even padding
         if any(kernel % 2 == 0 for kernel in kernels):
-            raise ValueError("Only odd valued kernel sizes allowed.")
+            raise ValueError('Only odd valued kernel sizes allowed.')
 
         if any(p < 0 or p > 1 for p in affine_dropouts):
-            raise ValueError("Dropout probabilities, p, must be 0 <= p <= 1.")
+            raise ValueError('Dropout probabilities, p, must be 0 <= p <= 1.')
 
 
 class SymmetricConv2dVAETrainer(Trainer):
     """Trainer class to fit a convolutional variational autoencoder
-    to a set of contact maps."""
+    to a set of contact maps.
+    """
 
     def __init__(
         self,
-        input_shape: Tuple[int, int, int],
-        filters: List[int] = [64, 64, 64],
-        kernels: List[int] = [3, 3, 3],
-        strides: List[int] = [1, 2, 1],
-        affine_widths: List[int] = [128],
-        affine_dropouts: List[float] = [0.0],
+        input_shape: tuple[int, int, int],
+        filters: list[int] = [64, 64, 64],
+        kernels: list[int] = [3, 3, 3],
+        strides: list[int] = [1, 2, 1],
+        affine_widths: list[int] = [128],
+        affine_dropouts: list[float] = [0.0],
         latent_dim: int = 10,
-        activation: str = "ReLU",
-        output_activation: str = "Sigmoid",
+        activation: str = 'ReLU',
+        output_activation: str = 'Sigmoid',
         lambda_rec: float = 1.0,
         seed: int = 42,
         num_data_workers: int = 0,
         prefetch_factor: int = 2,
         split_pct: float = 0.8,
-        split_method: str = "random",
+        split_method: str = 'random',
         batch_size: int = 128,
         shuffle: bool = True,
-        device: str = "cpu",
-        optimizer_name: str = "RMSprop",
-        optimizer_hparams: Dict[str, Any] = {"lr": 0.001, "weight_decay": 0.00001},
+        device: str = 'cpu',
+        optimizer_name: str = 'RMSprop',
+        optimizer_hparams: dict[str, Any] = {
+            'lr': 0.001,
+            'weight_decay': 0.00001,
+        },
         scheduler_name: Optional[str] = None,
-        scheduler_hparams: Dict[str, Any] = {},
+        scheduler_hparams: dict[str, Any] = {},
         epochs: int = 100,
         verbose: bool = False,
         clip_grad_max_norm: float = 10.0,
@@ -299,7 +314,8 @@ class SymmetricConv2dVAETrainer(Trainer):
         self.scheduler_name = scheduler_name
         self.scheduler_hparams = scheduler_hparams
 
-        from mdlearn.utils import get_torch_optimizer, get_torch_scheduler
+        from mdlearn.utils import get_torch_optimizer
+        from mdlearn.utils import get_torch_scheduler
 
         self.model = SymmetricConv2dVAE(
             input_shape=input_shape,
@@ -320,29 +336,33 @@ class SymmetricConv2dVAETrainer(Trainer):
 
         # Setup optimizer
         self.optimizer = get_torch_optimizer(
-            self.optimizer_name, self.optimizer_hparams, self.model.parameters()
+            self.optimizer_name,
+            self.optimizer_hparams,
+            self.model.parameters(),
         )
 
         # Setup learning rate scheduler
         self.scheduler = get_torch_scheduler(
-            self.scheduler_name, self.scheduler_hparams, self.optimizer
+            self.scheduler_name,
+            self.scheduler_hparams,
+            self.optimizer,
         )
 
         # Log the train and validation loss each epoch
         self.loss_curve_ = {
-            "train_loss": [],
-            "train_recon_loss": [],
-            "train_kld_loss": [],
-            "valid_loss": [],
-            "valid_recon_loss": [],
-            "valid_kld_loss": [],
+            'train_loss': [],
+            'train_recon_loss': [],
+            'train_kld_loss': [],
+            'valid_loss': [],
+            'valid_recon_loss': [],
+            'valid_kld_loss': [],
         }
 
     def fit(
         self,
         X: np.ndarray,
-        scalars: Dict[str, np.ndarray] = {},
-        output_path: PathLike = "./",
+        scalars: dict[str, np.ndarray] = {},
+        output_path: PathLike = './',
         checkpoint: Optional[PathLike] = None,
     ):
         r"""Trains the autoencoder on the input data :obj:`X`.
@@ -378,8 +398,8 @@ class SymmetricConv2dVAETrainer(Trainer):
         """
         if not isinstance(scalars, dict):
             raise TypeError(
-                "scalars should be of type dict. A common error"
-                " is to pass output_path as the second argument."
+                'scalars should be of type dict. A common error'
+                ' is to pass output_path as the second argument.',
             )
 
         from mdlearn.data.datasets.contact_map import ContactMapDataset
@@ -392,7 +412,8 @@ class SymmetricConv2dVAETrainer(Trainer):
 
         exist_ok = (checkpoint is not None) or self.use_wandb
         output_path, checkpoint_path, plot_path = self._make_output_dir(
-            output_path, exist_ok
+            output_path,
+            exist_ok,
         )
 
         # Set available number of cores
@@ -421,15 +442,22 @@ class SymmetricConv2dVAETrainer(Trainer):
         for epoch in range(start_epoch, self.epochs + 1):
             # Training
             self.model.train()
-            avg_train_loss, avg_train_recon_loss, avg_train_kld_loss = self._train(
-                train_loader
+            (
+                avg_train_loss,
+                avg_train_recon_loss,
+                avg_train_kld_loss,
+            ) = self._train(
+                train_loader,
             )
 
             if self.verbose:
                 print(
-                    "====> Epoch: {} Train:\tAvg loss: {:.4f}\tAvg recon: {:.4f}\tAvg kld loss: {:.4f}".format(
-                        epoch, avg_train_loss, avg_train_recon_loss, avg_train_kld_loss
-                    )
+                    '====> Epoch: {} Train:\tAvg loss: {:.4f}\tAvg recon: {:.4f}\tAvg kld loss: {:.4f}'.format(
+                        epoch,
+                        avg_train_loss,
+                        avg_train_recon_loss,
+                        avg_train_kld_loss,
+                    ),
                 )
 
             # Validation
@@ -445,9 +473,12 @@ class SymmetricConv2dVAETrainer(Trainer):
 
             if self.verbose:
                 print(
-                    "====> Epoch: {} Valid:\tAvg loss: {:.4f}\tAvg recon: {:.4f}\tAvg kld loss: {:.4f}".format(
-                        epoch, avg_valid_loss, avg_valid_recon_loss, avg_valid_kld_loss
-                    )
+                    '====> Epoch: {} Valid:\tAvg loss: {:.4f}\tAvg recon: {:.4f}\tAvg kld loss: {:.4f}'.format(
+                        epoch,
+                        avg_valid_loss,
+                        avg_valid_recon_loss,
+                        avg_valid_kld_loss,
+                    ),
                 )
 
             # Step the learning rate scheduler
@@ -456,25 +487,27 @@ class SymmetricConv2dVAETrainer(Trainer):
             # Log a model checkpoint file
             if epoch % self.checkpoint_log_every == 0:
                 log_checkpoint(
-                    checkpoint_path / f"checkpoint-epoch-{epoch}.pt",
+                    checkpoint_path / f'checkpoint-epoch-{epoch}.pt',
                     epoch,
                     self.model,
-                    {"optimizer": self.optimizer},
+                    {'optimizer': self.optimizer},
                     self.scheduler,
                 )
 
             if self.use_wandb:
                 metrics = {
-                    "train_loss": avg_train_loss,
-                    "train_recon_loss": avg_train_recon_loss,
-                    "train_kld_loss": avg_train_kld_loss,
-                    "valid_loss": avg_valid_loss,
-                    "valid_recon_loss": avg_valid_recon_loss,
-                    "valid_kld_loss": avg_valid_kld_loss,
+                    'train_loss': avg_train_loss,
+                    'train_recon_loss': avg_train_recon_loss,
+                    'train_kld_loss': avg_train_kld_loss,
+                    'valid_loss': avg_valid_loss,
+                    'valid_recon_loss': avg_valid_recon_loss,
+                    'valid_kld_loss': avg_valid_kld_loss,
                 }
 
             # Log a visualization of the latent space
-            if (self.plot_method is not None) and (epoch % self.plot_log_every == 0):
+            if (self.plot_method is not None) and (
+                epoch % self.plot_log_every == 0
+            ):
                 htmls = log_latent_visualization(
                     z,
                     paints,
@@ -486,25 +519,25 @@ class SymmetricConv2dVAETrainer(Trainer):
                 if self.use_wandb:
                     # Optionally, log visualizations to wandb
                     for name, html in htmls.items():
-                        metrics[name] = wandb.Html(html, inject=False)  # noqa
+                        metrics[name] = wandb.Html(html, inject=False)
 
             if self.use_wandb:
-                wandb.log(metrics)  # noqa
+                wandb.log(metrics)
 
             # Save the losses
-            self.loss_curve_["train_loss"].append(avg_train_loss)
-            self.loss_curve_["train_recon_loss"].append(avg_train_recon_loss)
-            self.loss_curve_["train_kld_loss"].append(avg_train_kld_loss)
-            self.loss_curve_["valid_loss"].append(avg_valid_loss)
-            self.loss_curve_["valid_recon_loss"].append(avg_valid_recon_loss)
-            self.loss_curve_["valid_kld_loss"].append(avg_valid_kld_loss)
+            self.loss_curve_['train_loss'].append(avg_train_loss)
+            self.loss_curve_['train_recon_loss'].append(avg_train_recon_loss)
+            self.loss_curve_['train_kld_loss'].append(avg_train_kld_loss)
+            self.loss_curve_['valid_loss'].append(avg_valid_loss)
+            self.loss_curve_['valid_recon_loss'].append(avg_valid_recon_loss)
+            self.loss_curve_['valid_kld_loss'].append(avg_valid_kld_loss)
 
     def predict(
         self,
         X: np.ndarray,
         inference_batch_size: int = 128,
         checkpoint: Optional[PathLike] = None,
-    ) -> Tuple[np.ndarray, float, float, float]:
+    ) -> tuple[np.ndarray, float, float, float]:
         r"""Predict using the LinearAE
 
         Parameters
@@ -572,14 +605,13 @@ class SymmetricConv2dVAETrainer(Trainer):
                 self.scalar_dset_names = tmp
                 raise e
 
-    def _train(self, train_loader) -> Tuple[float, float, float]:
+    def _train(self, train_loader) -> tuple[float, float, float]:
         avg_loss, avg_recon_loss, avg_kld_loss = 0.0, 0.0, 0.0
         for i, batch in enumerate(train_loader):
-
             if i / len(train_loader) > self.train_subsample_pct:
                 break  # Early stop for sweeps
 
-            x = batch["X"].to(self.device, non_blocking=True)
+            x = batch['X'].to(self.device, non_blocking=True)
 
             # Forward pass
             _, recon_x = self.model(x)
@@ -591,7 +623,8 @@ class SymmetricConv2dVAETrainer(Trainer):
             self.optimizer.zero_grad()
             loss.backward()
             _ = torch.nn.utils.clip_grad_norm_(
-                self.model.parameters(), self.clip_grad_max_norm
+                self.model.parameters(),
+                self.clip_grad_max_norm,
             )
             self.optimizer.step()
             # Collect loss
@@ -606,17 +639,17 @@ class SymmetricConv2dVAETrainer(Trainer):
         return avg_loss, avg_recon_loss, avg_kld_loss
 
     def _validate(
-        self, valid_loader
-    ) -> Tuple[float, float, float, np.ndarray, Dict[str, np.ndarray]]:
+        self,
+        valid_loader,
+    ) -> tuple[float, float, float, np.ndarray, dict[str, np.ndarray]]:
         avg_loss, avg_recon_loss, avg_kld_loss = 0.0, 0.0, 0.0
         paints = defaultdict(list)
         latent_vectors = []
         for i, batch in enumerate(valid_loader):
-
             if i / len(valid_loader) > self.valid_subsample_pct:
                 break  # Early stop for sweeps
 
-            x = batch["X"].to(self.device, non_blocking=True)
+            x = batch['X'].to(self.device, non_blocking=True)
 
             # Forward pass
             z, recon_x = self.model(x)
@@ -639,6 +672,8 @@ class SymmetricConv2dVAETrainer(Trainer):
         avg_kld_loss /= len(valid_loader)
         # Group latent vectors and paints
         latent_vectors = np.concatenate(latent_vectors)
-        paints = {name: np.concatenate(scalar) for name, scalar in paints.items()}
+        paints = {
+            name: np.concatenate(scalar) for name, scalar in paints.items()
+        }
 
         return avg_loss, avg_recon_loss, avg_kld_loss, latent_vectors, paints

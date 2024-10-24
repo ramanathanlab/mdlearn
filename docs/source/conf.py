@@ -10,21 +10,22 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+from __future__ import annotations
+
+import datetime
 import os
 import sys
-import datetime
-import sphinx_rtd_theme
 
-sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath('../..'))
 import mdlearn  # noqa
 
 
 # -- Project information -----------------------------------------------------
 
-project = "mdlearn"
-author = "Alexander Brace, Heng Ma, Austin Clyde, Debsindhu Bhowmik, Chakra Chennubhotla, Arvind Ramanathan"
+project = 'mdlearn'
+author = 'Alexander Brace, Heng Ma, Austin Clyde, Debsindhu Bhowmik, Chakra Chennubhotla, Arvind Ramanathan'
 now = datetime.datetime.now()
-copyright = "{}, ".format(now.year) + author
+copyright = f'{now.year}, ' + author
 
 # The full version, including alpha/beta/rc tags
 release = mdlearn.__version__
@@ -37,11 +38,11 @@ version = mdlearn.__version__
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "sphinx_rtd_theme",
-    "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon",
-    "sphinx.ext.autosummary",
-    "sphinxcontrib.autodoc_pydantic",
+    'sphinx_rtd_theme',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.autosummary',
+    'sphinxcontrib.autodoc_pydantic',
 ]
 
 # Autosummary settings
@@ -50,8 +51,8 @@ autosummary_generate = True  # Turn on sphinx.ext.autosummary
 # Autodoc settings
 # Need to figure these out. See https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_default_options
 autodoc_default_options = {
-    "members": True,
-    "undoc-members": True,
+    'members': True,
+    'undoc-members': True,
 }
 
 # Napoleon settings
@@ -71,7 +72,7 @@ napoleon_type_aliases = None
 napoleon_attr_annotations = True
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
+templates_path = ['_templates']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -79,18 +80,18 @@ templates_path = ["_templates"]
 exclude_patterns = []
 
 html_context = {
-    "conf_py_path": "/docs/source/",  # Path in the checkout to the docs root
+    'conf_py_path': '/docs/source/',  # Path in the checkout to the docs root
 }
 
 # List of imports to mock when building the documentation.
-autodoc_mock_imports = ["numpy", "h5py", "torch", "plotly", "pandas"]
+autodoc_mock_imports = ['numpy', 'h5py', 'torch', 'plotly', 'pandas']
 
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = 'sphinx_rtd_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

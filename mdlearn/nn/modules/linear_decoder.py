@@ -1,9 +1,8 @@
 """LinearDecoder module for point cloud data."""
-
-from typing import List
+from __future__ import annotations
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from mdlearn.nn.utils import get_activation
 
@@ -16,7 +15,7 @@ class LinearDecoder(nn.Module):
         latent_dim: int = 20,
         bias: bool = True,
         relu_slope: float = 0.0,
-        affine_widths: List[int] = [64, 128, 512, 1024],
+        affine_widths: list[int] = [64, 128, 512, 1024],
     ):
         """LinearDecoder module for point cloud data.
 
@@ -47,12 +46,12 @@ class LinearDecoder(nn.Module):
         self.affine_widths = affine_widths
 
         # Select activation
-        self.activation_kwargs = {"inplace": True}
+        self.activation_kwargs = {'inplace': True}
         if self.relu_slope > 0.0:
-            self.activation = "LeakyReLU"
-            self.activation_kwargs["negative_slope"] = self.relu_slope
+            self.activation = 'LeakyReLU'
+            self.activation_kwargs['negative_slope'] = self.relu_slope
         else:
-            self.activation = "ReLU"
+            self.activation = 'ReLU'
 
         self.model = nn.Sequential(*self._affine_layers())
 
@@ -61,7 +60,7 @@ class LinearDecoder(nn.Module):
         output = output.view(-1, (3 + self.num_features), self.num_points)
         return output
 
-    def _affine_layers(self) -> List[nn.Module]:
+    def _affine_layers(self) -> list[nn.Module]:
         layers = []
 
         in_features = self.latent_dim
@@ -73,7 +72,9 @@ class LinearDecoder(nn.Module):
                     bias=self.bias,
                 ),
             )
-            layers.append(get_activation(self.activation, **self.activation_kwargs))
+            layers.append(
+                get_activation(self.activation, **self.activation_kwargs),
+            )
 
             # in_features of next layer is out_features of current layer
             in_features = width
@@ -83,7 +84,7 @@ class LinearDecoder(nn.Module):
                 in_features=self.affine_widths[-1],
                 out_features=self.num_points * (3 + self.num_features),
                 bias=self.bias,
-            )
+            ),
         )
 
         return layers

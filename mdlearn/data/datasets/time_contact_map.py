@@ -1,6 +1,7 @@
 """ContactMapTimeSeriesDataset Dataset."""
+from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import torch
 
@@ -14,10 +15,10 @@ class ContactMapTimeSeriesDataset(ContactMapDataset):
     def __init__(
         self,
         path: PathLike,
-        shape: Tuple[int, ...],
+        shape: tuple[int, ...],
         lag_time: int = 1,
-        dataset_name: str = "contact_map",
-        scalar_dset_names: List[str] = [],
+        dataset_name: str = 'contact_map',
+        scalar_dset_names: list[str] = [],
         values_dset_name: Optional[str] = None,
         scalar_requires_grad: bool = False,
         in_memory: bool = True,
@@ -73,21 +74,21 @@ class ContactMapTimeSeriesDataset(ContactMapDataset):
         return self.len - self.lag_time
 
     def __getitem__(self, idx):
-
         # Only happens once. Need to open h5 file in current process
         if not self._initialized:
             self._init_dataset()
 
         sample = {
-            "X_t": self._get_data(idx),
-            "X_t_tau": self._get_data(idx + self.lag_time),
+            'X_t': self._get_data(idx),
+            'X_t_tau': self._get_data(idx + self.lag_time),
         }
         # Add index into dataset to sample
-        sample["index"] = torch.tensor(idx, requires_grad=False)
+        sample['index'] = torch.tensor(idx, requires_grad=False)
         # Add scalars
         for name, dset in self.scalar_dsets.items():
             sample[name] = torch.tensor(
-                dset[idx], requires_grad=self._scalar_requires_grad
+                dset[idx],
+                requires_grad=self._scalar_requires_grad,
             )
 
         return sample

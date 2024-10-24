@@ -1,6 +1,7 @@
 """.. warning:: VDE models are still under development, use with caution!"""
+from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import torch
 
@@ -14,20 +15,21 @@ class SymmetricConv2dVDE(VDE):
     `"Deep clustering of protein folding simulations"
     <https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-018-2507-5>`_ paper
     implemented as a time lagged autoencoder.
-    Inherits from :obj:`mdlearn.nn.models.vae.VDE`."""
+    Inherits from :obj:`mdlearn.nn.models.vae.VDE`.
+    """
 
     def __init__(
         self,
-        input_shape: Tuple[int, ...],
+        input_shape: tuple[int, ...],
         init_weights: Optional[str] = None,
-        filters: List[int] = [64, 64, 64],
-        kernels: List[int] = [3, 3, 3],
-        strides: List[int] = [1, 2, 1],
-        affine_widths: List[int] = [128],
-        affine_dropouts: List[float] = [0.0],
+        filters: list[int] = [64, 64, 64],
+        kernels: list[int] = [3, 3, 3],
+        strides: list[int] = [1, 2, 1],
+        affine_widths: list[int] = [128],
+        affine_dropouts: list[float] = [0.0],
         latent_dim: int = 3,
-        activation: str = "ReLU",
-        output_activation: str = "Sigmoid",
+        activation: str = 'ReLU',
+        output_activation: str = 'Sigmoid',
     ):
         """
         Parameters
@@ -55,7 +57,11 @@ class SymmetricConv2dVDE(VDE):
             Output activation function for last decoder layer.
         """
         self._check_hyperparameters(
-            kernels, strides, filters, affine_widths, affine_dropouts
+            kernels,
+            strides,
+            filters,
+            affine_widths,
+            affine_dropouts,
         )
 
         encoder = Conv2dEncoder(
@@ -86,7 +92,7 @@ class SymmetricConv2dVDE(VDE):
 
         super().__init__(encoder, decoder)
 
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """Forward pass of variational autoencoder.
 
         Parameters
@@ -107,24 +113,26 @@ class SymmetricConv2dVDE(VDE):
 
     def _check_hyperparameters(
         self,
-        kernels: List[int],
-        strides: List[int],
-        filters: List[int],
-        affine_widths: List[int],
-        affine_dropouts: List[float],
+        kernels: list[int],
+        strides: list[int],
+        filters: list[int],
+        affine_widths: list[int],
+        affine_dropouts: list[float],
     ):
         """Check that hyperparameters are consistent and logical."""
         if not (len(kernels) == len(strides) == len(filters)):
-            raise ValueError("Number of filters, kernels and strides must be equal.")
+            raise ValueError(
+                'Number of filters, kernels and strides must be equal.',
+            )
 
         if len(affine_dropouts) != len(affine_widths):
             raise ValueError(
-                "Number of dropouts must equal the number of affine widths."
+                'Number of dropouts must equal the number of affine widths.',
             )
 
         # Common convention: allows for filter center and for even padding
         if any(kernel % 2 == 0 for kernel in kernels):
-            raise ValueError("Only odd valued kernel sizes allowed.")
+            raise ValueError('Only odd valued kernel sizes allowed.')
 
         if any(p < 0 or p > 1 for p in affine_dropouts):
-            raise ValueError("Dropout probabilities, p, must be 0 <= p <= 1.")
+            raise ValueError('Dropout probabilities, p, must be 0 <= p <= 1.')
