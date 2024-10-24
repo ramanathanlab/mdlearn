@@ -53,13 +53,9 @@ dev = [
 ]
 docs = [
     "black",
-    "mkdocs-gen-files",
-    "mkdocs-literate-nav",
-    "mkdocs-material==9.4.7",
-    "mkdocs-section-index",
-    "mkdocstrings==0.23.0",
-    "mkdocstrings-python==1.8.0",
-    "mike",
+    "sphinx==8.1.3",
+    "sphinx-rtd-theme==3.0.1",
+    "autodoc_pydantic==2.2.0",
 ]
 torch = [
     "torch>=1.7",
