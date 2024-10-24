@@ -646,11 +646,10 @@ class AAE3dTrainer(Trainer):
         Parameters
         ----------
         X : ArrayLike
-            Input contact matrices in sparse COO format of shape (N,)
-            where N is the number of data examples, and the empty dimension
-            is ragged. The row and column index vectors should be contatenated
-            and the values are assumed to be 1 and don't need to be explcitly
-            passed.
+            Input point cloud data of shape (N, 3, num_points) where N is the
+            number of data examples, 3 is the x, y, z coordinates of each point,
+            and num_points is the number of points in the point cloud (e.g. number
+            of residues in a protein structure).
         inference_batch_size : int, default=64
             The batch size for inference.
         checkpoint : PathLike | None, default=None
