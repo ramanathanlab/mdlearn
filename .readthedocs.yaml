@@ -5,9 +5,12 @@
 # Required
 version: 2
 
-# Specify the build environment (this is likely causing the error)
+# Specify the build environment
 build:
   os: ubuntu-20.04  # or ubuntu-latest
+  tools:
+    python: "3.12"  # Specify Python version (already defined under 'python' but also in 'tools')
+    # You can also add other tools like Node.js, if needed
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
@@ -18,7 +21,7 @@ formats: all
 
 # Optionally set the version of Python and requirements required to build your docs
 python:
-  version: 3.8
+  version: 3.12
   install:
     - requirements: requirements_dev.txt
     - method: setuptools
