@@ -13,14 +13,26 @@ if __name__ == "__main__":
 
     Example
     -------
-    python train.py \
+    To run training:
+    python aae3d.py \
         --input_path /nfs/lambda_stor_01/homes/abrace/projects/ddwe/data/CA_to_Alex/xyz_coords_aligned.npy \
         --scalars_path /nfs/lambda_stor_01/homes/abrace/projects/ddwe/data/rmsd.npy \
         --scalar_name rmsd \
         --output_path runs/run-0 \
         --batch_size 32 \
         --epochs 100 \
-        --latent_dim 3
+        --latent_dim 3 \
+        --verbose
+
+    To run evaluation only:
+    python aae3d.py \
+        --input_path /nfs/lambda_stor_01/homes/abrace/projects/ddwe/data/CA_to_Alex/xyz_coords_aligned.npy 
+        --scalars_path /nfs/lambda_stor_01/homes/abrace/projects/ddwe/data/rmsd.npy \
+        --scalar_name rmsd \
+        --checkpoint_path runs/run-0/checkpoints/checkpoint-epoch-90.pt \
+        --output_path runs/run-0 \
+        --verbose \
+        --eval_only
     """
 
     # Parse the command line arguments
