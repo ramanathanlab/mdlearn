@@ -639,7 +639,7 @@ class AAE3dTrainer(Trainer):
     def predict(
         self,
         X: ArrayLike,
-        inference_batch_size: int = 128,
+        inference_batch_size: int = 64,
         checkpoint: PathLike | None = None,
     ) -> tuple[ArrayLike, float]:
         r"""Predict using the LinearAE
@@ -652,7 +652,7 @@ class AAE3dTrainer(Trainer):
             is ragged. The row and column index vectors should be contatenated
             and the values are assumed to be 1 and don't need to be explcitly
             passed.
-        inference_batch_size : int, default=128
+        inference_batch_size : int, default=64
             The batch size for inference.
         checkpoint : PathLike | None, default=None
             Path to a specific model checkpoint file.
