@@ -5,6 +5,10 @@
 # Required
 version: 2
 
+# Specify the build environment (this is likely causing the error)
+build:
+  os: ubuntu-20.04  # or ubuntu-latest
+
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
   configuration: docs/source/conf.py
