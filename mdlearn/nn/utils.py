@@ -199,7 +199,7 @@ class Trainer:
 
     def __init__(
         self,
-        seed: int = 42,
+        seed: int = np.random.default_rng().integers(2**32, dtype=int),
         in_gpu_memory: bool = False,
         num_data_workers: int = 0,
         prefetch_factor: int = 2,
@@ -222,7 +222,7 @@ class Trainer:
         """
         Parameters
         ----------
-        seed : int, default=42
+        seed : int, default=np.random.default_rng().integers(2**32, dtype=int)
             Random seed for torch, numpy, and random module.
         in_gpu_memory : bool, default=False
             If True, will pre-load the entire :obj:`data` array to GPU memory.

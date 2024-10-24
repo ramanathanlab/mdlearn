@@ -1,4 +1,5 @@
 """Linear-layer autoencoder model with trainer class."""
+
 from __future__ import annotations
 
 from collections import defaultdict
@@ -121,7 +122,7 @@ class LinearAETrainer(Trainer):
         bias: bool = True,
         relu_slope: float = 0.0,
         inplace_activation: bool = False,
-        seed: int = 42,
+        seed: int = np.random.default_rng().integers(2**32, dtype=int),
         in_gpu_memory: bool = False,
         num_data_workers: int = 0,
         prefetch_factor: int = 2,
@@ -165,7 +166,7 @@ class LinearAETrainer(Trainer):
             :obj:`negative_slope` set to :obj:`relu_slope`.
         inplace_activation : bool, default=False
             Sets the inplace option for the activation function.
-        seed : int, default=42
+        seed : int, default=np.random.default_rng().integers(2**32, dtype=int)
             Random seed for torch, numpy, and random module.
         in_gpu_memory : bool, default=False
             If True, will pre-load the entire :obj:`data` array to GPU memory.
@@ -383,10 +384,7 @@ class LinearAETrainer(Trainer):
 
             if self.verbose:
                 print(
-                    '====> Epoch: {} Train:\tAvg loss: {:.4f}'.format(
-                        epoch,
-                        avg_train_loss,
-                    ),
+                    f'====> Epoch: {epoch} Train:\tAvg loss: {avg_train_loss:.4f}',
                 )
 
             # Validation
@@ -396,10 +394,7 @@ class LinearAETrainer(Trainer):
 
             if self.verbose:
                 print(
-                    '====> Epoch: {} Valid:\tAvg loss: {:.4f}\n'.format(
-                        epoch,
-                        avg_valid_loss,
-                    ),
+                    f'====> Epoch: {epoch} Valid:\tAvg loss: {avg_valid_loss:.4f}\n',
                 )
 
             # Step the learning rate scheduler

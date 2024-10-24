@@ -256,7 +256,7 @@ class AAE3dTrainer(Trainer):
         lambda_gp: float = 10.0,
         lambda_rec: float = 1.0,
         init_weights: PathLike | None = None,
-        seed: int = 42,
+        seed: int = np.random.default_rng().integers(2**32, dtype=int),
         num_data_workers: int = 0,
         prefetch_factor: int = 2,
         split_pct: float = 0.8,
@@ -332,7 +332,7 @@ class AAE3dTrainer(Trainer):
         init_weights : PathLike | None, default=None
             Path to a specific model checkpoint file to load model weights for
             initialization (does not load optimizer states).
-        seed : int, default=42
+        seed : int, default=np.random.default_rng().integers(2**32, dtype=int)
             Random seed for torch, numpy, and random module.
         num_data_workers : int, default=0
             How many subprocesses to use for data loading. 0 means that
@@ -588,12 +588,7 @@ class AAE3dTrainer(Trainer):
             avg_train_disc_loss, avg_train_ae_loss = self._train(train_loader)
 
             print(
-                '====> Epoch: {} Train:\tAvg Disc loss: {:.4f}\tAvg AE loss: {:.4f}\tTime: {:.4f}'.format(
-                    epoch,
-                    avg_train_disc_loss,
-                    avg_train_ae_loss,
-                    time.time() - train_start,
-                ),
+                f'====> Epoch: {epoch} Train:\tAvg Disc loss: {avg_train_disc_loss:.4f}\tAvg AE loss: {avg_train_ae_loss:.4f}\tTime: {time.time() - train_start:.4f}',
             )
 
             valid_start = time.time()
@@ -605,11 +600,7 @@ class AAE3dTrainer(Trainer):
                 )
 
             print(
-                '====> Epoch: {} Valid:\tAvg recon loss: {:.4f}\tTime: {:.4f}\n'.format(
-                    epoch,
-                    avg_valid_recon_loss,
-                    time.time() - valid_start,
-                ),
+                f'====> Epoch: {epoch} Valid:\tAvg recon loss: {avg_valid_recon_loss:.4f}\tTime: {time.time() - valid_start:.4f}\n',
             )
 
             print(f'Total time: {time.time() - train_start:.4f}')

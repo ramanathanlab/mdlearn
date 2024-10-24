@@ -24,7 +24,7 @@ class PointCloudDataset(Dataset):
         num_features: int = 0,
         dataset_name: str = 'point_cloud',
         scalar_dset_names: list[str] = [],
-        seed: int = 333,
+        seed: int = np.random.default_rng().integers(2**32, dtype=int),
         cms_transform: bool = False,
         scalar_requires_grad: bool = False,
         in_memory: bool = True,
