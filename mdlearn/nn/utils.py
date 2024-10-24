@@ -170,7 +170,7 @@ def get_activation(activation, *args, **kwargs):
 
 # TODO: generalize this more.
 def _init_weights(m):
-    if type(m) == nn.Linear:
+    if isinstance(m, nn.Linear):
         nn.init.xavier_uniform_(m.weight)
         m.bias.data.fill_(0.01)
     elif type(m) in [nn.Conv2d, nn.ConvTranspose2d]:
@@ -300,16 +300,19 @@ class Trainer:
         self.valid_subsample_pct = valid_subsample_pct
         self.use_wandb = use_wandb
 
+        # Default scheduler to None
+        self.scheduler = None
+
         # Set random seeds
         self._set_seed()
 
-    def _set_seed(self):
+    def _set_seed(self) -> None:
         """Set random seed of torch, numpy, and random."""
         torch.manual_seed(self.seed)
         np.random.seed(self.seed)
         random.seed(self.seed)
 
-    def _set_num_threads(self):
+    def _set_num_threads(self) -> None:
         """Set available number of cores."""
         torch.set_num_threads(
             1 if self.num_data_workers == 0 else self.num_data_workers

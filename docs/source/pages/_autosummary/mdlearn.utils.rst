@@ -4,11 +4,6 @@ mdlearn.utils
 .. automodule:: mdlearn.utils
 
    
-   
-   
-
-   
-   
    .. rubric:: Functions
 
    .. autosummary::
@@ -19,15 +14,3 @@ mdlearn.utils
       parse_args
       resume_checkpoint
    
-   
-
-   
-   
-   
-
-   
-   
-   
-
-
-

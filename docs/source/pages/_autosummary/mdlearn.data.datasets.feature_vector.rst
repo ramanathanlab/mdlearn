@@ -4,15 +4,6 @@ mdlearn.data.datasets.feature\_vector
 .. automodule:: mdlearn.data.datasets.feature_vector
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -21,11 +12,3 @@ mdlearn.data.datasets.feature\_vector
       FeatureVectorHDF5Dataset
       TimeFeatureVectorDataset
    
-   
-
-   
-   
-   
-
-
-
