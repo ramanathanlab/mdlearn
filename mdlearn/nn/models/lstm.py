@@ -1,4 +1,5 @@
 """.. warning:: LSTM models are still under development, use with caution!"""
+
 from __future__ import annotations
 
 from collections import defaultdict
@@ -134,7 +135,7 @@ class LSTMTrainer(Trainer):
         bidirectional: bool = False,
         window_size: int = 10,
         horizon: int = 1,
-        seed: int = 42,
+        seed: int = np.random.default_rng().integers(2**32, dtype=int),
         in_gpu_memory: bool = False,
         num_data_workers: int = 0,
         prefetch_factor: int = 2,
@@ -188,7 +189,7 @@ class LSTMTrainer(Trainer):
             Number of timesteps considered for prediction.
         horizon : int, default=1
             How many time steps to predict ahead.
-        seed : int, default=42
+        seed : int, default=np.random.default_rng().integers(2**32, dtype=int)
             Random seed for torch, numpy, and random module.
         in_gpu_memory : bool, default=False
             If True, will pre-load the entire :obj:`data` array to GPU memory.
@@ -422,10 +423,7 @@ class LSTMTrainer(Trainer):
 
             if self.verbose:
                 print(
-                    '====> Epoch: {} Train:\tAvg loss: {:.4f}'.format(
-                        epoch,
-                        avg_train_loss,
-                    ),
+                    f'====> Epoch: {epoch} Train:\tAvg loss: {avg_train_loss:.4f}',
                 )
 
             # Validation
@@ -435,10 +433,7 @@ class LSTMTrainer(Trainer):
 
             if self.verbose:
                 print(
-                    '====> Epoch: {} Valid:\tAvg loss: {:.4f}\n'.format(
-                        epoch,
-                        avg_valid_loss,
-                    ),
+                    f'====> Epoch: {epoch} Valid:\tAvg loss: {avg_valid_loss:.4f}\n',
                 )
 
             # Step the learning rate scheduler

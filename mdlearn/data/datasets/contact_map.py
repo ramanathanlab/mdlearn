@@ -1,4 +1,5 @@
 """ContactMap Dataset."""
+
 from __future__ import annotations
 
 from typing import Optional
@@ -115,7 +116,7 @@ class ContactMapHDF5Dataset(Dataset):
         else:
             values = torch.ones(indices.shape[1], dtype=torch.float32)
         # Set shape to the last 2 elements of self.shape. Handles (1, W, H) and (W, H)
-        data = torch.sparse.FloatTensor(
+        data = torch.sparse_coo_tensor(
             indices,
             values,
             self.shape[-2:],
@@ -194,7 +195,7 @@ class ContactMapDataset(Dataset):
         # Create array of 1s, all values in the contact map are 1.
         values = torch.ones(indices.shape[1], dtype=torch.float32)
         # Set shape to the last 2 elements of self.shape.
-        data = torch.sparse.FloatTensor(
+        data = torch.sparse_coo_tensor(
             indices,
             values,
             self.shape[-2:],
