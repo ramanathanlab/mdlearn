@@ -36,7 +36,7 @@ mode, and install the pre-commit hooks.
 python -m venv venv
 source venv/bin/activate
 pip install -U pip setuptools wheel
-pip install -e '.[dev,docs]'
+pip install -e '.[dev,docs,torch]'
 pre-commit install
 ```
 
