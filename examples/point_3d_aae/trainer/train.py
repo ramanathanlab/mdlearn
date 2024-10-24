@@ -74,7 +74,7 @@ if __name__ == "__main__":
     # Reshape the data to (N_examples, 3, N_residues)
     coords = coords.transpose([0, 2, 1])
     # Print the training data shape
-    print("Training on data with shape:", coords.shape)
+    print(f"{'Evaluate' if args.eval_only else 'Train'} on data with shape:", coords.shape)
 
     # Load data for plotting evaluations
     scalar = np.load(args.scalars_path)
