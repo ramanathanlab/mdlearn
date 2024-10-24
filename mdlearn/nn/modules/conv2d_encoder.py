@@ -1,30 +1,30 @@
+from __future__ import annotations
+
 from math import isclose
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import numpy as np
 import torch
 from torch import nn
 
-from mdlearn.nn.utils import (
-    _init_weights,
-    conv_output_shape,
-    get_activation,
-    same_padding,
-)
+from mdlearn.nn.utils import _init_weights
+from mdlearn.nn.utils import conv_output_shape
+from mdlearn.nn.utils import get_activation
+from mdlearn.nn.utils import same_padding
 
 
 class Conv2dEncoder(nn.Module):
     def __init__(
         self,
-        input_shape: Tuple[int, ...],
+        input_shape: tuple[int, ...],
         init_weights: Optional[str] = None,
-        filters: List[int] = [64, 64, 64],
-        kernels: List[int] = [3, 3, 3],
-        strides: List[int] = [1, 2, 1],
-        affine_widths: List[int] = [128],
-        affine_dropouts: List[float] = [0.0],
+        filters: list[int] = [64, 64, 64],
+        kernels: list[int] = [3, 3, 3],
+        strides: list[int] = [1, 2, 1],
+        affine_widths: list[int] = [128],
+        affine_dropouts: list[float] = [0.0],
         latent_dim: int = 3,
-        activation: str = "ReLU",
+        activation: str = 'ReLU',
     ):
         super().__init__()
 
@@ -39,7 +39,9 @@ class Conv2dEncoder(nn.Module):
         self.activation = activation
 
         self.encoder = nn.Sequential(
-            *self._conv_layers(), nn.Flatten(), *self._affine_layers()
+            *self._conv_layers(),
+            nn.Flatten(),
+            *self._affine_layers(),
         )
 
         self.mu = self._latent_layer()
@@ -57,9 +59,9 @@ class Conv2dEncoder(nn.Module):
             _init_weights(self.mu)
             _init_weights(self.logstd)
         # Loading checkpoint weights
-        elif init_weights.endswith(".pt"):
-            checkpoint = torch.load(init_weights, map_location="cpu")
-            self.load_state_dict(checkpoint["encoder_state_dict"])
+        elif init_weights.endswith('.pt'):
+            checkpoint = torch.load(init_weights, map_location='cpu')
+            self.load_state_dict(checkpoint['encoder_state_dict'])
 
     def _conv_layers(self):
         """Compose convolution layers.
@@ -69,11 +71,13 @@ class Conv2dEncoder(nn.Module):
         list:
             Convolution layers and activations.
         """
-
         layers = []
 
-        for filter_, kernel, stride in zip(self.filters, self.kernels, self.strides):
-
+        for filter_, kernel, stride in zip(
+            self.filters,
+            self.kernels,
+            self.strides,
+        ):
             padding = same_padding(self.shapes[-1][1:], kernel, stride)
 
             layers.append(
@@ -83,14 +87,20 @@ class Conv2dEncoder(nn.Module):
                     kernel_size=kernel,
                     stride=stride,
                     padding=padding,
-                )
+                ),
             )
 
             layers.append(get_activation(self.activation))
 
             # Output shape is (channels, height, width)
             self.shapes.append(
-                conv_output_shape(self.shapes[-1][1:], kernel, stride, padding, filter_)
+                conv_output_shape(
+                    self.shapes[-1][1:],
+                    kernel,
+                    stride,
+                    padding,
+                    filter_,
+                ),
             )
 
         return layers
@@ -109,8 +119,9 @@ class Conv2dEncoder(nn.Module):
         in_features = np.prod(self.shapes[-1])
 
         for width, dropout in zip(self.affine_widths, self.affine_dropouts):
-
-            layers.append(nn.Linear(in_features=in_features, out_features=width))
+            layers.append(
+                nn.Linear(in_features=in_features, out_features=width),
+            )
 
             layers.append(get_activation(self.activation))
 

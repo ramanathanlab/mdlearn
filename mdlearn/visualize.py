@@ -1,7 +1,9 @@
 """Functions to visualize modeling results."""
+from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Optional
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -15,21 +17,20 @@ PathLike = Union[str, Path]
 
 def plot_scatter(
     data: ArrayLike,
-    color_dict: Dict[str, ArrayLike] = {},
+    color_dict: dict[str, ArrayLike] = {},
     color: Optional[str] = None,
-) -> "plotly.graph_objects._figure.Figure":
-
+) -> plotly.graph_objects._figure.Figure:
     df_dict = color_dict.copy()
 
     dim = data.shape[1]
     assert dim in [2, 3]
-    for i, name in zip(range(dim), ["x", "y", "z"]):
+    for i, name in zip(range(dim), ['x', 'y', 'z']):
         df_dict[name] = data[:, i]
 
     df = pd.DataFrame(df_dict)
     scatter_kwargs = dict(
-        x="x",
-        y="y",
+        x='x',
+        y='y',
         color=color,
         width=1000,
         height=1000,
@@ -39,18 +40,18 @@ def plot_scatter(
     if dim == 2:
         fig = px.scatter(df, **scatter_kwargs)
     else:  # dim == 3
-        fig = px.scatter_3d(df, z="z", **scatter_kwargs)
+        fig = px.scatter_3d(df, z='z', **scatter_kwargs)
     return fig
 
 
 def log_latent_visualization(
     data: ArrayLike,
-    colors: Dict[str, ArrayLike],
+    colors: dict[str, ArrayLike],
     output_path: PathLike,
     epoch: int = 0,
     n_samples: Optional[int] = None,
-    method: str = "raw",
-) -> Dict[str, str]:
+    method: str = 'raw',
+) -> dict[str, str]:
     """Make scatter plots of the latent space using the specified
     method of dimensionality reduction.
 
@@ -89,7 +90,6 @@ def log_latent_visualization(
     ValueError
         If dimensionality reduction :obj:`method` is not supported.
     """
-
     # Make temp variables to not mutate input data
     if n_samples is not None:
         inds = np.random.choice(len(data), n_samples)
@@ -99,19 +99,19 @@ def log_latent_visualization(
         _data = data
         _colors = colors
 
-    if method == "PCA":
+    if method == 'PCA':
         from sklearn.decomposition import PCA
 
         model = PCA(n_components=3)
         data_proj = model.fit_transform(_data)
 
-    elif method == "TSNE":
+    elif method == 'TSNE':
         try:
             # Attempt to use rapidsai
             from cuml.manifold import TSNE
 
             # rapidsai only supports 2 dimensions
-            model = TSNE(n_components=2, method="barnes_hut")
+            model = TSNE(n_components=2, method='barnes_hut')
         except ImportError:
             from sklearn.manifold import TSNE
 
@@ -119,13 +119,15 @@ def log_latent_visualization(
 
         data_proj = model.fit_transform(_data)
 
-    elif method == "LLE":
+    elif method == 'LLE':
         from sklearn import manifold
 
         data_proj, _ = manifold.locally_linear_embedding(
-            _data, n_neighbors=12, n_components=3
+            _data,
+            n_neighbors=12,
+            n_components=3,
         )
-    elif method == "raw":
+    elif method == 'raw':
         if _data.shape[1] <= 3:
             # If _data only has 2 or 3 dimensions, use it directly.
             data_proj = _data
@@ -133,7 +135,7 @@ def log_latent_visualization(
             # Use the first 3 dimensions of the raw data.
             data_proj = _data[:, :3]
     else:
-        raise ValueError(f"Invalid dimensionality reduction method {method}")
+        raise ValueError(f'Invalid dimensionality reduction method {method}')
 
     html_strings = {}
     for color in _colors:
@@ -141,8 +143,11 @@ def log_latent_visualization(
         html_string = to_html(fig)
         html_strings[color] = html_string
 
-        fname = Path(output_path) / f"latent_space-{method}-{color}-epoch-{epoch}.html"
-        with open(fname, "w") as f:
+        fname = (
+            Path(output_path)
+            / f'latent_space-{method}-{color}-epoch-{epoch}.html'
+        )
+        with open(fname, 'w') as f:
             f.write(html_string)
 
     return html_strings

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 
 
@@ -14,7 +16,7 @@ def test_lstmae_net():
     train_loader, _ = train_valid_split(
         dataset,
         split_pct=0.8,
-        method="partition",
+        method='partition',
         batch_size=batch_size,
     )
 
@@ -22,7 +24,7 @@ def test_lstmae_net():
     # print(model)
 
     for data in train_loader:
-        X, y = data["X"], data["y"]
+        X, y = data['X'], data['y']
         assert X.shape == (batch_size, window_size, D)
         assert y.shape == (batch_size, D)
         z, y_pred = model(X)

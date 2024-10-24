@@ -1,8 +1,13 @@
+from __future__ import annotations
+
 import numpy as np
 
 
 def metric_cluster_quality(
-    data: np.ndarray, metric: np.ndarray, n_samples: int = 10000, n_neighbors: int = 10
+    data: np.ndarray,
+    metric: np.ndarray,
+    n_samples: int = 10000,
+    n_neighbors: int = 10,
 ) -> float:
     sample_inds = np.random.choice(len(data), n_samples)
     from sklearn.neighbors import NearestNeighbors

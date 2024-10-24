@@ -1,23 +1,29 @@
+from __future__ import annotations
+
 import itertools
 from concurrent.futures import ProcessPoolExecutor
-from typing import List, Tuple
 
 import numpy as np
 
 from mdlearn.data.preprocess.align.kabsch_align import kabsch
 
 
-def _chunk_data(data: np.ndarray, partitions: int) -> List[np.ndarray]:
+def _chunk_data(data: np.ndarray, partitions: int) -> list[np.ndarray]:
     chunk_size = len(data) // partitions
-    chunks = [data[chunk_size * i : chunk_size * (1 + i)] for i in range(partitions)]
+    chunks = [
+        data[chunk_size * i : chunk_size * (1 + i)] for i in range(partitions)
+    ]
     # Handle remainder
-    chunks[-1] = np.concatenate((chunks[-1], data[chunk_size * (partitions) :]))
+    chunks[-1] = np.concatenate(
+        (chunks[-1], data[chunk_size * (partitions) :]),
+    )
     return chunks
 
 
 def _process_chunk(
-    chunk: np.ndarray, mean_coord: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray]:
+    chunk: np.ndarray,
+    mean_coord: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
     rmsds = np.zeros(len(chunk))
     for i in range(len(chunk)):
         rmsds[i], chunk[i], _ = kabsch(mean_coord, chunk[i], return_err=False)
@@ -31,7 +37,7 @@ def iterative_means_align(
     inplace: bool = False,
     verbose: bool = False,
     num_workers: int = 1,
-) -> Tuple[int, List[np.ndarray], List[np.ndarray], np.ndarray]:
+) -> tuple[int, list[np.ndarray], list[np.ndarray], np.ndarray]:
     r"""Run iterative means alignment.
 
     Run iterative means alignment which aligns :obj:`coords`
@@ -75,7 +81,7 @@ def iterative_means_align(
     coords_ = coords if inplace else coords.copy()
 
     if verbose:
-        print("Shape of coords array in iterative_means:", coords_.shape)
+        print('Shape of coords array in iterative_means:', coords_.shape)
 
     # Track average coordinates and RMSD
     avg_coords, e_rmsd = [], []
@@ -94,7 +100,9 @@ def iterative_means_align(
             itr_rmsds = np.zeros(len(coords_))
             chunks = _chunk_data(coords_, num_workers)
             for rmsds, chunk in executor.map(
-                _process_chunk, chunks, [mean_coord] * len(chunks)
+                _process_chunk,
+                chunks,
+                [mean_coord] * len(chunks),
             ):
                 # Collect RMSDs and aligned coordinates
                 itr_rmsds[start_ind : start_ind + len(chunk)] = rmsds
@@ -105,7 +113,7 @@ def iterative_means_align(
             new_mean_coord = np.mean(coords_, axis=0)
             err = np.linalg.norm(mean_coord - new_mean_coord)
             if verbose:
-                print(f"Iteration #{itr} with an error of {err}")
+                print(f'Iteration #{itr} with an error of {err}')
             if err <= eps or itr == max_iter:
                 break  # Algorithm has converged
 

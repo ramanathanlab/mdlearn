@@ -1,16 +1,20 @@
 """Configurations and utilities for model building and training."""
+from __future__ import annotations
 
 import argparse
 import json
 from pathlib import Path
-from typing import Any, Dict, Optional, Type, TypeVar, Union
+from typing import Any
+from typing import Optional
+from typing import TypeVar
+from typing import Union
 
 import torch
 import yaml
 from pydantic import BaseModel as _BaseModel
 
 PathLike = Union[str, Path]
-_T = TypeVar("_T")
+_T = TypeVar('_T')
 
 
 def parse_args() -> argparse.Namespace:
@@ -31,7 +35,11 @@ def parse_args() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-c", "--config", help="YAML config file", type=str, required=True
+        '-c',
+        '--config',
+        help='YAML config file',
+        type=str,
+        required=True,
     )
     args = parser.parse_args()
     return args
@@ -39,11 +47,16 @@ def parse_args() -> argparse.Namespace:
 
 class BaseModel(_BaseModel):
     def dump_yaml(self, cfg_path: PathLike):
-        with open(cfg_path, mode="w") as fp:
-            yaml.dump(json.loads(self.model_dump_json()), fp, indent=4, sort_keys=False)
+        with open(cfg_path, mode='w') as fp:
+            yaml.dump(
+                json.loads(self.model_dump_json()),
+                fp,
+                indent=4,
+                sort_keys=False,
+            )
 
     @classmethod
-    def from_yaml(cls: Type[_T], filename: PathLike) -> _T:
+    def from_yaml(cls: type[_T], filename: PathLike) -> _T:
         with open(filename) as fp:
             raw_data = yaml.safe_load(fp)
         return cls(**raw_data)
@@ -60,9 +73,9 @@ class WandbConfig(BaseModel):
     def init(
         self,
         cfg: BaseModel,
-        model: "torch.nn.Module",
+        model: torch.nn.Module,
         wandb_path: PathLike,
-    ) -> Optional["wandb.config"]:  # noqa: F821
+    ) -> Optional[wandb.config]:  # noqa: F821
         """Initialize wandb with model and config.
 
         Parameters
@@ -79,7 +92,6 @@ class WandbConfig(BaseModel):
         Optional[wandb.config]
             wandb config object or None if :obj:`wandb_project_name` is None.
         """
-
         if self.wandb_project_name is not None:
             import wandb
 
@@ -98,74 +110,80 @@ class WandbConfig(BaseModel):
 
 class OptimizerConfig(BaseModel):
     """pydantic schema for PyTorch optimizer which allows
-    for arbitrary optimizer hyperparameters."""
+    for arbitrary optimizer hyperparameters.
+    """
 
     class Config:
-        extra = "allow"
+        extra = 'allow'
 
     # Name of optimizer
-    name: str = "Adam"
+    name: str = 'Adam'
     # Arbitrary optimizer hyperparameters
-    hparams: Dict[str, Any] = {}
+    hparams: dict[str, Any] = {}
 
 
 class SchedulerConfig(BaseModel):
     """pydantic schema for PyTorch scheduler which allows for arbitrary
-    scheduler hyperparameters."""
+    scheduler hyperparameters.
+    """
 
     class Config:
-        extra = "allow"
+        extra = 'allow'
 
     # Name of scheduler
-    name: str = "ReduceLROnPlateau"
+    name: str = 'ReduceLROnPlateau'
     # Arbitrary scheduler hyperparameters
-    hparams: Dict[str, Any] = {}
+    hparams: dict[str, Any] = {}
 
 
 def get_torch_optimizer(
-    name: str, hparams: Dict[str, Any], parameters
-) -> "torch.optim.Optimizer":
+    name: str,
+    hparams: dict[str, Any],
+    parameters,
+) -> torch.optim.Optimizer:
     """Construct a PyTorch optimizer specified by :obj:`name` and :obj:`hparams`."""
     from torch import optim
 
-    if name == "Adadelta":
+    if name == 'Adadelta':
         optimizer = optim.Adadelta
-    elif name == "Adagrad":
+    elif name == 'Adagrad':
         optimizer = optim.Adagrad
-    elif name == "Adam":
+    elif name == 'Adam':
         optimizer = optim.Adam
-    elif name == "AdamW":
+    elif name == 'AdamW':
         optimizer = optim.AdamW
-    elif name == "SparseAdam":
+    elif name == 'SparseAdam':
         optimizer = optim.SparseAdam
-    elif name == "Adamax":
+    elif name == 'Adamax':
         optimizer = optim.Adamax
-    elif name == "ASGD":
+    elif name == 'ASGD':
         optimizer = optim.ASGD
-    elif name == "LBFGS":
+    elif name == 'LBFGS':
         optimizer = optim.LBFGS
-    elif name == "RMSprop":
+    elif name == 'RMSprop':
         optimizer = optim.RMSprop
-    elif name == "Rprop":
+    elif name == 'Rprop':
         optimizer = optim.Rprop
-    elif name == "SGD":
+    elif name == 'SGD':
         optimizer = optim.SGD
     else:
-        raise ValueError(f"Invalid optimizer name: {name}")
+        raise ValueError(f'Invalid optimizer name: {name}')
 
     try:
         return optimizer(parameters, **hparams)
 
     except TypeError:
         raise Exception(
-            f"Invalid parameter in hparams: {hparams}"
-            f" for optimizer {name}.\nSee PyTorch docs."
+            f'Invalid parameter in hparams: {hparams}'
+            f' for optimizer {name}.\nSee PyTorch docs.',
         )
 
 
 def get_torch_scheduler(  # noqa: C901
-    name: Optional[str], hparams: Dict[str, Any], optimizer: "torch.optim.Optimizer"
-) -> Optional["torch.optim.lr_scheduler._LRScheduler"]:
+    name: Optional[str],
+    hparams: dict[str, Any],
+    optimizer: torch.optim.Optimizer,
+) -> Optional[torch.optim.lr_scheduler._LRScheduler]:
     """Construct a PyTorch lr_scheduler specified by :obj:`name` and :obj:`hparams`.
 
     Parameters
@@ -188,47 +206,47 @@ def get_torch_scheduler(  # noqa: C901
 
     from torch.optim import lr_scheduler
 
-    if name == "ReduceLROnPlateau":
+    if name == 'ReduceLROnPlateau':
         scheduler = lr_scheduler.ReduceLROnPlateau
-    elif name == "LambdaLR":
-        raise ValueError("LambdaLR not supported")
-    elif name == "MultiplicativeLR":
-        raise ValueError("MultiplicativeLR not supported")
-    elif name == "StepLR":
+    elif name == 'LambdaLR':
+        raise ValueError('LambdaLR not supported')
+    elif name == 'MultiplicativeLR':
+        raise ValueError('MultiplicativeLR not supported')
+    elif name == 'StepLR':
         scheduler = lr_scheduler.StepLR
-    elif name == "MultiStepLR":
+    elif name == 'MultiStepLR':
         scheduler = lr_scheduler.MultiStepLR
-    elif name == "ExponentialLR":
+    elif name == 'ExponentialLR':
         scheduler = lr_scheduler.ExponentialLR
-    elif name == "CosineAnnealingLR":
+    elif name == 'CosineAnnealingLR':
         scheduler = lr_scheduler.CosineAnnealingLR
-    elif name == "ReduceLROnPlateau":
+    elif name == 'ReduceLROnPlateau':
         scheduler = lr_scheduler.ReduceLROnPlateau
-    elif name == "CyclicLR":
+    elif name == 'CyclicLR':
         scheduler = lr_scheduler.CyclicLR
-    elif name == "OneCycleLR":
+    elif name == 'OneCycleLR':
         scheduler = lr_scheduler.OneCycleLR
-    elif name == "CosineAnnealingWarmRestarts":
+    elif name == 'CosineAnnealingWarmRestarts':
         scheduler = lr_scheduler.CosineAnnealingWarmRestarts
     else:
-        raise ValueError(f"Invalid scheduler name: {name}")
+        raise ValueError(f'Invalid scheduler name: {name}')
 
     try:
         return scheduler(optimizer, **hparams)
 
     except TypeError:
         raise Exception(
-            f"Invalid parameter in hparams: {hparams}"
-            f" for scheduler {name}.\nSee PyTorch docs."
+            f'Invalid parameter in hparams: {hparams}'
+            f' for scheduler {name}.\nSee PyTorch docs.',
         )
 
 
 def log_checkpoint(
     checkpoint_file: PathLike,
     epoch: int,
-    model: "torch.nn.Module",
-    optimizers: Dict[str, "torch.optim.Optimizer"],
-    scheduler: Optional["torch.optim.lr_scheduler._LRScheduler"] = None,
+    model: torch.nn.Module,
+    optimizers: dict[str, torch.optim.Optimizer],
+    scheduler: Optional[torch.optim.lr_scheduler._LRScheduler] = None,
 ):
     """Write a torch .pt file containing the epoch, model, optimizer,
     and scheduler.
@@ -247,21 +265,21 @@ def log_checkpoint(
         Optional scheduler whose parameters are saved.
     """
     checkpoint = {
-        "epoch": epoch,  # To resume training, (see resume_checkpoint)
-        "model_state_dict": model.state_dict(),
+        'epoch': epoch,  # To resume training, (see resume_checkpoint)
+        'model_state_dict': model.state_dict(),
     }
     for name, optimizer in optimizers.items():
-        checkpoint[name + "_state_dict"] = optimizer.state_dict()
+        checkpoint[name + '_state_dict'] = optimizer.state_dict()
     if scheduler is not None:
-        checkpoint["scheduler_state_dict"] = scheduler.state_dict()
+        checkpoint['scheduler_state_dict'] = scheduler.state_dict()
     torch.save(checkpoint, checkpoint_file)
 
 
 def resume_checkpoint(
     checkpoint_file: PathLike,
-    model: "torch.nn.Module",
-    optimizers: Dict[str, "torch.optim.Optimizer"],
-    scheduler: Optional["torch.optim.lr_scheduler._LRScheduler"] = None,
+    model: torch.nn.Module,
+    optimizers: dict[str, torch.optim.Optimizer],
+    scheduler: Optional[torch.optim.lr_scheduler._LRScheduler] = None,
 ) -> int:
     """Modifies :obj:`model`, :obj:`optimizer`, and :obj:`scheduler` with
     values stored in torch .pt file :obj:`checkpoint_file` to resume from
@@ -284,13 +302,13 @@ def resume_checkpoint(
         The epoch the checkpoint is saved plus one i.e. the current
         training epoch to start from.
     """
-    checkpoint = torch.load(checkpoint_file, map_location="cpu")
-    start_epoch = checkpoint["epoch"] + 1
-    model.load_state_dict(checkpoint["model_state_dict"])
+    checkpoint = torch.load(checkpoint_file, map_location='cpu')
+    start_epoch = checkpoint['epoch'] + 1
+    model.load_state_dict(checkpoint['model_state_dict'])
     for name, optimizer in optimizers.items():
-        optimizer.load_state_dict(checkpoint[name + "_state_dict"])
+        optimizer.load_state_dict(checkpoint[name + '_state_dict'])
     if scheduler is not None:
-        scheduler_state_dict = checkpoint.get("scheduler_state_dict")
+        scheduler_state_dict = checkpoint.get('scheduler_state_dict')
         if scheduler_state_dict is not None:
             scheduler.load_state_dict(scheduler_state_dict)
     return start_epoch

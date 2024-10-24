@@ -1,6 +1,7 @@
 """ContactMap Dataset."""
+from __future__ import annotations
 
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 import h5py
 import numpy as np
@@ -16,9 +17,9 @@ class ContactMapHDF5Dataset(Dataset):
     def __init__(
         self,
         path: PathLike,
-        shape: Tuple[int, ...],
-        dataset_name: str = "contact_map",
-        scalar_dset_names: List[str] = [],
+        shape: tuple[int, ...],
+        dataset_name: str = 'contact_map',
+        scalar_dset_names: list[str] = [],
         values_dset_name: Optional[str] = None,
         scalar_requires_grad: bool = False,
         in_memory: bool = True,
@@ -74,7 +75,7 @@ class ContactMapHDF5Dataset(Dataset):
         self._initialized = False
 
     def _open_h5_file(self):
-        return h5py.File(self.file_path, "r", libver="latest", swmr=False)
+        return h5py.File(self.file_path, 'r', libver='latest', swmr=False)
 
     def _init_dataset(self):
         # Create h5py datasets
@@ -94,7 +95,8 @@ class ContactMapHDF5Dataset(Dataset):
             if self._values_dset_name is not None:
                 self.val_dset = np.array(self.val_dset, dtype=object)
             self.scalar_dsets = {
-                name: np.array(dset) for name, dset in self.scalar_dsets.items()
+                name: np.array(dset)
+                for name, dset in self.scalar_dsets.items()
             }
             self._h5_file.close()
 
@@ -107,11 +109,17 @@ class ContactMapHDF5Dataset(Dataset):
 
         # Create array of 1s, all values in the contact map are 1. Or load values.
         if self._values_dset_name is not None:
-            values = torch.from_numpy(self.val_dset[idx, ...]).to(torch.float32)
+            values = torch.from_numpy(self.val_dset[idx, ...]).to(
+                torch.float32,
+            )
         else:
             values = torch.ones(indices.shape[1], dtype=torch.float32)
         # Set shape to the last 2 elements of self.shape. Handles (1, W, H) and (W, H)
-        data = torch.sparse.FloatTensor(indices, values, self.shape[-2:]).to_dense()
+        data = torch.sparse.FloatTensor(
+            indices,
+            values,
+            self.shape[-2:],
+        ).to_dense()
         data = data.view(self.shape)
         return data
 
@@ -119,18 +127,18 @@ class ContactMapHDF5Dataset(Dataset):
         return self.len
 
     def __getitem__(self, idx):
-
         # Only happens once. Need to open h5 file in current process
         if not self._initialized:
             self._init_dataset()
 
-        sample = {"X": self._get_data(idx)}
+        sample = {'X': self._get_data(idx)}
         # Add index into dataset to sample
-        sample["index"] = torch.tensor(idx, requires_grad=False)
+        sample['index'] = torch.tensor(idx, requires_grad=False)
         # Add scalars
         for name, dset in self.scalar_dsets.items():
             sample[name] = torch.tensor(
-                dset[idx], requires_grad=self._scalar_requires_grad
+                dset[idx],
+                requires_grad=self._scalar_requires_grad,
             )
 
         return sample
@@ -142,8 +150,8 @@ class ContactMapDataset(Dataset):
     def __init__(
         self,
         data: np.ndarray,
-        shape: Tuple[int, int, int],
-        scalars: Dict[str, np.ndarray] = {},
+        shape: tuple[int, int, int],
+        scalars: dict[str, np.ndarray] = {},
         scalar_requires_grad: bool = False,
     ):
         """
@@ -169,8 +177,8 @@ class ContactMapDataset(Dataset):
         """
         if not all(len(scalars[key]) == len(data) for key in scalars):
             raise ValueError(
-                "Dimension of scalar arrays should match "
-                "the number of input feature vectors."
+                'Dimension of scalar arrays should match '
+                'the number of input feature vectors.',
             )
 
         self.data = data
@@ -180,11 +188,17 @@ class ContactMapDataset(Dataset):
 
     def _get_data(self, idx) -> torch.Tensor:
         # Data is stored as np.concatenate((row_inds, col_inds))
-        indices = torch.from_numpy(self.data[idx].reshape(2, -1)).to(torch.long)
+        indices = torch.from_numpy(self.data[idx].reshape(2, -1)).to(
+            torch.long,
+        )
         # Create array of 1s, all values in the contact map are 1.
         values = torch.ones(indices.shape[1], dtype=torch.float32)
         # Set shape to the last 2 elements of self.shape.
-        data = torch.sparse.FloatTensor(indices, values, self.shape[-2:]).to_dense()
+        data = torch.sparse.FloatTensor(
+            indices,
+            values,
+            self.shape[-2:],
+        ).to_dense()
         data = data.view(self.shape)
         return data
 
@@ -192,14 +206,14 @@ class ContactMapDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-
-        sample = {"X": self._get_data(idx)}
+        sample = {'X': self._get_data(idx)}
         # Add index into dataset to sample
-        sample["index"] = torch.tensor(idx, requires_grad=False)
+        sample['index'] = torch.tensor(idx, requires_grad=False)
         # Add scalars
         for name, dset in self.scalars.items():
             sample[name] = torch.tensor(
-                dset[idx], requires_grad=self._scalar_requires_grad
+                dset[idx],
+                requires_grad=self._scalar_requires_grad,
             )
 
         return sample

@@ -1,16 +1,15 @@
 """LSTMNet module."""
-
-from typing import List
+from __future__ import annotations
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class LSTMNet(nn.Module):
     def __init__(
         self,
         input_dim: int,
-        neurons: List[int] = [32],
+        neurons: list[int] = [32],
         bias: bool = True,
         dropout: float = 0.0,
     ):
@@ -50,7 +49,7 @@ class LSTMNet(nn.Module):
 
         if not self.neurons:
             raise ValueError(
-                "Model must have atleast one layer, received an empty list for `neurons`."
+                'Model must have atleast one layer, received an empty list for `neurons`.',
             )
 
         self.stacked_lstm = nn.ModuleList(self._lstm_layers())
@@ -76,7 +75,7 @@ class LSTMNet(nn.Module):
         # Handle bidirectional index, here LSTM.num_layers is 1.
         return h_n[0, ...]
 
-    def _lstm_layers(self) -> List[nn.Module]:
+    def _lstm_layers(self) -> list[nn.Module]:
         layers = []
         input_size = self.input_dim
         for hidden_size in self.neurons:
@@ -88,7 +87,7 @@ class LSTMNet(nn.Module):
                     bias=self.bias,
                     batch_first=True,
                     dropout=self.dropout,
-                )
+                ),
             )
 
             # input_size of next layer is hidden_size of current layer

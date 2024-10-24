@@ -1,9 +1,8 @@
 """DenseNet module."""
-
-from typing import List
+from __future__ import annotations
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from mdlearn.nn.utils import get_activation
 
@@ -12,7 +11,7 @@ class DenseNet(nn.Module):
     def __init__(
         self,
         input_dim: int,
-        neurons: List[int] = [128],
+        neurons: list[int] = [128],
         bias: bool = True,
         relu_slope: float = 0.0,
         inplace_activation: bool = False,
@@ -50,16 +49,16 @@ class DenseNet(nn.Module):
 
         if not self.neurons:
             raise ValueError(
-                "Model must have atleast one layer, received an empty list for `neurons`."
+                'Model must have atleast one layer, received an empty list for `neurons`.',
             )
 
         # Select activation
-        self.activation_kwargs = {"inplace": inplace_activation}
+        self.activation_kwargs = {'inplace': inplace_activation}
         if self.relu_slope > 0.0:
-            self.activation = "LeakyReLU"
-            self.activation_kwargs["negative_slope"] = self.relu_slope
+            self.activation = 'LeakyReLU'
+            self.activation_kwargs['negative_slope'] = self.relu_slope
         else:
-            self.activation = "ReLU"
+            self.activation = 'ReLU'
 
         self.model = nn.Sequential(*self._affine_layers())
 
@@ -79,7 +78,7 @@ class DenseNet(nn.Module):
         output = self.model(x.squeeze())
         return output
 
-    def _affine_layers(self) -> List[nn.Module]:
+    def _affine_layers(self) -> list[nn.Module]:
         layers = []
 
         in_features = self.input_dim
@@ -91,7 +90,9 @@ class DenseNet(nn.Module):
                     bias=self.bias,
                 ),
             )
-            layers.append(get_activation(self.activation, **self.activation_kwargs))
+            layers.append(
+                get_activation(self.activation, **self.activation_kwargs),
+            )
 
             # in_features of next layer is out_features of current layer
             in_features = out_features

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Optional
 
 import torch
@@ -11,7 +13,8 @@ MAX_LOGSTD = 10
 
 class VAE(AE):
     """Variational autoencoder base class module.
-    Inherits from :obj:`mdlearn.nn.models.ae.AE`."""
+    Inherits from :obj:`mdlearn.nn.models.ae.AE`.
+    """
 
     def __init__(self, encoder, decoder):
         """
@@ -24,7 +27,11 @@ class VAE(AE):
         """
         super().__init__(encoder, decoder)
 
-    def reparametrize(self, mu: torch.Tensor, logstd: torch.Tensor) -> torch.Tensor:
+    def reparametrize(
+        self,
+        mu: torch.Tensor,
+        logstd: torch.Tensor,
+    ) -> torch.Tensor:
         """Reparameterization trick for :obj:`mu` and :obj:`logstd`.
 
         Parameters
@@ -70,7 +77,9 @@ class VAE(AE):
         return z
 
     def kld_loss(
-        self, mu: Optional[torch.Tensor] = None, logstd: Optional[torch.Tensor] = None
+        self,
+        mu: Optional[torch.Tensor] = None,
+        logstd: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         r"""Computes the KLD loss, either for the passed arguments :obj:`mu`
         and :obj:`logstd`, or based on latent variables from last encoding.
@@ -94,7 +103,9 @@ class VAE(AE):
         Clamps logstd using a max logstd of 10.
         """
         mu = self.__mu__ if mu is None else mu
-        logstd = self.__logstd__ if logstd is None else logstd.clamp(max=MAX_LOGSTD)
+        logstd = (
+            self.__logstd__ if logstd is None else logstd.clamp(max=MAX_LOGSTD)
+        )
         return -0.5 * torch.mean(
-            torch.sum(1 + 2 * logstd - mu**2 - logstd.exp() ** 2, dim=1)
+            torch.sum(1 + 2 * logstd - mu**2 - logstd.exp() ** 2, dim=1),
         )

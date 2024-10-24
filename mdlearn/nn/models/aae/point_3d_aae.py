@@ -15,12 +15,16 @@ from tqdm import tqdm
 
 from mdlearn.data.datasets.point_cloud import PointCloudDatasetInMemory
 from mdlearn.data.utils import train_valid_split
-from mdlearn.nn.models.aae import AAE, ChamferLoss  # type: ignore[attr-defined]
+from mdlearn.nn.models.aae import AAE  # type: ignore[attr-defined]
+from mdlearn.nn.models.aae import ChamferLoss  # type: ignore[attr-defined]
 from mdlearn.nn.modules.conv1d_encoder import Conv1dEncoder
 from mdlearn.nn.modules.linear_decoder import LinearDecoder
 from mdlearn.nn.modules.linear_discriminator import LinearDiscriminator
-from mdlearn.nn.utils import PathLike, Trainer  # type: ignore[attr-defined]
-from mdlearn.utils import get_torch_optimizer, log_checkpoint, resume_checkpoint
+from mdlearn.nn.utils import PathLike  # type: ignore[attr-defined]
+from mdlearn.nn.utils import Trainer  # type: ignore[attr-defined]
+from mdlearn.utils import get_torch_optimizer
+from mdlearn.utils import log_checkpoint
+from mdlearn.utils import resume_checkpoint
 from mdlearn.visualize import log_latent_visualization
 
 
@@ -131,7 +135,9 @@ class AAE3d(AAE):
         return z, recon_x
 
     def critic_loss(
-        self, real_logits: torch.Tensor, fake_logits: torch.Tensor
+        self,
+        real_logits: torch.Tensor,
+        fake_logits: torch.Tensor,
     ) -> torch.Tensor:
         """Classification loss (critic) function.
 
@@ -164,7 +170,9 @@ class AAE3d(AAE):
         torch.Tensor
             The gradient penalty loss.
         """
-        alpha = torch.rand(z.shape[0], 1).to(z.device)  # z.shape[0] is batch_size
+        alpha = torch.rand(z.shape[0], 1).to(
+            z.device,
+        )  # z.shape[0] is batch_size
         interpolates = noise + alpha * (z - noise)
         disc_interpolates = self.discriminate(interpolates)
 
@@ -180,7 +188,11 @@ class AAE3d(AAE):
         gradient_penalty = ((slopes - 1) ** 2).mean()
         return gradient_penalty  # type: ignore[no-any-return]
 
-    def recon_loss(self, x: torch.Tensor, recon_x: torch.Tensor) -> torch.Tensor:
+    def recon_loss(
+        self,
+        x: torch.Tensor,
+        recon_x: torch.Tensor,
+    ) -> torch.Tensor:
         """Reconstruction loss using ChamferLoss.
 
         Parameters
@@ -197,7 +209,7 @@ class AAE3d(AAE):
         """
         # Here we need input shape (batch_size, num_points, points_dim)
         return torch.mean(
-            self._recon_loss(recon_x.permute(0, 2, 1), x.permute(0, 2, 1))
+            self._recon_loss(recon_x.permute(0, 2, 1), x.permute(0, 2, 1)),
         )
 
     def decoder_loss(self, fake_logit: torch.Tensor) -> torch.Tensor:
@@ -234,10 +246,10 @@ class AAE3dTrainer(Trainer):
         discriminator_bias: bool = True,
         discriminator_relu_slope: float = 0.0,
         discriminator_affine_widths: list[int] = [512, 128, 64],
-        disc_optimizer_name: str = "Adam",
-        disc_optimizer_hparams: dict[str, Any] = {"lr": 0.0001},
-        ae_optimizer_name: str = "Adam",
-        ae_optimizer_hparams: dict[str, Any] = {"lr": 0.0001},
+        disc_optimizer_name: str = 'Adam',
+        disc_optimizer_hparams: dict[str, Any] = {'lr': 0.0001},
+        ae_optimizer_name: str = 'Adam',
+        ae_optimizer_hparams: dict[str, Any] = {'lr': 0.0001},
         cms_transform: bool = False,
         noise_mu: float = 0.0,
         noise_std: float = 0.2,
@@ -248,10 +260,10 @@ class AAE3dTrainer(Trainer):
         num_data_workers: int = 0,
         prefetch_factor: int = 2,
         split_pct: float = 0.8,
-        split_method: str = "random",
+        split_method: str = 'random',
         batch_size: int = 64,
         shuffle: bool = True,
-        device: str = "cpu",
+        device: str = 'cpu',
         epochs: int = 100,
         verbose: bool = False,
         clip_grad_max_norm: float = 10.0,
@@ -427,9 +439,9 @@ class AAE3dTrainer(Trainer):
 
         # Optionally initialize model with pre-trained weights
         if init_weights is not None:
-            checkpoint = torch.load(init_weights, map_location="cpu")
-            self.model.load_state_dict(checkpoint["model_state_dict"])
-            print(f"Loaded model from {init_weights}")
+            checkpoint = torch.load(init_weights, map_location='cpu')
+            self.model.load_state_dict(checkpoint['model_state_dict'])
+            print(f'Loaded model from {init_weights}')
 
         # Set model device
         self.model.to(self.device)
@@ -450,15 +462,16 @@ class AAE3dTrainer(Trainer):
             ae_optimizer_name,
             ae_optimizer_hparams,
             itertools.chain(
-                self.model.encoder.parameters(), self.model.decoder.parameters()
+                self.model.encoder.parameters(),
+                self.model.decoder.parameters(),
             ),
         )
 
         # Log the train and validation loss each epoch
         self.loss_curve_: dict[str, list[float]] = {
-            "train_disc_loss": [],
-            "train_ae_loss": [],
-            "valid_recon_loss": [],
+            'train_disc_loss': [],
+            'train_ae_loss': [],
+            'valid_recon_loss': [],
         }
 
     def _load_checkpoint(self, checkpoint: PathLike) -> int:
@@ -480,7 +493,10 @@ class AAE3dTrainer(Trainer):
         return resume_checkpoint(
             checkpoint,
             self.model,
-            {"disc_optimizer": self.disc_optimizer, "ae_optimizer": self.ae_optimizer},
+            {
+                'disc_optimizer': self.disc_optimizer,
+                'ae_optimizer': self.ae_optimizer,
+            },
             self.scheduler,
         )
 
@@ -488,7 +504,7 @@ class AAE3dTrainer(Trainer):
         self,
         X: ArrayLike,
         scalars: dict[str, ArrayLike] = {},
-        output_path: PathLike = "./",
+        output_path: PathLike = './',
         checkpoint: PathLike | None = None,
     ) -> None:
         r"""Trains the autoencoder on the input data :obj:`X`.
@@ -523,8 +539,8 @@ class AAE3dTrainer(Trainer):
         """
         if not isinstance(scalars, dict):
             raise TypeError(
-                "scalars should be of type dict. A common error"
-                " is to pass output_path as the second argument."
+                'scalars should be of type dict. A common error'
+                ' is to pass output_path as the second argument.',
             )
 
         if self.use_wandb:
@@ -532,7 +548,8 @@ class AAE3dTrainer(Trainer):
 
         exist_ok = (checkpoint is not None) or self.use_wandb
         output_path, checkpoint_path, plot_path = self._make_output_dir(
-            output_path, exist_ok
+            output_path,
+            exist_ok,
         )
 
         # Set available number of cores
@@ -571,12 +588,12 @@ class AAE3dTrainer(Trainer):
             avg_train_disc_loss, avg_train_ae_loss = self._train(train_loader)
 
             print(
-                "====> Epoch: {} Train:\tAvg Disc loss: {:.4f}\tAvg AE loss: {:.4f}\tTime: {:.4f}".format(
+                '====> Epoch: {} Train:\tAvg Disc loss: {:.4f}\tAvg AE loss: {:.4f}\tTime: {:.4f}'.format(
                     epoch,
                     avg_train_disc_loss,
                     avg_train_ae_loss,
                     time.time() - train_start,
-                )
+                ),
             )
 
             valid_start = time.time()
@@ -584,26 +601,31 @@ class AAE3dTrainer(Trainer):
             self.model.eval()
             with torch.no_grad():
                 avg_valid_recon_loss, latent_vectors, scalars = self._validate(
-                    valid_loader
+                    valid_loader,
                 )
 
             print(
-                "====> Epoch: {} Valid:\tAvg recon loss: {:.4f}\tTime: {:.4f}\n".format(
-                    epoch, avg_valid_recon_loss, time.time() - valid_start
-                )
+                '====> Epoch: {} Valid:\tAvg recon loss: {:.4f}\tTime: {:.4f}\n'.format(
+                    epoch,
+                    avg_valid_recon_loss,
+                    time.time() - valid_start,
+                ),
             )
 
-            print("Total time: {:.4f}".format(time.time() - train_start))
+            print(f'Total time: {time.time() - train_start:.4f}')
 
             if self.use_wandb:
                 metrics: dict[str, Any] = {
-                    "train_disc_loss": avg_train_disc_loss,
-                    "train_ae_loss": avg_train_ae_loss,
-                    "valid_recon_loss": avg_valid_recon_loss,
+                    'train_disc_loss': avg_train_disc_loss,
+                    'train_ae_loss': avg_train_ae_loss,
+                    'valid_recon_loss': avg_valid_recon_loss,
                 }
 
             # Visualize latent space
-            if self.plot_method is not None and epoch % self.plot_log_every == 0:
+            if (
+                self.plot_method is not None
+                and epoch % self.plot_log_every == 0
+            ):
                 html_strings = log_latent_visualization(
                     latent_vectors,
                     scalars,
@@ -621,19 +643,19 @@ class AAE3dTrainer(Trainer):
 
             if epoch % self.checkpoint_log_every == 0:
                 log_checkpoint(
-                    checkpoint_path / f"checkpoint-epoch-{epoch}.pt",
+                    checkpoint_path / f'checkpoint-epoch-{epoch}.pt',
                     epoch,
                     self.model,
                     {
-                        "disc_optimizer": self.disc_optimizer,
-                        "ae_optimizer": self.ae_optimizer,
+                        'disc_optimizer': self.disc_optimizer,
+                        'ae_optimizer': self.ae_optimizer,
                     },
                 )
 
             # Save the losses
-            self.loss_curve_["train_disc_loss"].append(avg_train_disc_loss)
-            self.loss_curve_["train_ae_loss"].append(avg_train_ae_loss)
-            self.loss_curve_["valid_recon_loss"].append(avg_valid_recon_loss)
+            self.loss_curve_['train_disc_loss'].append(avg_train_disc_loss)
+            self.loss_curve_['train_ae_loss'].append(avg_train_ae_loss)
+            self.loss_curve_['valid_recon_loss'].append(avg_valid_recon_loss)
 
     def predict(
         self,
@@ -646,11 +668,10 @@ class AAE3dTrainer(Trainer):
         Parameters
         ----------
         X : ArrayLike
-            Input contact matrices in sparse COO format of shape (N,)
-            where N is the number of data examples, and the empty dimension
-            is ragged. The row and column index vectors should be contatenated
-            and the values are assumed to be 1 and don't need to be explcitly
-            passed.
+            Input point cloud data of shape (N, 3, num_points) where N is the
+            number of data examples, 3 is the x, y, z coordinates of each point,
+            and num_points is the number of points in the point cloud (e.g. number
+            of residues in a protein structure).
         inference_batch_size : int, default=64
             The batch size for inference.
         checkpoint : PathLike | None, default=None
@@ -692,7 +713,9 @@ class AAE3dTrainer(Trainer):
                 # Set to empty list to avoid storage of paint scalars
                 # that are not convenient to pass to the predict function.
                 self.scalar_dset_names = []
-                avg_valid_recon_loss, latent_vectors, _ = self._validate(data_loader)
+                avg_valid_recon_loss, latent_vectors, _ = self._validate(
+                    data_loader,
+                )
                 # Restore class state
                 self.scalar_dset_names = tmp
                 return latent_vectors, avg_valid_recon_loss
@@ -702,14 +725,16 @@ class AAE3dTrainer(Trainer):
                 raise e
 
     def _train(
-        self, train_loader: DataLoader[dict[str, torch.Tensor]]
+        self,
+        train_loader: DataLoader[dict[str, torch.Tensor]],
     ) -> tuple[float, float]:
         avg_disc_loss, avg_ae_loss = 0.0, 0.0
         # Create prior noise buffer array
-        noise = torch.FloatTensor(self.batch_size, self.latent_dim).to(self.device)
+        noise = torch.FloatTensor(self.batch_size, self.latent_dim).to(
+            self.device,
+        )
         for batch in tqdm(train_loader):
-
-            x = batch["X"].to(self.device, non_blocking=True)
+            x = batch['X'].to(self.device, non_blocking=True)
 
             # Encoder/Discriminator forward
             # Get latent vectors
@@ -754,17 +779,17 @@ class AAE3dTrainer(Trainer):
         return avg_disc_loss, avg_ae_loss
 
     def _validate(
-        self, valid_loader: DataLoader[dict[str, torch.Tensor]]
+        self,
+        valid_loader: DataLoader[dict[str, torch.Tensor]],
     ) -> tuple[float, ArrayLike, dict[str, ArrayLike]]:
         scalars = defaultdict(list)
         latent_vectors = []
         avg_recon_loss = 0.0
         for i, batch in enumerate(valid_loader):
-
             if i / len(valid_loader) > self.valid_subsample_pct:
                 break  # Early stop for sweeps
 
-            x = batch["X"].to(self.device)
+            x = batch['X'].to(self.device)
             z = self.model.encode(x)
             recon_x = self.model.decode(z)
             avg_recon_loss += self.model.recon_loss(x, recon_x).item()
@@ -776,6 +801,8 @@ class AAE3dTrainer(Trainer):
 
         avg_recon_loss /= len(valid_loader)
         latent_vectors = np.concatenate(latent_vectors)
-        scalars = {name: np.concatenate(scalar) for name, scalar in scalars.items()}  # type: ignore[assignment]
+        scalars = {
+            name: np.concatenate(scalar) for name, scalar in scalars.items()
+        }  # type: ignore[assignment]
 
         return avg_recon_loss, latent_vectors, scalars  # type: ignore[return-value]

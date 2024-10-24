@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 from pathlib import Path
 
@@ -6,7 +8,7 @@ import numpy as np
 
 from mdlearn.nn.models.aae.point_3d_aae import AAE3dTrainer
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     """Train a 3D point autoencoder.
 
     You can customize this script further by specifying more AAE3dTrainer options.
@@ -38,47 +40,72 @@ if __name__ == "__main__":
     # Parse the command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--input_path",
+        '--input_path',
         type=str,
-        help="The path to the input coordinates, an npy file with shape (N, num_points, 3)",
+        help='The path to the input coordinates, an npy file with shape (N, num_points, 3)',
     )
     parser.add_argument(
-        "--scalars_path",
+        '--scalars_path',
         type=str,
-        help="The path to the input scalars, an npy file with shape (N, 1)",
+        help='The path to the input scalars, an npy file with shape (N, 1)',
     )
     parser.add_argument(
-        "--scalar_name", type=str, help="Name of the scalar to use for evaluation"
+        '--scalar_name',
+        type=str,
+        help='Name of the scalar to use for evaluation',
     )
     parser.add_argument(
-        "--output_path", type=Path, help="The path to save the trained model"
+        '--output_path',
+        type=Path,
+        help='The path to save the trained model',
     )
     parser.add_argument(
-        "--checkpoint_path",
+        '--checkpoint_path',
         type=str,
         default=None,
-        help="The path to load a checkpoint model",
+        help='The path to load a checkpoint model',
     )
     parser.add_argument(
-        "--batch_size", type=int, default=32, help="The batch size for training"
+        '--batch_size',
+        type=int,
+        default=32,
+        help='The batch size for training',
     )
     parser.add_argument(
-        "--epochs", type=int, default=100, help="The number of epochs to train for"
+        '--epochs',
+        type=int,
+        default=100,
+        help='The number of epochs to train for',
     )
     parser.add_argument(
-        "--latent_dim", type=int, default=3, help="The dimension of the latent space"
+        '--latent_dim',
+        type=int,
+        default=3,
+        help='The dimension of the latent space',
     )
     parser.add_argument(
-        "--device", type=str, default="cuda", help="The device to train on [cuda, cpu]"
-    )
-    parser.add_argument(
-        "--plot_method",
+        '--device',
         type=str,
-        default="raw",
-        help="The method to use for plotting the latent space [raw, PCA, TSNE]",
+        default='cuda',
+        help='The device to train on [cuda, cpu]',
     )
-    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
-    parser.add_argument("--eval_only", action="store_true", help="Run evaluation only")
+    parser.add_argument(
+        '--plot_method',
+        type=str,
+        default='raw',
+        help='The method to use for plotting the latent space [raw, PCA, TSNE]',
+    )
+    parser.add_argument(
+        '-v',
+        '--verbose',
+        action='store_true',
+        help='Verbose output',
+    )
+    parser.add_argument(
+        '--eval_only',
+        action='store_true',
+        help='Run evaluation only',
+    )
     args = parser.parse_args()
 
     # Load the training data
@@ -87,7 +114,8 @@ if __name__ == "__main__":
     coords = coords.transpose([0, 2, 1])
     # Print the training data shape
     print(
-        f"{'Evaluate' if args.eval_only else 'Train'} on data with shape:", coords.shape
+        f"{'Evaluate' if args.eval_only else 'Train'} on data with shape:",
+        coords.shape,
     )
 
     # Load data for plotting evaluations
@@ -116,25 +144,27 @@ if __name__ == "__main__":
     if args.eval_only:
         # Checkpoint path must be provided for evaluation only mode
         if args.checkpoint_path is None:
-            raise ValueError("Must provide a checkpoint path for evaluation only mode")
+            raise ValueError(
+                'Must provide a checkpoint path for evaluation only mode',
+            )
 
         # Evaluate the model
         z, _ = trainer.predict(X=coords, checkpoint=args.checkpoint_path)
 
         # Plot the latent space
         fig = plt.figure()
-        ax = fig.add_subplot(111, projection="3d")
-        sc = ax.scatter(z[:, 0], z[:, 1], z[:, 2], c=scalar, cmap="viridis")
+        ax = fig.add_subplot(111, projection='3d')
+        sc = ax.scatter(z[:, 0], z[:, 1], z[:, 2], c=scalar, cmap='viridis')
 
         # Add color bar for reference and label it
         cbar = plt.colorbar(sc)
         cbar.set_label(args.scalar_name)
 
         # Set labels
-        ax.set_xlabel(r"$z_0$")
-        ax.set_ylabel(r"$z_1$")
-        ax.set_zlabel(r"$z_2$")
+        ax.set_xlabel(r'$z_0$')
+        ax.set_ylabel(r'$z_1$')
+        ax.set_zlabel(r'$z_2$')
 
         # Save the plot as a high-quality PNG file
-        png_file = args.output_path / f"{args.scalar_name}_latent_space.png"
-        plt.savefig(png_file, dpi=300, bbox_inches="tight")
+        png_file = args.output_path / f'{args.scalar_name}_latent_space.png'
+        plt.savefig(png_file, dpi=300, bbox_inches='tight')

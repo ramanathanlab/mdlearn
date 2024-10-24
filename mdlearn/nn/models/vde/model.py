@@ -1,7 +1,8 @@
 """.. warning:: VDE models are still under development, use with caution!"""
+from __future__ import annotations
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from mdlearn.nn.models.vae import VAE
 
@@ -10,12 +11,17 @@ class VDE(VAE):
     """Variational dynamics encoder base class module
     based off the `"Variational Encoding of Complex Dynamics"
     <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7398762/>`_ paper
-    Inherits from :obj:`mdlearn.nn.models.vae.VAE`."""
+    Inherits from :obj:`mdlearn.nn.models.vae.VAE`.
+    """
 
     def __init__(self, encoder: nn.Module, decoder: nn.Module):
         super().__init__(encoder, decoder)
 
-    def ac_loss(self, z_t: torch.Tensor, z_t_tau: torch.Tensor) -> torch.Tensor:
+    def ac_loss(
+        self,
+        z_t: torch.Tensor,
+        z_t_tau: torch.Tensor,
+    ) -> torch.Tensor:
         r"""Negative autocorrelation loss.
 
         Parameters
