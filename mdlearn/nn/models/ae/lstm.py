@@ -135,13 +135,14 @@ class LSTMAETrainer(Trainer):
         dense_bias: bool = True,
         window_size: int = 10,
         horizon: int = 1,
-        seed: int = np.random.default_rng().integers(2**32, dtype=int),
+        seed: int = np.random.default_rng().integers(2**31 - 1, dtype=int),
         in_gpu_memory: bool = False,
         num_data_workers: int = 0,
         prefetch_factor: int = 2,
         split_pct: float = 0.8,
         split_method: str = 'partition',
         batch_size: int = 128,
+        inference_batch_size: int = 128,
         shuffle: bool = True,
         device: str = 'cpu',
         optimizer_name: str = 'RMSprop',
@@ -195,7 +196,7 @@ class LSTMAETrainer(Trainer):
             Number of timesteps considered for prediction.
         horizon : int, default=1
             How many time steps to predict ahead.
-        seed : int, default=np.random.default_rng().integers(2**32, dtype=int)
+        seed : int, default=np.random.default_rng().integers(2**31 - 1, dtype=int)
             Random seed for torch, numpy, and random module.
         in_gpu_memory : bool, default=False
             If True, will pre-load the entire :obj:`data` array to GPU memory.
@@ -212,6 +213,8 @@ class LSTMAETrainer(Trainer):
             partition, use "partition".
         batch_size : int, default=128
             Mini-batch size for training.
+        inference_batch_size : int, default=128
+            Mini-batch size for inference.
         shuffle : bool, default=True
             Whether to shuffle training data or not.
         device : str, default="cpu"
@@ -271,6 +274,7 @@ class LSTMAETrainer(Trainer):
             split_pct,
             split_method,
             batch_size,
+            inference_batch_size,
             shuffle,
             device,
             epochs,
@@ -487,7 +491,7 @@ class LSTMAETrainer(Trainer):
     def predict(
         self,
         X: np.ndarray,
-        inference_batch_size: int = 512,
+        inference_batch_size: int | None = None,
         checkpoint: Optional[PathLike] = None,
     ) -> tuple[np.ndarray, np.ndarray, float]:
         """Predict using the LSTMAE.
@@ -496,8 +500,9 @@ class LSTMAETrainer(Trainer):
         ----------
         X : np.ndarray
             The input data to predict on.
-        inference_batch_size : int, default=512
-            The batch size for inference.
+        inference_batch_size : int, default=None
+            The batch size for inference (if None uses the
+            value specified during Trainer construction).
         checkpoint : Optional[PathLike], default=None
             Path to a specific model checkpoint file.
 
@@ -513,6 +518,10 @@ class LSTMAETrainer(Trainer):
         from mdlearn.data.datasets.feature_vector import (
             TimeFeatureVectorDataset,
         )
+
+        # Fall back to default batch size
+        if inference_batch_size is None:
+            inference_batch_size = self.inference_batch_size
 
         dataset = TimeFeatureVectorDataset(
             X,
