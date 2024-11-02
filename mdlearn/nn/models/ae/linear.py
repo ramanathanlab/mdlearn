@@ -122,7 +122,7 @@ class LinearAETrainer(Trainer):
         bias: bool = True,
         relu_slope: float = 0.0,
         inplace_activation: bool = False,
-        seed: int = np.random.default_rng().integers(2**32, dtype=int),
+        seed: int = np.random.default_rng().integers(2**31 - 1, dtype=int),
         in_gpu_memory: bool = False,
         num_data_workers: int = 0,
         prefetch_factor: int = 2,
@@ -166,7 +166,7 @@ class LinearAETrainer(Trainer):
             :obj:`negative_slope` set to :obj:`relu_slope`.
         inplace_activation : bool, default=False
             Sets the inplace option for the activation function.
-        seed : int, default=np.random.default_rng().integers(2**32, dtype=int)
+        seed : int, default=np.random.default_rng().integers(2**31 - 1, dtype=int)
             Random seed for torch, numpy, and random module.
         in_gpu_memory : bool, default=False
             If True, will pre-load the entire :obj:`data` array to GPU memory.

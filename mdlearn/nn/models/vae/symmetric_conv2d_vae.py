@@ -159,7 +159,7 @@ class SymmetricConv2dVAETrainer(Trainer):
         activation: str = 'ReLU',
         output_activation: str = 'Sigmoid',
         lambda_rec: float = 1.0,
-        seed: int = np.random.default_rng().integers(2**32, dtype=int),
+        seed: int = np.random.default_rng().integers(2**31 - 1, dtype=int),
         num_data_workers: int = 0,
         prefetch_factor: int = 2,
         split_pct: float = 0.8,
@@ -211,7 +211,7 @@ class SymmetricConv2dVAETrainer(Trainer):
         lambda_rec : float, default=1.0
             Factor to scale reconstruction loss by during training such that
             :obj:`loss = lambda_rec * recon_loss + kld_loss`.
-        seed : int, default=np.random.default_rng().integers(2**32, dtype=int)
+        seed : int, default=np.random.default_rng().integers(2**31 - 1, dtype=int)
             Random seed for torch, numpy, and random module.
         num_data_workers : int, default=0
             How many subprocesses to use for data loading. 0 means that

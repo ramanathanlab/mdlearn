@@ -135,7 +135,7 @@ class LSTMAETrainer(Trainer):
         dense_bias: bool = True,
         window_size: int = 10,
         horizon: int = 1,
-        seed: int = np.random.default_rng().integers(2**32, dtype=int),
+        seed: int = np.random.default_rng().integers(2**31 - 1, dtype=int),
         in_gpu_memory: bool = False,
         num_data_workers: int = 0,
         prefetch_factor: int = 2,
@@ -195,7 +195,7 @@ class LSTMAETrainer(Trainer):
             Number of timesteps considered for prediction.
         horizon : int, default=1
             How many time steps to predict ahead.
-        seed : int, default=np.random.default_rng().integers(2**32, dtype=int)
+        seed : int, default=np.random.default_rng().integers(2**31 - 1, dtype=int)
             Random seed for torch, numpy, and random module.
         in_gpu_memory : bool, default=False
             If True, will pre-load the entire :obj:`data` array to GPU memory.

@@ -256,7 +256,7 @@ class AAE3dTrainer(Trainer):
         lambda_gp: float = 10.0,
         lambda_rec: float = 1.0,
         init_weights: PathLike | None = None,
-        seed: int = np.random.default_rng().integers(2**32, dtype=int),
+        seed: int = np.random.default_rng().integers(2**31 - 1, dtype=int),
         num_data_workers: int = 0,
         prefetch_factor: int = 2,
         split_pct: float = 0.8,
@@ -332,7 +332,7 @@ class AAE3dTrainer(Trainer):
         init_weights : PathLike | None, default=None
             Path to a specific model checkpoint file to load model weights for
             initialization (does not load optimizer states).
-        seed : int, default=np.random.default_rng().integers(2**32, dtype=int)
+        seed : int, default=np.random.default_rng().integers(2**31 - 1, dtype=int)
             Random seed for torch, numpy, and random module.
         num_data_workers : int, default=0
             How many subprocesses to use for data loading. 0 means that
