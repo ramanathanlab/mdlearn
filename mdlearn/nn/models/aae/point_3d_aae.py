@@ -262,6 +262,7 @@ class AAE3dTrainer(Trainer):
         split_pct: float = 0.8,
         split_method: str = 'random',
         batch_size: int = 64,
+        inference_batch_size: int = 64,
         shuffle: bool = True,
         device: str = 'cpu',
         epochs: int = 100,
@@ -347,6 +348,8 @@ class AAE3dTrainer(Trainer):
             partition, use "partition".
         batch_size : int, default=64
             Mini-batch size for training.
+        inference_batch_size : int, default=64
+            Mini-batch size for inference.
         shuffle : bool, default=True
             Whether to shuffle training data or not.
         device : str, default="cpu"
@@ -400,6 +403,7 @@ class AAE3dTrainer(Trainer):
             split_pct,
             split_method,
             batch_size,
+            inference_batch_size,
             shuffle,
             device,
             epochs,
@@ -651,7 +655,7 @@ class AAE3dTrainer(Trainer):
     def predict(
         self,
         X: ArrayLike,
-        inference_batch_size: int = 64,
+        inference_batch_size: int | None = None,
         checkpoint: PathLike | None = None,
     ) -> tuple[ArrayLike, float]:
         r"""Predict using the LinearAE
@@ -663,8 +667,9 @@ class AAE3dTrainer(Trainer):
             number of data examples, 3 is the x, y, z coordinates of each point,
             and num_points is the number of points in the point cloud (e.g. number
             of residues in a protein structure).
-        inference_batch_size : int, default=64
-            The batch size for inference.
+        inference_batch_size : int, default=None
+            The batch size for inference (if None uses the
+            value specified during Trainer construction).
         checkpoint : PathLike | None, default=None
             Path to a specific model checkpoint file.
 
@@ -674,6 +679,10 @@ class AAE3dTrainer(Trainer):
             The :obj:`z` latent vectors corresponding to the
             input data :obj:`X` and the average reconstruction loss.
         """
+        # Fall back to default batch size
+        if inference_batch_size is None:
+            inference_batch_size = self.inference_batch_size
+
         # Setup the dataset and data loader
         dataset = PointCloudDatasetInMemory(
             data=X,

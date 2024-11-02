@@ -129,6 +129,7 @@ class LinearAETrainer(Trainer):
         split_pct: float = 0.8,
         split_method: str = 'random',
         batch_size: int = 128,
+        inference_batch_size: int = 128,
         shuffle: bool = True,
         device: str = 'cpu',
         optimizer_name: str = 'RMSprop',
@@ -183,6 +184,8 @@ class LinearAETrainer(Trainer):
             partition, use "partition".
         batch_size : int, default=128
             Mini-batch size for training.
+        inference_batch_size : int, default=128
+            Mini-batch size for inference.
         shuffle : bool, default=True
             Whether to shuffle training data or not.
         device : str, default="cpu"
@@ -242,6 +245,7 @@ class LinearAETrainer(Trainer):
             split_pct,
             split_method,
             batch_size,
+            inference_batch_size,
             shuffle,
             device,
             epochs,
@@ -443,7 +447,7 @@ class LinearAETrainer(Trainer):
     def predict(
         self,
         X: np.ndarray,
-        inference_batch_size: int = 512,
+        inference_batch_size: int | None = None,
         checkpoint: Optional[PathLike] = None,
     ) -> tuple[np.ndarray, float]:
         r"""Predict using the LinearAE
@@ -452,8 +456,9 @@ class LinearAETrainer(Trainer):
         ----------
         X : np.ndarray
             The input data to predict on.
-        inference_batch_size : int, default=512
-            The batch size for inference.
+        inference_batch_size : int, default=None
+            The batch size for inference (if None uses the
+            value specified during Trainer construction).
         checkpoint : Optional[PathLike], default=None
             Path to a specific model checkpoint file.
 
@@ -464,6 +469,10 @@ class LinearAETrainer(Trainer):
             input data :obj:`X` and the average reconstruction loss.
         """
         from mdlearn.data.datasets.feature_vector import FeatureVectorDataset
+
+        # Fall back to default batch size
+        if inference_batch_size is None:
+            inference_batch_size = self.inference_batch_size
 
         dataset = FeatureVectorDataset(X, in_gpu_memory=self.in_gpu_memory)
         data_loader = DataLoader(

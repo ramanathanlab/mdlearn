@@ -206,6 +206,7 @@ class Trainer:
         split_pct: float = 0.8,
         split_method: str = 'random',
         batch_size: int = 128,
+        inference_batch_size: int = 128,
         shuffle: bool = True,
         device: str = 'cpu',
         epochs: int = 100,
@@ -239,6 +240,8 @@ class Trainer:
             partition, use "partition".
         batch_size : int, default=128
             Mini-batch size for training.
+        inference_batch_size : int, default=128
+            Mini-batch size for inference.
         shuffle : bool, default=True
             Whether to shuffle training data or not.
         device : str, default="cpu"
@@ -306,6 +309,7 @@ class Trainer:
         self.split_pct = split_pct
         self.split_method = split_method
         self.batch_size = batch_size
+        self.inference_batch_size = inference_batch_size
         self.shuffle = shuffle
         self.device = torch.device(device)
         self.epochs = epochs

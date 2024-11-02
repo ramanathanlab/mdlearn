@@ -165,6 +165,7 @@ class SymmetricConv2dVAETrainer(Trainer):
         split_pct: float = 0.8,
         split_method: str = 'random',
         batch_size: int = 128,
+        inference_batch_size: int = 128,
         shuffle: bool = True,
         device: str = 'cpu',
         optimizer_name: str = 'RMSprop',
@@ -226,6 +227,8 @@ class SymmetricConv2dVAETrainer(Trainer):
             partition, use "partition".
         batch_size : int, default=128
             Mini-batch size for training.
+        inference_batch_size : int, default=128
+            Mini-batch size for inference.
         shuffle : bool, default=True
             Whether to shuffle training data or not.
         device : str, default="cpu"
@@ -293,6 +296,7 @@ class SymmetricConv2dVAETrainer(Trainer):
             split_pct,
             split_method,
             batch_size,
+            inference_batch_size,
             shuffle,
             device,
             epochs,
@@ -525,7 +529,7 @@ class SymmetricConv2dVAETrainer(Trainer):
     def predict(
         self,
         X: np.ndarray,
-        inference_batch_size: int = 128,
+        inference_batch_size: int | None = None,
         checkpoint: Optional[PathLike] = None,
     ) -> tuple[np.ndarray, float, float, float]:
         r"""Predict using the LinearAE
@@ -538,8 +542,9 @@ class SymmetricConv2dVAETrainer(Trainer):
             is ragged. The row and column index vectors should be contatenated
             and the values are assumed to be 1 and don't need to be explcitly
             passed.
-        inference_batch_size : int, default=128
-            The batch size for inference.
+        inference_batch_size : int, default=None
+            The batch size for inference (if None uses the
+            value specified during Trainer construction).
         checkpoint : Optional[PathLike], default=None
             Path to a specific model checkpoint file.
 
@@ -551,6 +556,10 @@ class SymmetricConv2dVAETrainer(Trainer):
             reconstruction, KL-divergence]
         """
         from mdlearn.data.datasets.contact_map import ContactMapDataset
+
+        # Fall back to default batch size
+        if inference_batch_size is None:
+            inference_batch_size = self.inference_batch_size
 
         dataset = ContactMapDataset(X, self.input_shape)
         data_loader = DataLoader(
