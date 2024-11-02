@@ -79,6 +79,7 @@ To release a new version of mdlearn to PyPI:
 3. [Build and install](#developing-mdlearn) mdlearn from source.
 4. Run the following commands:
 ```
+rm -r dist
 python3 -m build
 twine upload dist/*
 ```
