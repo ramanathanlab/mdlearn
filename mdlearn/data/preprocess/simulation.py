@@ -78,9 +78,10 @@ class CoordinatePreprocessor:
         """
         # Load simulation and reference structures
         self.sim = MDAnalysis.Universe(str(top_file), str(traj_file))
+        ref = MDAnalysis.Universe(str(ref_file))
 
         # Align trajectory to a reference structure
-        AlignTraj(self.sim, ref_file, select=selection, in_memory=True).run()
+        AlignTraj(self.sim, ref, select=selection, in_memory=True).run()
 
         # Atom selection for reference
         self.atoms = self.sim.select_atoms(selection)
