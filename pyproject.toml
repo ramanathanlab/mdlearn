@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mdlearn"
-version = "1.0.4"
+version = "1.0.5"
 authors = [
     {name = "Alexander Brace", email = "abrace@anl.gov"},
     {name = "Heng Ma", email = "heng.ma@anl.gov"},
