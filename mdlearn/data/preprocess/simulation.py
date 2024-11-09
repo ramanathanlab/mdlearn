@@ -80,6 +80,12 @@ class CoordinatePreprocessor:
         self.sim = MDAnalysis.Universe(str(top_file), str(traj_file))
         ref = MDAnalysis.Universe(str(ref_file))
 
+        # print all the inputs
+        print('Selection: ', selection)
+        print('Top file: ', top_file)
+        print('Traj file: ', traj_file)
+        print('Ref file: ', ref_file)
+
         mobile_atoms = self.sim.select_atoms('protein and name CA')
         ref_atoms = ref.select_atoms('protein and name CA')
         print(mobile_atoms)  # Check if any atoms are selected
