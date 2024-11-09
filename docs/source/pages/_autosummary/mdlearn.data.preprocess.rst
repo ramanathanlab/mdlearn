@@ -1,9 +1,9 @@
-mdlearn.data.preprocess
+﻿mdlearn.data.preprocess
 =======================
 
 .. automodule:: mdlearn.data.preprocess
 
-   
+
 .. rubric:: Modules
 
 .. autosummary::
@@ -12,3 +12,4 @@ mdlearn.data.preprocess
 
    align
    decorrelation
+   simulation

@@ -157,8 +157,8 @@ class ContactMapPreprocessor:
         Returns
         -------
         np.ndarray
-            The contact maps of the trajectory with shape (n_frames, *)
-            where * is a ragged dimension containing the concatenated
+            The contact maps of the trajectory with shape (n_frames, R)
+            where R is a ragged dimension containing the concatenated
             row and column indices of the ones in the contact map.
         """
         # Compute contact maps for each frame
