@@ -270,7 +270,7 @@ def preprocess(
         raise ValueError(f'Invalid topic: {topic}')
 
     # Get preprocessor for the specified topic
-    preprocessor = PREPROCESSORS[topic](traj_file, top_file, **kwargs)
+    preprocessor = PREPROCESSORS[topic](top_file, traj_file, **kwargs)
 
     # Preprocess the simulation data
     data = preprocessor.get()
