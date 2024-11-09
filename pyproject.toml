@@ -29,12 +29,17 @@ dependencies = [
     "numpy",
     "tqdm",
     "plotly",
+    "MDAnalysis",
+    "typer",
 ]
 
 [project.urls]
 homepage = "https://github.com/ramanathanlab/mdlearn"
 documentation = "https://mdlearn.readthedocs.io/en/latest"
 repository = "https://github.com/ramanathanlab/mdlearn"
+
+[project.scripts]
+mdlearn = "mdlearn.cli:main"
 
 [project.optional-dependencies]
 dev = [
