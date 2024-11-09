@@ -58,6 +58,18 @@ trainer.fit(X, output_path="./run")
 z, loss = trainer.predict(X)
 ```
 
+### Preprocessing
+
+We provide a CLI for collecting common data products from simulations. Currently, we support the following preprocessing methods:
+- Coordinates
+- Contact maps
+- Root mean square deviation (RMSD)
+
+Run the following command for details on how to use the CLI:
+```bash
+mdlearn preprocess --help
+```
+
 ## Contributing
 
 Please report **bugs**, **enhancement requests**, or **questions** through the [Issue Tracker](https://github.com/ramanathanlab/mdlearn/issues).
