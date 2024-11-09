@@ -227,7 +227,7 @@ class RmsdPreprocessor:
 
 PREPROCESSORS = {
     'coordinates': CoordinatePreprocessor,
-    'contact_maps': ContactMapPreprocessor,
+    'contact_map': ContactMapPreprocessor,
     'rmsd': RmsdPreprocessor,
 }
 
