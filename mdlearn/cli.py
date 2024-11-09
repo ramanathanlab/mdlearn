@@ -54,6 +54,12 @@ preprocess_options = {
         help='Selection string to extract atoms from the trajectory, '
         'defaults to "protein and name CA".',
     ),
+    'ref_file': typer.Option(
+        ...,
+        '--ref_file',
+        '-r',
+        help='Reference structure file to align the trajectory.',
+    ),
 }
 
 
@@ -65,6 +71,7 @@ def coordinates(
     traj_ext: str = preprocess_options['traj_ext'],
     num_workers: int = preprocess_options['num_workers'],
     selection: str = preprocess_options['selection'],
+    ref_file: Path = preprocess_options['ref_file'],
 ) -> None:
     """Preprocess coordinates from a MD trajectory."""
     from mdlearn.data.preprocess.simulation import parallel_preprocess
@@ -78,6 +85,7 @@ def coordinates(
         traj_ext=traj_ext,
         num_workers=num_workers,
         selection=selection,
+        ref_file=ref_file,
     )
 
 
@@ -121,12 +129,7 @@ def rmsd(
     traj_ext: str = preprocess_options['traj_ext'],
     num_workers: int = preprocess_options['num_workers'],
     selection: str = preprocess_options['selection'],
-    ref_file: Path = typer.Option(  # noqa: B008
-        ...,
-        '--ref_file',
-        '-r',
-        help='Reference structure file for RMSD calculation.',
-    ),
+    ref_file: Path = preprocess_options['ref_file'],
 ) -> None:
     """Preprocess RMSD from a MD trajectory."""
     from mdlearn.data.preprocess.simulation import parallel_preprocess

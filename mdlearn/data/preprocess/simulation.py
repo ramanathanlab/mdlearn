@@ -12,6 +12,7 @@ import MDAnalysis
 import numpy as np
 from MDAnalysis.analysis import distances
 from MDAnalysis.analysis import rms
+from MDAnalysis.analysis.align import AlignTraj
 from tqdm import tqdm
 
 
@@ -58,6 +59,7 @@ class CoordinatePreprocessor:
         self,
         top_file: Path | str,
         traj_file: Path | str,
+        ref_file: Path | str,
         selection: str = 'protein and name CA',
     ) -> None:
         """Initialize the coordinate preprocessor.
@@ -68,12 +70,17 @@ class CoordinatePreprocessor:
             Topology file of the simulation.
         traj_file : Path | str
             Trajectory file of the simulation.
+        ref_file : Path | str
+            Reference structure file to align the trajectory.
         selection : str
             Atom selection string for the reference structure,
             defaults to 'protein and name CA'.
         """
         # Load simulation and reference structures
         self.sim = MDAnalysis.Universe(str(top_file), str(traj_file))
+
+        # Align trajectory to a reference structure
+        AlignTraj(self.sim, ref_file, select=selection, in_memory=True).run()
 
         # Atom selection for reference
         self.atoms = self.sim.select_atoms(selection)
@@ -310,6 +317,7 @@ def parallel_preprocess(
     # Zip the arguments for the worker function
     args = zip(top_files, traj_files, output_dirs)
 
+    # Process the trajectory files in parallel
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
-        for _ in tqdm(executor.map(worker_fn, args)):
+        for _ in tqdm(executor.map(worker_fn, *args)):
             pass
