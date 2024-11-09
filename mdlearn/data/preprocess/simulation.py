@@ -315,9 +315,9 @@ def parallel_preprocess(
     )
 
     # Zip the arguments for the worker function
-    args = zip(top_files, traj_files, output_dirs)
+    args = list(zip(top_files, traj_files, output_dirs))
 
     # Process the trajectory files in parallel
     with ProcessPoolExecutor(max_workers=num_workers) as executor:
-        for _ in tqdm(executor.map(worker_fn, *args)):
+        for _ in tqdm(executor.map(worker_fn, *zip(*args)), total=len(args)):
             pass
