@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it as below.
+authors:
+  - family-names: Brace
+    given-names: Alexander
+    orcid: https://orcid.org/0000-0001-9873-9177
+  - family-names: Ma
+    given-names: Heng
+    orcid: https://orcid.org/0000-0002-7667-922X
+  - family-names: Ramanathan
+    given-names: Arvind
+    orcid: https://orcid.org/0000-0002-1622-5488
+license: MIT
+repository-code: https://github.com/ramanathanlab/mdlearn
+title: mdlearn
+url: https://github.com/ramanathanlab/mdlearn
